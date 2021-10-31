@@ -1,6 +1,6 @@
 # **quark** - A simple scripting language.
 
-All the docs can be found in `example.q` file. 
+All the docs can be found in `example.quark` file. 
 
 Guide for installation > 
 
