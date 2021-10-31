@@ -2,7 +2,7 @@
 
 All the docs can be found in `example.quark` file. 
 
-Guide for installation > https://github.com/Tapeline/quark/wiki/Guide-for-installation
+Guide for installation > https://github.com/Tapeline/quark/wiki/Installing-QuarkJ
 
 
 **CC BY-NC-SA 4.0**
