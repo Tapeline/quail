@@ -54,3 +54,46 @@ destroy variable  # remove variable from memory
 # end catch as variable do
 #   some code
 # end
+
+
+
+
+# ================================================= #
+# The detailed explanation of all Quark 0.2 changes #
+# ================================================= #
+
+# Empty variables creation
+string var 
+num number
+bool boolean
+
+
+# String changes
+# string::pos - get char at pos
+# len string - get length of string
+
+
+# Loop utilities
+# break, continue
+
+
+# Functions
+func repeat(msg, count) does
+  string data
+  through 1...count as i do
+    data = data .. msg
+  end
+  return data
+end
+
+out repeat(repeat("a", 3), 3)
+
+
+# Other changes
+# assert expression - raises an exception
+# block var - prevents modifications to variable. Cannot be undone (yet).
+# null - VoidType. Finalized variable.
+
+
+# RuntimeWrapper changes
+# - Now stacktrace contains line number.
