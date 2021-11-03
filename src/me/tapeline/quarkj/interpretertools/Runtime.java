@@ -5,19 +5,21 @@ import me.tapeline.quarkj.parsingtools.nodes.*;
 import me.tapeline.quarkj.parsingtools.nodes.Node;
 import me.tapeline.quarkj.utils.Utilities;
 
-import java.util.Scanner;
+import java.util.*;
 
 public class Runtime {
 
     public final Node rootNode;
+    private final String code;
     public Memory scope;
     public final RuntimeConfig config;
     public TryCatchNode scopeExceptionHandler = null;
 
-    public Runtime(Node rootNode, RuntimeConfig cfg) {
+    public Runtime(Node rootNode, RuntimeConfig cfg, String code) {
         this.rootNode = rootNode;
         this.scope = new Memory();
         this.config = cfg;
+        this.code = code;
     }
 
     public void raiseException(String msg, int pos) {
@@ -27,7 +29,8 @@ public class Runtime {
             scopeExceptionHandler = null;
         } else {
             System.err.println("[QNodeRunner] (X) " + msg);
-            System.err.println("[QNodeRunner] At " + pos + " symbol in code.");
+            System.err.println("[QNodeRunner] At " + pos + " symbol in code, at " + Utilities.getLine(pos, code) +
+                    " line.");
             System.exit(102);
         }
     }
@@ -42,239 +45,282 @@ public class Runtime {
         if (node instanceof LiteralBoolNode)
             return new BoolType(Boolean.parseBoolean(((LiteralBoolNode) node).token.c));
 
+        if (node instanceof LiteralDefinitionNode) {
+            switch (((LiteralDefinitionNode) node).type.c) {
+                case "bool": {
+                    scope.mem.put(((LiteralDefinitionNode) node).variable.c, new BoolType(false));
+                    break;
+                }
+                case "num": {
+                    scope.mem.put(((LiteralDefinitionNode) node).variable.c, new NumType(0));
+                    break;
+                }
+                case "string": {
+                    scope.mem.put(((LiteralDefinitionNode) node).variable.c, new StringType(""));
+                    break;
+                }
+            }
+            return new VoidType(true);
+        }
+
+        if (node instanceof LiteralFunctionNode) {
+            List<String> args = new ArrayList<>();
+            if (((LiteralFunctionNode) node).args instanceof MultiElementNode)
+                for (Node n : ((MultiElementNode) ((LiteralFunctionNode) node).args).nodes)
+                    args.add(((VariableNode) n).token.c);
+            else
+                args.add(((VariableNode) ((LiteralFunctionNode) node).args).token.c);
+            scope.set(((LiteralFunctionNode) node).name.c, new FuncType(((LiteralFunctionNode) node).name.c,
+                        args, ((LiteralFunctionNode) node).code));
+            return new VoidType(true);
+        }
+
         if (node instanceof UnaryOperatorNode) {
-            if (((UnaryOperatorNode) node).operator.c.equals("out")) {
-                System.out.println(NodeRunner_run(((UnaryOperatorNode) node).operand));
-                return new VoidType(true);
-            } else if (((UnaryOperatorNode) node).operator.c.equals("put")) {
-                System.out.print(NodeRunner_run( ((UnaryOperatorNode) node).operand ));
-                return new VoidType(true);
-            } else if (((UnaryOperatorNode) node).operator.c.equals("not")) {
-                QType operand = NodeRunner_run(((UnaryOperatorNode) node).operand);
-                if (operand instanceof BoolType) {
-                    return new BoolType(!((BoolType) operand).value);
-                } else {
-                    raiseException("Unable to invert `" + operand.getClass().toString() + "`",
-                            ((UnaryOperatorNode) node).operator.p);
+            switch (((UnaryOperatorNode) node).operator.c) {
+                case "out":
+                    System.out.println(NodeRunner_run(((UnaryOperatorNode) node).operand));
+                    return new VoidType(true);
+                case "put":
+                    System.out.print(NodeRunner_run(((UnaryOperatorNode) node).operand));
+                    return new VoidType(true);
+                case "not":
+                    QType operand = NodeRunner_run(((UnaryOperatorNode) node).operand);
+                    if (operand instanceof BoolType)
+                        return new BoolType(!((BoolType) operand).value);
+                    else
+                        raiseException("Unable to invert `" + operand.getClass().toString() + "`",
+                                ((UnaryOperatorNode) node).operator.p);
+                    break;
+                case "input": {
+                    System.out.print(NodeRunner_run(((UnaryOperatorNode) node).operand));
+                    Scanner sc = new Scanner(System.in);
+                    String input = sc.next();
+                    return new StringType(input);
                 }
-            } else if (((UnaryOperatorNode) node).operator.c.equals("input")) {
-                System.out.print(NodeRunner_run( ((UnaryOperatorNode) node).operand ));
-                Scanner sc = new Scanner(System.in);
-                String input = sc.next();
-                return new StringType(input);
-            } else if (((UnaryOperatorNode) node).operator.c.equals("destroy")) {
-                scope.mem.remove( ((VariableNode)((UnaryOperatorNode) node).operand).token.c);
-                return new VoidType(true);
-            } else if (((UnaryOperatorNode) node).operator.c.equals("declarestring")) {
-                scope.set( ((VariableNode)((UnaryOperatorNode) node).operand).token.c, new StringType(""));
-                return new VoidType(true);
-            } else if (((UnaryOperatorNode) node).operator.c.equals("declarenum")) {
-                scope.set( ((VariableNode)((UnaryOperatorNode) node).operand).token.c, new NumType(0));
-                return new VoidType(true);
-            } else if (((UnaryOperatorNode) node).operator.c.equals("declarebool")) {
-                scope.set( ((VariableNode)((UnaryOperatorNode) node).operand).token.c, new BoolType(false));
-                return new VoidType(true);
-            } else if (((UnaryOperatorNode) node).operator.c.equals("numinput")) {
-                System.out.print(NodeRunner_run( ((UnaryOperatorNode) node).operand ));
-                Scanner sc = new Scanner(System.in);
-                String rInput = sc.next();
-                if (Utilities.isNumeric(rInput)) {
-                    double input = Double.parseDouble(rInput);
-                    return new NumType(input);
-                } else {
-                    raiseException("Unable to convert input string `" + rInput + "`" + " to NumType",
-                            ((UnaryOperatorNode) node).operator.p);
+                case "destroy":
+                    scope.mem.remove(((VariableNode) ((UnaryOperatorNode) node).operand).token.c);
+                    return new VoidType(true);
+                case "numinput": {
+                    System.out.print(NodeRunner_run(((UnaryOperatorNode) node).operand));
+                    Scanner sc = new Scanner(System.in);
+                    String rInput = sc.next();
+                    if (Utilities.isNumeric(rInput)) {
+                        double input = Double.parseDouble(rInput);
+                        return new NumType(input);
+                    } else
+                        raiseException("Unable to convert input string `" + rInput + "`" + " to NumType",
+                                ((UnaryOperatorNode) node).operator.p);
+                    break;
                 }
-            } else if (((UnaryOperatorNode) node).operator.c.equals("boolinput")) {
-                System.out.print(NodeRunner_run( ((UnaryOperatorNode) node).operand ));
-                Scanner sc = new Scanner(System.in);
-                boolean input = sc.nextBoolean();
-                return new BoolType(input);
-            } else if (((UnaryOperatorNode) node).operator.c.equals("exists")) {
-                return new BoolType(scope.mem.containsKey(((VariableNode) ((UnaryOperatorNode) node).operand).token.c));
-            } else if (((UnaryOperatorNode) node).operator.c.equals("tostring")) {
-                QType valueRaw = NodeRunner_run(((UnaryOperatorNode) node).operand);
-                return new StringType(valueRaw.toString());
-            } else if (((UnaryOperatorNode) node).operator.c.equals("tonum")) {
-                QType valueRaw = NodeRunner_run(((UnaryOperatorNode) node).operand);
-                if (valueRaw instanceof StringType && Utilities.isNumeric(((StringType) valueRaw).value)) {
-                    return new NumType(Double.parseDouble(((StringType) valueRaw).value));
-                } else {
-                    raiseException("Unable to convert `" + valueRaw + "` to NumType",
-                            ((VariableNode) ((UnaryOperatorNode) node).operand).token.p);
+                case "boolinput": {
+                    System.out.print(NodeRunner_run(((UnaryOperatorNode) node).operand));
+                    Scanner sc = new Scanner(System.in);
+                    boolean input = sc.nextBoolean();
+                    return new BoolType(input);
                 }
-            } else if (((UnaryOperatorNode) node).operator.c.equals("tobool")) {
-                QType valueRaw = NodeRunner_run(((UnaryOperatorNode) node).operand);
-                if (valueRaw instanceof StringType && Utilities.isBoolean(((StringType) valueRaw).value)) {
-                    return new BoolType(Boolean.parseBoolean(((StringType) valueRaw).value));
-                } else {
-                    raiseException("Unable to convert `" + valueRaw + "` to BoolType",
-                            ((VariableNode) ((UnaryOperatorNode) node).operand).token.p);
+                case "exists":
+                    return new BoolType(scope.mem.containsKey(((VariableNode) ((UnaryOperatorNode) node).operand).token.c));
+                case "tostring": {
+                    QType valueRaw = NodeRunner_run(((UnaryOperatorNode) node).operand);
+                    return new StringType(valueRaw.toString());
+                }
+                case "tonum": {
+                    QType valueRaw = NodeRunner_run(((UnaryOperatorNode) node).operand);
+                    if (valueRaw instanceof StringType && Utilities.isNumeric(((StringType) valueRaw).value))
+                        return new NumType(Double.parseDouble(((StringType) valueRaw).value));
+                    else
+                        raiseException("Unable to convert `" + valueRaw + "` to NumType",
+                                ((VariableNode) ((UnaryOperatorNode) node).operand).token.p);
+                    break;
+                }
+                case "tobool": {
+                    QType valueRaw = NodeRunner_run(((UnaryOperatorNode) node).operand);
+                    if (valueRaw instanceof StringType && Utilities.isBoolean(((StringType) valueRaw).value))
+                        return new BoolType(Boolean.parseBoolean(((StringType) valueRaw).value));
+                    else
+                        raiseException("Unable to convert `" + valueRaw + "` to BoolType",
+                                ((VariableNode) ((UnaryOperatorNode) node).operand).token.p);
+                    break;
+                }
+                case "assert": {
+                    QType valueRaw = NodeRunner_run(((UnaryOperatorNode) node).operand);
+                    if (valueRaw instanceof BoolType && ((BoolType) valueRaw).value)
+                        return new BoolType(true);
+                    else
+                        raiseException("Assertion error! " + valueRaw + " is not BoolType:true",
+                                ((UnaryOperatorNode) node).operator.p);
+                    break;
+                }
+                case "return": {
+                    DirectInstructionType di = new DirectInstructionType(DirectInstruction.RETURN);
+                    di.data.put("value", NodeRunner_run(((UnaryOperatorNode) node).operand));
+                    return di;
+                }
+                case "block": {
+                    scope.finalize(((VariableNode) ((UnaryOperatorNode) node).operand).token.c);
                 }
             }
         }
 
         if (node instanceof BinaryOperatorNode) {
             BinaryOperatorNode binNode = ((BinaryOperatorNode) node);
-            if (binNode.operator.c.equals("+")) {
-                QType a = NodeRunner_run(binNode.lnode);
-                QType b = NodeRunner_run(binNode.rnode);
-                if (a instanceof StringType || b instanceof StringType) {
-                    raiseException("At `" + node + "`\nUnable to do arithmetic operation on StringType!" +
-                            "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
-                } else if (a instanceof BoolType || b instanceof BoolType) {
-                    raiseException("At `" + node + "`\nUnable to do arithmetic operation on BoolType!" +
-                            "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
+            if (binNode.operator.c.equals("=")) {
+                if (scope.finalized.contains(((VariableNode) binNode.lnode).token.c)) {
+                    raiseException("`" + ((VariableNode) binNode.lnode).token.c + "` is blocked (finalized)",
+                            ((VariableNode) binNode.lnode).token.p);
+                    return new VoidType(true);
                 }
-                double af = ((NumType) a).value;
-                double bf = ((NumType) b).value;
-                return new NumType(af + bf);
-
-
-            } else if (binNode.operator.c.equals("-")) {
-                QType a = NodeRunner_run(binNode.lnode);
-                QType b = NodeRunner_run(binNode.rnode);
-                if (a instanceof StringType || b instanceof StringType) {
-                    raiseException("At `" + node + "`\nUnable to do arithmetic operation on StringType!" +
-                            "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
-                } else if (a instanceof BoolType || b instanceof BoolType) {
-                    raiseException("At `" + node + "`\nUnable to do arithmetic operation on BoolType!" +
-                            "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
-                }
-                double af = ((NumType) a).value;
-                double bf = ((NumType) b).value;
-                return new NumType(af - bf);
-
-
-            } else if (binNode.operator.c.equals("*")) {
-                QType a = NodeRunner_run(binNode.lnode);
-                QType b = NodeRunner_run(binNode.rnode);
-                if (a instanceof StringType || b instanceof StringType) {
-                    raiseException("At `" + node + "`\nUnable to do arithmetic operation on StringType!" +
-                            "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
-                } else if (a instanceof BoolType || b instanceof BoolType) {
-                    raiseException("At `" + node + "`\nUnable to do arithmetic operation on BoolType!" +
-                            "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
-                }
-                double af = ((NumType) a).value;
-                double bf = ((NumType) b).value;
-                return new NumType(af * bf);
-
-
-            } else if (binNode.operator.c.equals("/")) {
-                QType a = NodeRunner_run(binNode.lnode);
-                QType b = NodeRunner_run(binNode.rnode);
-                if (a instanceof StringType || b instanceof StringType) {
-                    raiseException("At `" + node + "`\nUnable to do arithmetic operation on StringType!" +
-                            "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
-                    return null;
-                } else if (a instanceof BoolType || b instanceof BoolType) {
-                    raiseException("At `" + node + "`\nUnable to do arithmetic operation on BoolType!" +
-                            "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
-                    return null;
-                }
-                double af = ((NumType) a).value;
-                double bf = ((NumType) b).value;
-                return new NumType(af / bf);
-
-
-            } else if (binNode.operator.c.equals("^")) {
-                QType a = NodeRunner_run(binNode.lnode);
-                QType b = NodeRunner_run(binNode.rnode);
-                if (a instanceof StringType || b instanceof StringType) {
-                    raiseException("At `" + node + "`\nUnable to do arithmetic operation on StringType!" +
-                            "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
-                } else if (a instanceof BoolType || b instanceof BoolType) {
-                    raiseException("At `" + node + "`\nUnable to do arithmetic operation on BoolType!" +
-                            "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
-                }
-                double af = ((NumType) a).value;
-                double bf = ((NumType) b).value;
-                return new NumType(Math.pow(af, bf));
-
-
-            } else if (binNode.operator.c.equals("=")) {
                 QType result = NodeRunner_run(binNode.rnode);
                 scope.set(((VariableNode) binNode.lnode).token.c, result);
                 return result;
-
-
-            } else if (binNode.operator.c.equals("==")) {
-                QType operandA = NodeRunner_run(binNode.lnode);
-                QType operandB = NodeRunner_run(binNode.rnode);
-                if (operandA instanceof BoolType && operandB instanceof BoolType) {
-                    return new BoolType(((BoolType) operandA).value == ((BoolType) operandB).value);
-                } else if (operandA instanceof NumType && operandB instanceof NumType) {
-                    return new BoolType(((NumType) operandA).value == ((NumType) operandB).value);
-                } else if (operandA instanceof StringType && operandB instanceof StringType) {
-                    return new BoolType(((StringType) operandA).value.equals(((StringType) operandB).value));
+            }
+            QType a = NodeRunner_run(binNode.lnode);
+            QType b = NodeRunner_run(binNode.rnode);
+            switch (binNode.operator.c) {
+                case "+": {
+                    if (a instanceof StringType || b instanceof StringType)
+                        raiseException("At `" + node + "`\nUnable to do arithmetic operation on StringType!" +
+                                "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
+                    else if (a instanceof BoolType || b instanceof BoolType)
+                        raiseException("At `" + node + "`\nUnable to do arithmetic operation on BoolType!" +
+                                "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
+                    double af = ((NumType) a).value;
+                    double bf = ((NumType) b).value;
+                    return new NumType(af + bf);
                 }
-                raiseException("Incomparable types `" + operandA.getClass().toString() + "` and `" +
-                        operandB.getClass().toString() + "`", binNode.operator.p);
-
-
-            } else if (binNode.operator.c.equals("!=")) {
-                QType operandA = NodeRunner_run(binNode.lnode);
-                QType operandB = NodeRunner_run(binNode.rnode);
-                if (operandA instanceof BoolType && operandB instanceof BoolType) {
-                    return new BoolType(((BoolType) operandA).value != ((BoolType) operandB).value);
-                } else if (operandA instanceof NumType && operandB instanceof NumType) {
-                    return new BoolType(((NumType) operandA).value != ((NumType) operandB).value);
-                } else if (operandA instanceof StringType && operandB instanceof StringType) {
-                    return new BoolType(!(((StringType) operandA).value.equals(((StringType) operandB).value)));
+                case "-": {
+                    if (a instanceof StringType || b instanceof StringType)
+                        raiseException("At `" + node + "`\nUnable to do arithmetic operation on StringType!" +
+                                "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
+                    else if (a instanceof BoolType || b instanceof BoolType)
+                        raiseException("At `" + node + "`\nUnable to do arithmetic operation on BoolType!" +
+                                "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
+                    double af = ((NumType) a).value;
+                    double bf = ((NumType) b).value;
+                    return new NumType(af - bf);
                 }
-                raiseException("Incomparable types `" + operandA.getClass().toString() + "` and `" +
-                        operandB.getClass().toString() + "`", binNode.operator.p);
-
-
-            } else if (binNode.operator.c.equals(">")) {
-                QType operandA = NodeRunner_run(binNode.lnode);
-                QType operandB = NodeRunner_run(binNode.rnode);
-                if (operandA instanceof NumType && operandB instanceof NumType) {
-                    return new BoolType(((NumType) operandA).value > ((NumType) operandB).value);
+                case "*": {
+                    if (a instanceof StringType || b instanceof StringType)
+                        raiseException("At `" + node + "`\nUnable to do arithmetic operation on StringType!" +
+                                "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
+                    else if (a instanceof BoolType || b instanceof BoolType)
+                        raiseException("At `" + node + "`\nUnable to do arithmetic operation on BoolType!" +
+                                "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
+                    double af = ((NumType) a).value;
+                    double bf = ((NumType) b).value;
+                    return new NumType(af * bf);
                 }
-                raiseException("Incomparable types `" + operandA.getClass().toString() + "` and `" +
-                        operandB.getClass().toString() + "`", binNode.operator.p);
-
-
-            } else if (binNode.operator.c.equals("<")) {
-                QType operandA = NodeRunner_run(binNode.lnode);
-                QType operandB = NodeRunner_run(binNode.rnode);
-                if (operandA instanceof NumType && operandB instanceof NumType) {
-                    return new BoolType(((NumType) operandA).value < ((NumType) operandB).value);
+                case "/": {
+                    if (a instanceof StringType || b instanceof StringType) {
+                        raiseException("At `" + node + "`\nUnable to do arithmetic operation on StringType!" +
+                                "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
+                        return null;
+                    } else if (a instanceof BoolType || b instanceof BoolType) {
+                        raiseException("At `" + node + "`\nUnable to do arithmetic operation on BoolType!" +
+                                "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
+                        return null;
+                    }
+                    double af = ((NumType) a).value;
+                    double bf = ((NumType) b).value;
+                    return new NumType(af / bf);
                 }
-                raiseException("Incomparable types `" + operandA.getClass().toString() + "` and `" +
-                        operandB.getClass().toString() + "`", binNode.operator.p);
-
-
-            } else if (binNode.operator.c.equals("<=")) {
-                QType operandA = NodeRunner_run(binNode.lnode);
-                QType operandB = NodeRunner_run(binNode.rnode);
-                if (operandA instanceof NumType && operandB instanceof NumType) {
-                    return new BoolType(((NumType) operandA).value <= ((NumType) operandB).value);
+                case "^": {
+                    if (a instanceof StringType || b instanceof StringType)
+                        raiseException("At `" + node + "`\nUnable to do arithmetic operation on StringType!" +
+                                "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
+                    else if (a instanceof BoolType || b instanceof BoolType)
+                        raiseException("At `" + node + "`\nUnable to do arithmetic operation on BoolType!" +
+                                "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
+                    double af = ((NumType) a).value;
+                    double bf = ((NumType) b).value;
+                    return new NumType(Math.pow(af, bf));
                 }
-                raiseException("Incomparable types `" + operandA.getClass().toString() + "` and `" +
-                        operandB.getClass().toString() + "`", binNode.operator.p);
-
-
-            } else if (binNode.operator.c.equals(">=")) {
-                QType operandA = NodeRunner_run(binNode.lnode);
-                QType operandB = NodeRunner_run(binNode.rnode);
-                if (operandA instanceof NumType && operandB instanceof NumType) {
-                    return new BoolType(((NumType) operandA).value >= ((NumType) operandB).value);
+                case "==": {
+                    if (a instanceof BoolType && b instanceof BoolType)
+                        return new BoolType(((BoolType) a).value == ((BoolType) b).value);
+                    else if (a instanceof NumType && b instanceof NumType)
+                        return new BoolType(((NumType) a).value == ((NumType) b).value);
+                    else if (a instanceof StringType && b instanceof StringType)
+                        return new BoolType(((StringType) a).value.equals(((StringType) b).value));
+                    raiseException("Incomparable types `" + a.getClass().toString() + "` and `" +
+                            b.getClass().toString() + "`", binNode.operator.p);
+                    break;
                 }
-                raiseException("Incomparable types `" + operandA.getClass().toString() + "` and `" +
-                        operandB.getClass().toString() + "`", binNode.operator.p);
-
-
-            } else if (binNode.operator.c.equals("..")) {
-                QType operandA = NodeRunner_run(binNode.lnode);
-                QType operandB = NodeRunner_run(binNode.rnode);
-                if (operandA instanceof StringType && operandB instanceof StringType) {
-                    return new StringType(((StringType) operandA).value + ((StringType) operandB).value);
+                case "!=": {
+                    if (a instanceof BoolType && b instanceof BoolType)
+                        return new BoolType(((BoolType) a).value != ((BoolType) b).value);
+                    else if (a instanceof NumType && b instanceof NumType)
+                        return new BoolType(((NumType) a).value != ((NumType) b).value);
+                    else if (a instanceof StringType && b instanceof StringType)
+                        return new BoolType(!(((StringType) a).value.equals(((StringType) b).value)));
+                    raiseException("Incomparable types `" + a.getClass().toString() + "` and `" +
+                            b.getClass().toString() + "`", binNode.operator.p);
+                    break;
                 }
-                raiseException("Unable to concatenate `" + operandA.getClass().toString() + "` and `" +
-                        operandB.getClass().toString() + "`", binNode.operator.p);
+                case ">": {
+                    if (a instanceof NumType && b instanceof NumType)
+                        return new BoolType(((NumType) a).value > ((NumType) b).value);
+                    raiseException("Incomparable types `" + a.getClass().toString() + "` and `" +
+                            b.getClass().toString() + "`", binNode.operator.p);
+                    break;
+                }
+                case "<": {
+                    if (a instanceof NumType && b instanceof NumType)
+                        return new BoolType(((NumType) a).value < ((NumType) b).value);
+                    raiseException("Incomparable types `" + a.getClass().toString() + "` and `" +
+                            b.getClass().toString() + "`", binNode.operator.p);
+                    break;
+                }
+                case "<=": {
+                    if (a instanceof NumType && b instanceof NumType)
+                        return new BoolType(((NumType) a).value <= ((NumType) b).value);
+                    raiseException("Incomparable types `" + a.getClass().toString() + "` and `" +
+                            b.getClass().toString() + "`", binNode.operator.p);
+                    break;
+                }
+                case ">=": {
+                    if (a instanceof NumType && b instanceof NumType)
+                        return new BoolType(((NumType) a).value >= ((NumType) b).value);
+                    raiseException("Incomparable types `" + a.getClass().toString() + "` and `" +
+                            b.getClass().toString() + "`", binNode.operator.p);
+                    break;
+                }
+                case "..": {
+                    if (a instanceof StringType && b instanceof StringType)
+                        return new StringType(((StringType) a).value + ((StringType) b).value);
+                    raiseException("Unable to concatenate `" + a.getClass().toString() + "` and `" +
+                            b.getClass().toString() + "`", binNode.operator.p);
+                    break;
+                }
+                case "and": {
+                    if (a instanceof BoolType && b instanceof BoolType)
+                        return new BoolType(((BoolType) a).value && ((BoolType) b).value);
+                    raiseException("Unable to apply `and` to `" + a.getClass().toString() + "` and `" +
+                            b.getClass().toString() + "`", binNode.operator.p);
+                    break;
+                }
+                case "or": {
+                    if (a instanceof BoolType && b instanceof BoolType)
+                        return new BoolType(((BoolType) a).value || ((BoolType) b).value);
+                    raiseException("Unable to apply `or` to `" + a.getClass().toString() + "` and `" +
+                            b.getClass().toString() + "`", binNode.operator.p);
+                    break;
+                }
+                case "::": {
+                    if (a instanceof StringType && b instanceof NumType) {
+                        if (((NumType) b).value < ((StringType) a).value.length()) {
+                            return new StringType(((StringType) a).value.charAt((int)
+                                    Math.round(((NumType) b).value))+"");
+                        } else {
+                            raiseException("Index " + ((NumType) b).value + " out of bounds!", binNode.operator.p);
+                            break;
+                        }
+                    } else {
+                        raiseException("Unable to apply `or` to `" + a.getClass().toString() + "` and `" +
+                                b.getClass().toString() + "`", binNode.operator.p);
+                        break;
+                    }
+                }
             }
         } else if (node instanceof VariableNode) {
             if (  scope.mem.containsKey( ((VariableNode) node).token.c )  ) {
@@ -285,11 +331,13 @@ public class Runtime {
             }
         } else if (node instanceof RootNode) {
             for (Node n : ((RootNode) node).nodes) {
-                NodeRunner_run(n);
+                QType result = NodeRunner_run(n);
+                if (result instanceof DirectInstructionType) return result;
             }
         } else if (node instanceof BlockNode) {
             for (Node n : ((BlockNode) node).nodes) {
-                NodeRunner_run(n);
+                QType result = NodeRunner_run(n);
+                if (result instanceof DirectInstructionType) return result;
             }
         } else if (node instanceof IfBlockNode) {
             BinaryOperatorNode conditionRaw = ((IfBlockNode) node).condition;
@@ -299,11 +347,13 @@ public class Runtime {
                         conditionRaw.operator.p);
             }
             if (((BoolType) condition).value) {
-                NodeRunner_run(((IfBlockNode) node).nodes);
+                QType result = NodeRunner_run(((IfBlockNode) node).nodes);
+                if (result instanceof DirectInstructionType) return result;
             } else {
                 for (Node linkedNode : ((IfBlockNode) node).linkedNodes) {
                     if (linkedNode instanceof ElseBlockNode) {
-                        NodeRunner_run(((ElseBlockNode) linkedNode).nodes);
+                        QType result = NodeRunner_run(((ElseBlockNode) linkedNode).nodes);
+                        if (result instanceof DirectInstructionType) return result;
                     } else if (linkedNode instanceof ElseIfBlockNode) {
                         BinaryOperatorNode linkedConditionRaw = ((ElseIfBlockNode) linkedNode).condition;
                         QType linkedCondition = NodeRunner_run(linkedConditionRaw);
@@ -312,25 +362,36 @@ public class Runtime {
                                     "` type instead of BoolType", linkedConditionRaw.operator.p);
                         }
                         if (((BoolType) linkedCondition).value) {
-                            NodeRunner_run(((ElseIfBlockNode) linkedNode).nodes);
+                            QType result = NodeRunner_run(((ElseIfBlockNode) linkedNode).nodes);
+                            if (result instanceof DirectInstructionType) return result;
                         }
                     }
                 }
             }
             return null;
         } else if (node instanceof InstructionNode) {
-            if (((InstructionNode) node).operator.c.equals("milestone")) {
-                System.out.println("<MILESTONE>");
-                System.out.println("Memory:\n" + scope.mem.toString());
-                System.out.println("AST:\n" + rootNode);
-                System.out.println("<MILESTONE>");
-            } else if (((InstructionNode) node).operator.c.equals("breakpoint")) {
-                System.out.println("<MILESTONE>");
-                System.out.println("Memory:\n" + scope.mem.toString());
-                System.out.println("AST:\n" + rootNode);
-                Scanner sc = new Scanner(System.in);
-                System.out.println("<MILESTONE>\nType `c` and press ENTER to continue > ");
-                sc.next();
+            switch (((InstructionNode) node).operator.c) {
+                case "milestone":
+                    System.out.println("<MILESTONE>");
+                    System.out.println("Memory:\n" + scope.mem.toString());
+                    System.out.println("AST:\n" + rootNode);
+                    System.out.println("<MILESTONE>");
+                    break;
+                case "breakpoint": {
+                    System.out.println("<MILESTONE>");
+                    System.out.println("Memory:\n" + scope.mem.toString());
+                    System.out.println("AST:\n" + rootNode);
+                    Scanner sc = new Scanner(System.in);
+                    System.out.println("<MILESTONE>\nType `c` and press ENTER to continue > ");
+                    sc.next();
+                    break;
+                }
+                case "continue": {
+                    return new DirectInstructionType(DirectInstruction.CONTINUE);
+                }
+                case "break": {
+                    return new DirectInstructionType(DirectInstruction.BREAK);
+                }
             }
         } else if (node instanceof ThroughBlockNode) {
             String var = ((ThroughBlockNode) node).variable.token.c;
@@ -338,32 +399,91 @@ public class Runtime {
             Node rawRangeB = ((ThroughBlockNode) node).range.rnode;
             QType rangeA = NodeRunner_run(rawRangeA);
             QType rangeB = NodeRunner_run(rawRangeB);
+            QType returnValue = new VoidType(true);
             if (rangeA instanceof NumType && rangeB instanceof NumType) {
                 long a = Math.round(((NumType) rangeA).value);
                 long b = Math.round(((NumType) rangeB).value);
                 if (b > a) {
                     for (long i = a; i <= b; i++) {
                         scope.set(var, new NumType((double) i));
-                        NodeRunner_run(((ThroughBlockNode) node).nodes);
+                        QType result = NodeRunner_run(((ThroughBlockNode) node).nodes);
+                        if (result instanceof DirectInstructionType) {
+                            if (((DirectInstructionType) result).i.equals(DirectInstruction.CONTINUE))
+                                continue;
+                            else
+                                return result;
+                        }
                     }
                 } else {
                     for (long i = a; i >= b; i--) {
                         scope.set(var, new NumType((double) i));
-                        NodeRunner_run(((ThroughBlockNode) node).nodes);
+                        QType result = NodeRunner_run(((ThroughBlockNode) node).nodes);
+                        if (result instanceof DirectInstructionType) {
+                            if (((DirectInstructionType) result).i.equals(DirectInstruction.CONTINUE))
+                                continue;
+                            else
+                                return result;
+                        }
                     }
                 }
+                return returnValue;
+            } else {
+                raiseException("A and B should be NumType values!", ((ThroughBlockNode) node).variable.token.p);
+                return null;
             }
         } else if (node instanceof TryCatchNode) {
             scopeExceptionHandler = (TryCatchNode) node;
-            NodeRunner_run(((TryCatchNode) node).tryNodes);
+            return NodeRunner_run(((TryCatchNode) node).tryNodes);
+        } else if (node instanceof FunctionCallNode) {
+            if (!scope.mem.containsKey(((FunctionCallNode) node).operator.c)) raiseException(
+                    "Function `" + ((FunctionCallNode) node).operator.c + "` is not declared in this scope",
+                    ((FunctionCallNode) node).operator.p);
+            HashMap<String, QType> backupCollidingVariables = new HashMap<>();
+            QType functionRaw = scope.mem.get(((FunctionCallNode) node).operator.c);
+            if (!(functionRaw instanceof FuncType)) {
+                raiseException("`" + ((FunctionCallNode) node).operator.c + "` is not a function",
+                        ((FunctionCallNode) node).operator.p);
+                return null;
+            }
+            FuncType function = ((FuncType) functionRaw);
+            for (String varName : function.args)
+                if (scope.mem.containsKey(varName))
+                    backupCollidingVariables.put(varName, scope.mem.get(varName));
+            if (((FunctionCallNode) node).operand instanceof MultiElementNode) {
+                MultiElementNode argsCasted = (MultiElementNode) ((FunctionCallNode) node).operand;
+                for (int i = 0; i < function.args.size(); i++) {
+                    if (i < argsCasted.nodes.size())
+                        scope.set(function.args.get(i), NodeRunner_run(argsCasted.nodes.get(i)));
+                    else
+                        scope.set(function.args.get(i), new VoidType(true));
+                }
+            } else {
+                for (int i = 0; i < function.args.size(); i++) {
+                    if (i == 0)
+                        scope.set(function.args.get(i), NodeRunner_run(((FunctionCallNode) node).operand));
+                    else
+                        scope.set(function.args.get(i), new VoidType(true));
+                }
+            }
+            QType returnValue = NodeRunner_run(function.code);
+            if (returnValue instanceof DirectInstructionType &&
+                    ((DirectInstructionType) returnValue).i.equals(DirectInstruction.RETURN))
+                returnValue = ((DirectInstructionType) returnValue).data.get("value");
+            for (String key : function.args) {
+                if (backupCollidingVariables.containsKey(key))
+                    scope.set(key, backupCollidingVariables.get(key));
+                else
+                    scope.mem.remove(key);
+            }
+            return returnValue;
         }
 
         return new VoidType(true);
     }
 
-    public void run() {
+    public QType run() {
         if (config.DEBUG) System.out.println(rootNode.toString());
-        NodeRunner_run(rootNode);
+        return NodeRunner_run(rootNode);
     }
 
 }

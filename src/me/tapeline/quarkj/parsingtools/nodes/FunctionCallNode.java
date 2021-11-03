@@ -2,19 +2,19 @@ package me.tapeline.quarkj.parsingtools.nodes;
 
 import me.tapeline.quarkj.tokenizetools.tokens.Token;
 
-public class UnaryOperatorNode extends Node {
+public class FunctionCallNode extends Node {
 
     public final Token operator;
     public final Node operand;
 
-    public UnaryOperatorNode(Token op, Node opnd) {
+    public FunctionCallNode(Token op, Node opnd) {
         this.operator = op;
         this.operand = opnd;
     }
 
     @Override
     public String toString() {
-        return "UnaryOp-" + operator.toString() + "[" + operand.toString() + "]";
+        return "FunctionCall-" + operator.toString()  + operand.toString();
     }
 
 }

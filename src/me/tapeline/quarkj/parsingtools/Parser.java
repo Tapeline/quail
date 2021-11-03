@@ -12,15 +12,14 @@ public class Parser {
     private final List<Token> tokens;
     private RootNode scope = new RootNode();
     private int pos = 0;
-    private boolean stop = false;
 
     public Parser(List<Token> tokens) {
         this.tokens = tokens;
     }
 
     public void raiseException(String msg) {
-        stop = true;
         System.err.println("[QParser] (X) " + msg);
+        System.exit(101);
     }
 
     public Token match(List<TokenType> tokenTypes) {
@@ -43,10 +42,8 @@ public class Parser {
     public Token require(List<TokenType> tokenTypes) {
         Token token = match(tokenTypes);
         if (token == null) {
-            stop = true;
             raiseException("Expected one of `" + tokenTypes.toString() + "` types, but got `" +
                     getNext().toString() + "`");
-            return null;
         }
         return token;
     }
@@ -54,8 +51,19 @@ public class Parser {
     public Node parseParentheses() {
         if (match(Arrays.asList(TokenType.LPAR)) != null) {
             Node node = parseFormula();
-            require(Arrays.asList(TokenType.RPAR));
-            return node;
+            if (getNext().t.equals(TokenType.COMMA)) {
+                MultiElementNode multiElementNode = new MultiElementNode();
+                multiElementNode.addNode(node);
+                while (getNext().t.equals(TokenType.COMMA)) {
+                    require(Arrays.asList(TokenType.COMMA));
+                    multiElementNode.addNode(parseFormula());
+                }
+                require(Arrays.asList(TokenType.RPAR));
+                return multiElementNode;
+            } else {
+                require(Arrays.asList(TokenType.RPAR));
+                return node;
+            }
         } else return parseVarOrLiteral();
     }
 
@@ -93,7 +101,14 @@ public class Parser {
             return parseUnaryOperator();
         }
         Token var = match(Arrays.asList(TokenType.ID));
-        if (var != null) return new VariableNode(var);
+        if (var != null) {
+            Node variable = new VariableNode(var);
+            if (getNext().t.equals(TokenType.LPAR)) {
+                pos++;
+                return parseFunctionCall(variable);
+            }
+            return variable;
+        }
         raiseException("Expected literal or variable contained value, but got " + getNext().toString());
         return null;
     }
@@ -111,7 +126,6 @@ public class Parser {
         while (true) {
             Node node = parseExpression();
             if (node instanceof EndNode) break;
-            if (stop) return null;
             code.addNode(node);
         }
         return new IfBlockNode(condition, code);
@@ -122,7 +136,6 @@ public class Parser {
         BinaryOperatorNode condition = new BinaryOperatorNode(new Token(TokenType.BINARYOPERATOR, "==", 0),
                 condraw, new LiteralBoolNode(new Token(TokenType.LITERALBOOL, "true", 0)));
         BlockNode code = new BlockNode();
-        if (stop) return null;
         Token t_ = require(Arrays.asList(TokenType.BLOCK));
         if (t_ == null || !t_.c.equals("do")) {
             raiseException("Expected do near `elseif`!");
@@ -131,7 +144,6 @@ public class Parser {
         while (true) {
             Node node = parseExpression();
             if (node instanceof EndNode) break;
-            if (stop) return null;
             code.addNode(node);
         }
         int ifBlockNodeIndex = scope.getLastIfNodeIndex();
@@ -155,7 +167,6 @@ public class Parser {
         while (true) {
             Node node = parseExpression();
             if (node instanceof EndNode) break;
-            if (stop) return null;
             code.addNode(node);
         }
         int ifBlockNodeIndex = scope.getLastIfNodeIndex();
@@ -172,14 +183,12 @@ public class Parser {
     public Node parseThroughBlock() {
         BlockNode code = new BlockNode();
         Node rangeRaw = parseFormula();
-        if (stop) return null;
         Token t_ = require(Arrays.asList(TokenType.KEYWORD));
         if (t_ == null || !t_.c.equals("as")) {
             raiseException("Expected `as` in `through` construction!");
             return null;
         }
         Node varRaw = parseVarOrLiteral();
-        if (stop) return null;
         if (!(varRaw instanceof VariableNode)) {
             raiseException("`through` accepts only single variable (`VariableNode`), but not `"
                     + varRaw.getClass().toString() + "`");
@@ -194,7 +203,6 @@ public class Parser {
         while (true) {
             Node node = parseExpression();
             if (node instanceof EndNode) break;
-            if (stop) return null;
             code.addNode(node);
         }
         return new ThroughBlockNode((BinaryOperatorNode) rangeRaw, variable, code);
@@ -210,7 +218,6 @@ public class Parser {
         while (true) {
             Node node = parseExpression();
             if (node instanceof EndNode) break;
-            if (stop) return null;
             tryCode.addNode(node);
         }
         Token t_ = require(Arrays.asList(TokenType.KEYWORD));
@@ -224,7 +231,6 @@ public class Parser {
             return null;
         }
         Node varRaw = parseVarOrLiteral();
-        if (stop) return null;
         if (!(varRaw instanceof VariableNode)) {
             raiseException("`catch` accepts only single variable (`VariableNode`), but not `"
                     + varRaw.getClass().toString() + "`");
@@ -240,10 +246,46 @@ public class Parser {
         while (true) {
             Node node = parseExpression();
             if (node instanceof EndNode) break;
-            if (stop) return null;
             catchCode.addNode(node);
         }
         return new TryCatchNode(tryCode, catchCode, variable);
+    }
+
+    public Node parseFunctionCall(Node function) {
+        pos--;
+        Node arguments = parseParentheses();
+        return new FunctionCallNode(((VariableNode) function).token, arguments);
+    }
+
+    public Node parseTypeStatement() {
+        Token type = require(Arrays.asList(TokenType.TYPE));
+        switch (type.c) {
+            case "num":
+            case "string":
+            case "bool": {
+                Token variable = require(Arrays.asList(TokenType.ID));
+                return new LiteralDefinitionNode(variable, type);
+            }
+            case "func": {
+                Token name = require(Arrays.asList(TokenType.ID));
+                Node arguments = parseParentheses();
+                Token t_ = require(Arrays.asList(TokenType.BLOCK));
+                if (!t_.c.equals("does"))
+                    raiseException("Expected `do` after function head definition");
+                BlockNode node = new BlockNode();
+                while (true) {
+                    Node n = parseExpression();
+                    if (n instanceof EndNode) break;
+                    node.addNode(n);
+                }
+                return new LiteralFunctionNode(name, arguments, node);
+            }
+            default: {
+                raiseException("Unknown type `" + type.c + "`");
+                break;
+            }
+        }
+        return null;
     }
 
 
@@ -251,68 +293,55 @@ public class Parser {
         if (match(Arrays.asList(TokenType.ID)) != null) {
             pos--;
             Node varNode = parseVarOrLiteral();
-            if (stop) return null;
             Token nextToken = getNext();
             pos++;
             if (nextToken.t.equals(TokenType.ASSIGNOPERATOR)) {
                 Node rfNode = parseFormula();
-                if (stop) return null;
                 return new BinaryOperatorNode(nextToken, varNode, rfNode);
-            /*} else if (nextToken.t.equals(TokenType.FIELDREFERENCE)) {
-                Node field = parseVarOrLiteral();
-                if (getNext().t.equals(TokenType.FIELDREFERENCE))
-                return new ObjectFieldReferenceNode(nextToken, varNode, field);
-            */} else {
-                raiseException("Unknown operation `" + nextToken.toString() + "` for `" + varNode.toString() + "`");
+            } else if (nextToken.t.equals(TokenType.LPAR) && varNode instanceof VariableNode) {
+                return parseFunctionCall(varNode);
+            } else {
+                raiseException("Unknown operation `" + nextToken + "` for `" + varNode.toString() + "`");
                 return null;
             }
         } else if (match(Arrays.asList(TokenType.KEYWORD)) != null) {
             pos--;
             Token token = match(Arrays.asList(TokenType.KEYWORD));
-            if (token.c.equals("if")) {
-                Node block = parseIfBlock();
-                if (stop) return null;
-                return block;
-            } else if (token.c.equals("elseif")) {
-                Node block = parseElseIfBlock();
-                if (stop) return null;
-                return block;
-            } else if (token.c.equals("else")) {
-                Node block = parseElseBlock();
-                if (stop) return null;
-                return block;
-            } else if (token.c.equals("through")) {
-                Node block = parseThroughBlock();
-                if (stop) return null;
-                return block;
-            } else if (token.c.equals("try")) {
-                Node block = parseTryBlock();
-                if (stop) return null;
-                return block;
+            switch (token.c) {
+                case "if": {
+                    return parseIfBlock();
+                }
+                case "elseif": {
+                    return parseElseIfBlock();
+                }
+                case "else": {
+                    return parseElseBlock();
+                }
+                case "through": {
+                    return parseThroughBlock();
+                }
+                case "try": {
+                    return parseTryBlock();
+                }
             }
         } else if (match(Arrays.asList(TokenType.BLOCK)) != null) {
             pos--;
             Token token = match(Arrays.asList(TokenType.BLOCK));
             if (token.c.equals("end")) {
-                Node end = new EndNode(token);
-                if (stop) return null;
-                return end;
+                return new EndNode(token);
             }
         } else if (match(Arrays.asList(TokenType.INSTRUCTION)) != null) {
             pos--;
             Token token = match(Arrays.asList(TokenType.INSTRUCTION));
-            if (token.c.equals("milestone") || token.c.equals("breakpoint")) {
-                Node node = new InstructionNode(token);
-                if (stop) return null;
-                return node;
-            }
+            return new InstructionNode(token);
         } else if (match(Arrays.asList(TokenType.WHITESPACE)) != null ||
                 match(Arrays.asList(TokenType.COMMENT)) != null) {
             return null;
+        } else if (match(Arrays.asList(TokenType.TYPE)) != null) {
+            pos--;
+            return parseTypeStatement();
         } else if (getNext().t.equals(TokenType.UNARYOPERATOR)) {
-            Node node = parseUnaryOperator();
-            if (stop) return null;
-            return node;
+            return parseUnaryOperator();
         }
         raiseException("Unknown exception!");
         return null;
@@ -321,7 +350,6 @@ public class Parser {
     public Node parseCode() {
         while (pos < tokens.size()) {
             Node node = parseExpression();
-            if (stop) return null;
             if (node != null) scope.addNode(node);
         }
         return scope;

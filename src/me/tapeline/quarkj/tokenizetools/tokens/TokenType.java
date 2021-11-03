@@ -7,16 +7,17 @@ public enum TokenType {
     LITERALSTRING("LITERALSTRING", "\\\"[^\\\".]*\\\""),
     LITERALNUM("LITERALNUM", "-?\\d+(\\.\\d+)?"),
     LITERALBOOL("LITERALBOOL", "(true|false)[\\s^\\w]"),
-    TYPE("TYPE", "(undefinedtype)[\\s\\W]"),
-    BLOCK("BLOCK", "(do|does|end)[\\s\\W]"),
+    TYPE("TYPE", "(func|string|bool|num)[\\s\\W]"),
+    MODIFIER("MODIFIER", "(local|final)[\\s\\W]"),
+    BLOCK("BLOCK", "(do|does|end|is)[\\s\\W]"),
     FIELDREFERENCE("FIELDREFERENCE", "\\."),
     COMMA("COMMA", ","),
     KEYWORD("KEYWORD", "(as|in|nothing|through|if|elseif|else|try|catch)[\\s\\W]"),
-    BINARYOPERATOR("BINARYOPERATOR", "(\\^|\\/\\/|\\+|-|\\*|\\/|\\%|and|or|==|<=|>=|>|<|\\.\\.\\.|\\.\\.)"),
+    BINARYOPERATOR("BINARYOPERATOR", "(\\^|\\/\\/|\\+|-|\\*|\\/|\\%|and|or|==|<=|>=|>|<|\\.\\.\\.|\\.\\.|\\.|\\:\\:)"),
     ASSIGNOPERATOR("ASSIGNOPERATOR", "(=)"),
     UNARYOPERATOR("UNARYOPERATOR",
-            "(not|out|input|numinput|boolinput|exists|tostring|tonum|tobool|declarestring|declarebool|declarenum|destroy|put)[\\s\\W]"),
-    INSTRUCTION("INSTRUCTION", "(milestone|breakpoint)[\\s\\W]"),
+            "(not|out|input|numinput|boolinput|exists|tostring|tonum|tobool|destroy|put|assert|return|block|len)[\\s\\W^\\(]"),
+    INSTRUCTION("INSTRUCTION", "(milestone|breakpoint|break|continue)[\\s\\W]"),
     ID("ID", "[a-zA-Z_]+\\d{0,}"),
     LPAR("LPAR", "(\\()"),
     RPAR("RPAR", "(\\))"),
@@ -25,7 +26,7 @@ public enum TokenType {
 
     public static List<TokenType> tokenTypeList = Arrays.asList(
             LITERALSTRING, LITERALNUM, BINARYOPERATOR, LPAR, RPAR, ASSIGNOPERATOR, FIELDREFERENCE, COMMA,
-            LITERALBOOL, TYPE, BLOCK, KEYWORD, UNARYOPERATOR, INSTRUCTION, ID, COMMENT, WHITESPACE);
+            LITERALBOOL, TYPE, MODIFIER, BLOCK, KEYWORD, UNARYOPERATOR, INSTRUCTION, ID, COMMENT, WHITESPACE);
     private final String s;
     public final String regex;
 

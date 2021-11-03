@@ -2,6 +2,7 @@ package me.tapeline.quarkj;
 
 import me.tapeline.quarkj.interpretertools.Runtime;
 import me.tapeline.quarkj.interpretertools.RuntimeConfig;
+import me.tapeline.quarkj.language.types.QType;
 import me.tapeline.quarkj.parsingtools.Parser;
 import me.tapeline.quarkj.parsingtools.nodes.Node;
 import me.tapeline.quarkj.tokenizetools.Lexer;
@@ -19,19 +20,19 @@ public class RuntimeWrapper {
         this.DEBUG = d;
     }
 
-    public void run() {
+    public QType run() {
         Lexer lexer = new Lexer(code);
         List<Token> tokens = lexer.lex();
         if (tokens == null) System.exit(100);
         if (DEBUG) for (Token token : tokens) System.out.println(token);
 
         Parser parser = new Parser(tokens);
-        Node code = parser.parseCode();
-        if (code == null) System.exit(101);
-        if (DEBUG) System.out.println(code);
+        Node codeNode = parser.parseCode();
+        if (codeNode == null) System.exit(101);
+        if (DEBUG) System.out.println(codeNode);
 
-        Runtime runtime = new Runtime(code, new RuntimeConfig());
-        runtime.run();
+        Runtime runtime = new Runtime(codeNode, new RuntimeConfig() , code);
+        return runtime.run();
     }
 
 }

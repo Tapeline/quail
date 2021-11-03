@@ -3,12 +3,12 @@ package me.tapeline.quarkj.parsingtools.nodes;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RootNode extends Node {
+public class MultiElementNode extends Node {
 
     public List<Node> nodes = new ArrayList<>();
 
     public void addNode(Node n) {
-        nodes.add(n);
+        if(n != null) nodes.add(n);
     }
 
     public int getLastIfNodeIndex() {
@@ -21,11 +21,11 @@ public class RootNode extends Node {
 
     @Override
     public String toString() {
-        String s = "Code[";
+        String s = "Multielement(";
         for (Node n : nodes) {
-            s += ("\n" + n.toString());
+            s += (n.toString() + ',');
         }
-        s += "]";
+        s += ")";
         return s;
     }
 }
