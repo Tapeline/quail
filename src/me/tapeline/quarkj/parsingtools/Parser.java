@@ -49,6 +49,11 @@ public class Parser {
     }
 
     public Node parseParentheses() {
+        if (tokens.get(pos).t.equals(TokenType.LPAR) && tokens.get(pos+1).t.equals(TokenType.RPAR)) {
+            pos += 2;
+            return new MultiElementNode();
+        }
+
         if (match(Arrays.asList(TokenType.LPAR)) != null) {
             Node node = parseFormula();
             if (getNext().t.equals(TokenType.COMMA)) {
@@ -72,7 +77,10 @@ public class Parser {
         Token op = match(Arrays.asList(TokenType.BINARYOPERATOR));
         while (op != null) {
             Node rNode = parseParentheses();
-            lNode = new BinaryOperatorNode(op, lNode, rNode);
+            if (op.c.equals("."))
+                lNode = new FieldReferenceNode(op, lNode, rNode);
+            else
+                lNode = new BinaryOperatorNode(op, lNode, rNode);
             op = match(Arrays.asList(TokenType.BINARYOPERATOR));
         }
         return lNode;
@@ -103,7 +111,7 @@ public class Parser {
         Token var = match(Arrays.asList(TokenType.ID));
         if (var != null) {
             Node variable = new VariableNode(var);
-            if (getNext().t.equals(TokenType.LPAR)) {
+            if (pos < tokens.size() && getNext().t.equals(TokenType.LPAR)) {
                 pos++;
                 return parseFunctionCall(variable);
             }
@@ -208,6 +216,38 @@ public class Parser {
         return new ThroughBlockNode((BinaryOperatorNode) rangeRaw, variable, code);
     }
 
+    public Node parseWhileBlock() {
+        BlockNode code = new BlockNode();
+        Node conditionRaw = parseParentheses();
+        BinaryOperatorNode condition = new BinaryOperatorNode(new Token(TokenType.BINARYOPERATOR, "==", tokens.get(pos).p),
+                conditionRaw, new LiteralBoolNode(new Token(TokenType.LITERALBOOL, "true", tokens.get(pos).p)));
+        Token t_ = require(Arrays.asList(TokenType.BLOCK));
+        if (!t_.c.equals("do")) {
+            raiseException("Expected `do` after `while` construction definition");
+            return null;
+        }
+        while (true) {
+            Node node = parseExpression();
+            if (node instanceof EndNode) break;
+            code.addNode(node);
+        }
+        return new WhileBlockNode(condition, code);
+    }
+
+    public Node parseLoopStopBlock() {
+        BlockNode code = new BlockNode();
+        while (true) {
+            if (tokens.get(pos).t.equals(TokenType.KEYWORD) && tokens.get(pos).c.equals("stop when")) break;
+            Node node = parseExpression();
+            code.addNode(node);
+        }
+        require(Arrays.asList(TokenType.KEYWORD));
+        Node conditionRaw = parseParentheses();
+        BinaryOperatorNode condition = new BinaryOperatorNode(new Token(TokenType.BINARYOPERATOR, "==", tokens.get(pos).p),
+                conditionRaw, new LiteralBoolNode(new Token(TokenType.LITERALBOOL, "true", tokens.get(pos).p)));
+        return new LoopStopBlockNode(condition, code);
+    }
+
     public Node parseTryBlock() {
         BlockNode tryCode = new BlockNode();
         Token t___ = require(Arrays.asList(TokenType.BLOCK));
@@ -293,6 +333,7 @@ public class Parser {
         if (match(Arrays.asList(TokenType.ID)) != null) {
             pos--;
             Node varNode = parseVarOrLiteral();
+            if (varNode instanceof FunctionCallNode) return varNode;
             Token nextToken = getNext();
             pos++;
             if (nextToken.t.equals(TokenType.ASSIGNOPERATOR)) {
@@ -323,6 +364,12 @@ public class Parser {
                 case "try": {
                     return parseTryBlock();
                 }
+                case "loop": {
+                    return parseLoopStopBlock();
+                }
+                case "while": {
+                    return parseWhileBlock();
+                }
             }
         } else if (match(Arrays.asList(TokenType.BLOCK)) != null) {
             pos--;
@@ -343,7 +390,7 @@ public class Parser {
         } else if (getNext().t.equals(TokenType.UNARYOPERATOR)) {
             return parseUnaryOperator();
         }
-        raiseException("Unknown exception!");
+            raiseException("Unknown exception!");
         return null;
     }
 

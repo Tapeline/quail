@@ -28,4 +28,8 @@ public class Memory {
     public void finalize(String a) {
         finalized.add(a);
     }
+
+    public String dump() {
+        return "MemoryDump:\nMemory: " + mem.toString() + "\nFinalized (Blocked): " + finalized.toString();
+    }
 }

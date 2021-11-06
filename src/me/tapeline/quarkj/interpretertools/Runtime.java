@@ -3,6 +3,8 @@ package me.tapeline.quarkj.interpretertools;
 import me.tapeline.quarkj.language.types.*;
 import me.tapeline.quarkj.parsingtools.nodes.*;
 import me.tapeline.quarkj.parsingtools.nodes.Node;
+import me.tapeline.quarkj.utils.NumUtils;
+import me.tapeline.quarkj.utils.StringUtils;
 import me.tapeline.quarkj.utils.Utilities;
 
 import java.util.*;
@@ -158,6 +160,12 @@ public class Runtime {
                 }
                 case "block": {
                     scope.finalize(((VariableNode) ((UnaryOperatorNode) node).operand).token.c);
+                }
+                case "notnull": {
+                    return new BoolType(!(NodeRunner_run(((UnaryOperatorNode) node).operand) instanceof VoidType));
+                }
+                case "throw": {
+                    raiseException(NodeRunner_run(((UnaryOperatorNode) node).operand).toString(), ((UnaryOperatorNode) node).operator.p);
                 }
             }
         }
@@ -373,13 +381,13 @@ public class Runtime {
             switch (((InstructionNode) node).operator.c) {
                 case "milestone":
                     System.out.println("<MILESTONE>");
-                    System.out.println("Memory:\n" + scope.mem.toString());
+                    System.out.println(scope.dump());
                     System.out.println("AST:\n" + rootNode);
                     System.out.println("<MILESTONE>");
                     break;
                 case "breakpoint": {
                     System.out.println("<MILESTONE>");
-                    System.out.println("Memory:\n" + scope.mem.toString());
+                    System.out.println(scope.dump());
                     System.out.println("AST:\n" + rootNode);
                     Scanner sc = new Scanner(System.in);
                     System.out.println("<MILESTONE>\nType `c` and press ENTER to continue > ");
@@ -391,6 +399,12 @@ public class Runtime {
                 }
                 case "break": {
                     return new DirectInstructionType(DirectInstruction.BREAK);
+                }
+                case "memory": {
+                    System.out.println("<MEMDUMP>");
+                    System.out.println(scope.dump());
+                    System.out.println("<MEMDUMP>");
+                    break;
                 }
             }
         } else if (node instanceof ThroughBlockNode) {
@@ -410,6 +424,8 @@ public class Runtime {
                         if (result instanceof DirectInstructionType) {
                             if (((DirectInstructionType) result).i.equals(DirectInstruction.CONTINUE))
                                 continue;
+                            else if (((DirectInstructionType) result).i.equals(DirectInstruction.BREAK))
+                                break;
                             else
                                 return result;
                         }
@@ -421,6 +437,8 @@ public class Runtime {
                         if (result instanceof DirectInstructionType) {
                             if (((DirectInstructionType) result).i.equals(DirectInstruction.CONTINUE))
                                 continue;
+                            else if (((DirectInstructionType) result).i.equals(DirectInstruction.BREAK))
+                                break;
                             else
                                 return result;
                         }
@@ -476,6 +494,115 @@ public class Runtime {
                     scope.mem.remove(key);
             }
             return returnValue;
+        } else if (node instanceof FieldReferenceNode) {
+            Node objectRaw = ((FieldReferenceNode) node).lnode;
+            Node field = ((FieldReferenceNode) node).rnode;
+            QType object = NodeRunner_run(objectRaw);
+            if (object instanceof StringType) {
+                if (field instanceof VariableNode) {
+                    switch (((VariableNode) field).token.c) {
+                        case "reverse":
+                            return new StringType(StringUtils.reverse(((StringType) object).value));
+                        case "capital":
+                            return new StringType(StringUtils.capitalize(((StringType) object).value));
+                        case "upper":
+                            return new StringType(StringUtils.upper(((StringType) object).value));
+                        case "lower":
+                            return new StringType(StringUtils.lower(((StringType) object).value));
+                        case "length":
+                            return new NumType(StringUtils.len(((StringType) object).value));
+                        case "len":
+                            return new NumType(StringUtils.len(((StringType) object).value));
+                    }
+                } else if (field instanceof FunctionCallNode){
+                    switch (((FunctionCallNode) field).operator.c) {
+                        case "sub": {
+                            if (((FunctionCallNode) field).operand instanceof MultiElementNode) {
+                                QType a = NodeRunner_run(((MultiElementNode)((FunctionCallNode)
+                                        field).operand).nodes.get(0));
+                                QType b = NodeRunner_run(((MultiElementNode)((FunctionCallNode)
+                                        field).operand).nodes.get(1));
+                                if (a instanceof NumType && b instanceof NumType) {
+                                    return new StringType(StringUtils.sub(((StringType) object).value,
+                                            (int) Math.round(((NumType) a).value),
+                                            (int) Math.round(((NumType) b).value)));
+                                } else {
+                                    raiseException("`a`, `b` expected to be NumType's, not `" + a.getClass().toString() +
+                                                    "`, `" + b.getClass().toString() + "`",
+                                            ((FieldReferenceNode) node).operator.p);
+                                    return null;
+                                }
+                            } else {
+                                QType a = NodeRunner_run(((FunctionCallNode) field).operand);
+                                if (a instanceof NumType) {
+                                    return new StringType(StringUtils.sub(((StringType) object).value,
+                                            (int) Math.round(((NumType) a).value)));
+                                } else {
+                                    raiseException("`a` expected to be NumType's, not `" + a.getClass().toString() +
+                                                    "`", ((FieldReferenceNode) node).operator.p);
+                                    return null;
+                                }
+                            }
+                        }
+                        case "at": {
+                            if (((FunctionCallNode) field).operand instanceof MultiElementNode) break;
+                            QType pos = NodeRunner_run(((FunctionCallNode) field).operand);
+                            if (pos instanceof NumType) {
+                                return new StringType(StringUtils.at(((StringType) object).value,
+                                        (int) Math.round(((NumType) pos).value)));
+                            } else {
+                                raiseException("`pos` expected to be NumType, not `" + pos.getClass().toString() + "`",
+                                        ((FieldReferenceNode) node).operator.p);
+                                return null;
+                            }
+                        }
+                    }
+                }
+            } else if (object instanceof NumType) {
+                if (field instanceof VariableNode) {
+                    switch (((VariableNode) field).token.c) {
+                        case "round":
+                            return new NumType(NumUtils.round(((NumType) object).value));
+                        case "floor":
+                            return new NumType(NumUtils.floor(((NumType) object).value));
+                        case "ceil":
+                            return new NumType(NumUtils.ceil(((NumType) object).value));
+                    }
+                }
+            }
+            raiseException("Method/Field `" + field.toString() + "` is not defined for `" + objectRaw + "`",
+                    ((FieldReferenceNode) node).operator.p);
+            return null;
+        } else if (node instanceof LoopStopBlockNode) {
+            BinaryOperatorNode conditionRaw = ((LoopStopBlockNode) node).condition;
+            while (true) {
+                QType result = NodeRunner_run(((LoopStopBlockNode) node).nodes);
+                if (result instanceof DirectInstructionType) {
+                    if (((DirectInstructionType) result).i.equals(DirectInstruction.CONTINUE))
+                        continue;
+                    else if (((DirectInstructionType) result).i.equals(DirectInstruction.BREAK))
+                        break;
+                    else
+                        return result;
+                }
+                QType condition = NodeRunner_run(conditionRaw);
+                if (condition instanceof BoolType && ((BoolType) condition).value) break;
+            }
+        } else if (node instanceof WhileBlockNode) {
+            BinaryOperatorNode conditionRaw = ((WhileBlockNode) node).condition;
+            while (true) {
+                QType condition = NodeRunner_run(conditionRaw);
+                if (!(condition instanceof BoolType && ((BoolType) condition).value)) break;
+                QType result = NodeRunner_run(((WhileBlockNode) node).nodes);
+                if (result instanceof DirectInstructionType) {
+                    if (((DirectInstructionType) result).i.equals(DirectInstruction.CONTINUE))
+                        continue;
+                    else if (((DirectInstructionType) result).i.equals(DirectInstruction.BREAK))
+                        break;
+                    else
+                        return result;
+                }
+            }
         }
 
         return new VoidType(true);

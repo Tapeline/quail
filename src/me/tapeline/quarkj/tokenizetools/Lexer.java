@@ -54,9 +54,10 @@ public class Lexer {
             if (sub.length() < 1 || sub.equals(" ")) return false;
             List<String> result = findAll(regex, sub);
             if (result != null && result.size() > 0) {
-                Token token = new Token(i, result.get(0).trim(), pos);
+                Token token = new Token(i, result.get(0).trim().replaceAll("&:q", "\""), pos);
                 pos += result.get(0).length();
-                tokens.add(token);
+                if (!token.t.equals(TokenType.WHITESPACE) &&
+                    !token.t.equals(TokenType.COMMENT)) tokens.add(token);
                 return true;
             }
         }
