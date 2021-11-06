@@ -69,8 +69,8 @@ bool boolean
 
 
 # String changes
-# string::pos - get char at pos
-# len string - get length of string
+# string::pos - get char at pos     # len string    is deprecated. It'll be deleted in v0.4
+# len string - get length of string # string::pos   is deprecated. It'll be deleted in v0.4
 
 
 # Loop utilities
@@ -97,3 +97,53 @@ out repeat(repeat("a", 3), 3)
 
 # RuntimeWrapper changes
 # - Now stacktrace contains line number.
+
+
+
+
+# ================================================= #
+# The detailed explanation of all Quark 0.3 changes #
+# ================================================= #
+
+# String utils
+s1 = "abc".reverse
+s2 = "abc".upper
+s3 = "ABC".lower
+s4 = "abc".length             # len string    is deprecated. It'll be deleted in v0.4
+s5 = "aaabbbccc".sub(3, 6)
+s6 = "aaabbbccc".sub(3)
+s7 = "aaabbbccc".at(8)        # string::pos   is deprecated. It'll be deleted in v0.4
+s8 = "abc".reverse.upper      # You can even stack them
+
+
+# Number utils
+n1 = 1.1.ceil
+n2 = 1.5.round
+n3 = 1.4.floor
+
+
+# Memory instruction. Dumps all memory contents
+memory
+
+
+# While loop
+# while (condition) do
+#   code
+# end
+
+
+# LoopUntil
+# loop
+#   code
+# stop when (condition)
+
+
+# Other
+# throw "exception"   # throws an exception
+# notnull value       # value is not null?
+
+
+# RuntimeWrapper changes
+# - Now you can run Quark like this:
+#    java -jar Quark.jar "/home/tapeline/test.q" true
+#    java -jar Quark.jar "path" debug
