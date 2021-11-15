@@ -147,3 +147,78 @@ memory
 # - Now you can run Quark like this:
 #    java -jar Quark.jar "/home/tapeline/test.q" true
 #    java -jar Quark.jar "path" debug
+
+
+
+
+# ================================================= #
+# The detailed explanation of all Quark 0.4 changes #
+# ================================================= #
+
+# Lists
+# list l   or   l = []
+l = []
+l.append(1)         # aliases:  .add() .push()
+l.append(true)
+l.remove(0)         # alias:  .drop()
+l.append(false)
+out l
+out l.reverse
+out l.len
+# Also supports .sub(), .at()
+#
+# .over(value, pos) (.overlap(value, pos)) - Set list[pos] to value
+
+
+# Import
+# f = import "full/path/to/file.q"
+# f will contain value, that full/path/to/file.q has returned
+# E.g.: full/path/to/file.q:
+# func sayhi(name) does
+#   out "Hi, " .. name
+# end
+# return sayhi
+#
+# main.q:
+# f = import "full/path/to/file.q" # - f now contains sayhi function
+# f("Mark") # Will output Hi, Mark
+
+
+# ._runner(args...)
+# Quark doesn't have syntax like this hi()(), # hi return a function, and then we call it (second parentheses)
+# but now there is ._runner() function. It calls his function with provided args.
+# Example hi()._runner() # hi return a function, and then we call it
+#
+# There is also a short version (may be buggy, all responsibility is on you)
+# .(args...)
+# if you want to cast only one argument, you can use .arg
+# e.g.   hi.("Hi")   but you cast only one argument, so you can shorten this more -   hi."Hi"
+# Notice! in 0.5 there will be containers, and something like OOP, so you can't use syntax like this   hi.a
+# or maybe even like this .(a, b...)
+# So it's recommended to use full version
+
+
+# every loop # python equivalent - for i in [lolz, lolz, alotoflolz]
+# every variable in list|string do 
+#   code
+# end
+
+
+# File management
+# file_exists "path" - check if file exists
+# file_new "path" - creates a new empty file
+# file_read "path" - returns string value read from file
+# file_write ("path", "content")  - rewrites a whole file
+# file_append ("path", "content") - adds content to the end of file
+# Notice! Don't forget to put whitespace between file_write|file_append and ()!
+# It's a bug, but I'll fix this in future.
+
+
+# nothing - just like `pass` in python - does nothing
+
+
+# Other changes
+# - q0.4-alpha fearuting Conscious Exception Catcher (TM). Jokes aside, now try-catch works normally
+# - There is no support for \ character, so if you want a double quote (") in string, write &q;
+# - len string and string::pos is deleted
+# - added string.split(delimiter) method
