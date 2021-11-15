@@ -12,6 +12,10 @@ public class VariableNode extends Node {
 
     @Override
     public String toString() {
+        return "Variable " + token;
+    }
+
+    public String srepr() {
         return "Variable[" + token + "]";
     }
 

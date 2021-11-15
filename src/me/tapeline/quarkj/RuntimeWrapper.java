@@ -7,8 +7,10 @@ import me.tapeline.quarkj.parsingtools.Parser;
 import me.tapeline.quarkj.parsingtools.nodes.Node;
 import me.tapeline.quarkj.tokenizetools.Lexer;
 import me.tapeline.quarkj.tokenizetools.tokens.Token;
+import me.tapeline.quarkj.tokenizetools.tokens.TokenType;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class RuntimeWrapper {
 
@@ -22,9 +24,10 @@ public class RuntimeWrapper {
 
     public QType run() {
         Lexer lexer = new Lexer(code);
-        List<Token> tokens = lexer.lex();
+        lexer.lex();
+        List<Token> tokens = lexer.fixBooleans();
         if (tokens == null) System.exit(100);
-        if (DEBUG) for (Token token : tokens) System.out.println(token);
+        if (DEBUG) for (Token token : tokens) System.out.println(token.srepr());
 
         Parser parser = new Parser(tokens);
         Node codeNode = parser.parseCode();

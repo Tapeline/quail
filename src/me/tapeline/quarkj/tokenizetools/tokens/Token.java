@@ -13,6 +13,10 @@ public class Token {
 
     @Override
     public String toString() {
+        return c;
+    }
+
+    public String srepr() {
         return t + "[" + c + "]:" + p;
     }
 }

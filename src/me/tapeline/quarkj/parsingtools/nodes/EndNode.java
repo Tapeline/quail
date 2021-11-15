@@ -12,7 +12,7 @@ public class EndNode extends Node {
 
     @Override
     public String toString() {
-        return "End[" + token + "]";
+        return "end";
     }
 
 }

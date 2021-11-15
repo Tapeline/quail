@@ -12,6 +12,10 @@ public class InstructionNode extends Node {
 
     @Override
     public String toString() {
+        return operator.toString();
+    }
+
+    public String srepr() {
         return "Instruction-" + operator.toString();
     }
 

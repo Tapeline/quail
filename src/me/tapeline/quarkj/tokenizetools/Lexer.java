@@ -1,5 +1,6 @@
 package me.tapeline.quarkj.tokenizetools;
 
+import com.sun.corba.se.impl.oa.toa.TOA;
 import me.tapeline.quarkj.tokenizetools.tokens.Token;
 import me.tapeline.quarkj.tokenizetools.tokens.TokenType;
 
@@ -19,7 +20,7 @@ public class Lexer {
         this.code = code;
     }
 
-    public List<String> findAll(Pattern r, String sub) {
+    public static List<String> findAll(Pattern r, String sub) {
         List<String> allMatches = new ArrayList<String>();
         Matcher m = r.matcher(sub);
         while (m.find()) {
@@ -54,7 +55,7 @@ public class Lexer {
             if (sub.length() < 1 || sub.equals(" ")) return false;
             List<String> result = findAll(regex, sub);
             if (result != null && result.size() > 0) {
-                Token token = new Token(i, result.get(0).trim().replaceAll("&:q", "\""), pos);
+                Token token = new Token(i, result.get(0).trim().replaceAll("&q;", "\""), pos);
                 pos += result.get(0).length();
                 if (!token.t.equals(TokenType.WHITESPACE) &&
                     !token.t.equals(TokenType.COMMENT)) tokens.add(token);
@@ -71,6 +72,22 @@ public class Lexer {
     public List<Token> lex() {
         while (nextToken()) {}
         return stop? null : tokens;
+    }
+
+    public List<Token> fixBooleans() {
+        for (int i = 0; i < tokens.size(); i++) {
+            if (tokens.get(i).t.equals(TokenType.ID)) {
+                switch (tokens.get(i).c) {
+                    case "true":
+                        tokens.set(i, new Token(TokenType.LITERALBOOL, "true", tokens.get(i).p));
+                        break;
+                    case "false":
+                        tokens.set(i, new Token(TokenType.LITERALBOOL, "false", tokens.get(i).p));
+                        break;
+                }
+            }
+        }
+        return tokens;
     }
 
 }

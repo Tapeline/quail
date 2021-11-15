@@ -14,6 +14,10 @@ public class TryCatchNode extends Node {
 
     @Override
     public String toString() {
+        return "try do " + tryNodes + " end catch as " + variable + " do " + catchNodes;
+    }
+
+    public String srepr() {
         return "Try=" + tryNodes + ",Catch=" + catchNodes;
     }
 }

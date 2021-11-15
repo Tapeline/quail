@@ -16,7 +16,9 @@ public class BinaryOperatorNode extends Node {
 
     @Override
     public String toString() {
-        return "BinaryOp-" + operator.toString() + "[left=" + lnode.toString() + ", right=" + rnode.toString() + "]";
+        return lnode.toString() + " " + operator.toString() + " " + rnode.toString();
     }
+
+
 
 }

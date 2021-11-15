@@ -69,7 +69,8 @@ public class Parser {
                 require(Arrays.asList(TokenType.RPAR));
                 return node;
             }
-        } else return parseVarOrLiteral();
+        } else if (tokens.get(pos).t.equals(TokenType.LSPAR)) return parseSquaredParentheses();
+        else return parseVarOrLiteral();
     }
 
     public Node parseFormula() {
@@ -302,6 +303,7 @@ public class Parser {
         switch (type.c) {
             case "num":
             case "string":
+            case "list":
             case "bool": {
                 Token variable = require(Arrays.asList(TokenType.ID));
                 return new LiteralDefinitionNode(variable, type);
@@ -328,6 +330,52 @@ public class Parser {
         return null;
     }
 
+    public Node parseSquaredParentheses() {
+        if (tokens.get(pos).t.equals(TokenType.LSPAR) && tokens.get(pos+1).t.equals(TokenType.RSPAR)) {
+            pos += 2;
+            return new LiteralListNode();
+        }
+
+        if (match(Arrays.asList(TokenType.LSPAR)) != null) {
+            Node node = parseFormula();
+            if (getNext().t.equals(TokenType.COMMA)) {
+                LiteralListNode multiElementNode = new LiteralListNode();
+                multiElementNode.addNode(node);
+                while (getNext().t.equals(TokenType.COMMA)) {
+                    require(Arrays.asList(TokenType.COMMA));
+                    multiElementNode.addNode(parseFormula());
+                }
+                require(Arrays.asList(TokenType.RSPAR));
+                return multiElementNode;
+            } else {
+                require(Arrays.asList(TokenType.RSPAR));
+                return node;
+            }
+        } else return parseVarOrLiteral();
+    }
+
+    public Node parseEveryBlock() {
+        BlockNode code = new BlockNode();
+        Node variable = parseVarOrLiteral();
+        if (!(variable instanceof VariableNode))
+            raiseException("`every` accepts only variable, but not " + variable.toString());
+        Token t_ = require(Arrays.asList(TokenType.KEYWORD));
+        if (!t_.c.equals("in"))
+            raiseException("Expected `in` after variable in `every` construction header");
+        Node list = parseVarOrLiteral();
+        if (!(variable instanceof VariableNode || variable instanceof LiteralListNode))
+            raiseException("`every` accepts only variable or list as iterable, but not " + list.toString());
+        Token t__ = require(Arrays.asList(TokenType.BLOCK));
+        if (!t__.c.equals("do"))
+            raiseException("Expected `do` after `every` construction header");
+        while (true) {
+            Node node = parseExpression();
+            if (node instanceof EndNode) break;
+            code.addNode(node);
+        }
+        return new EveryBlockNode(list, ((VariableNode) variable), code);
+    }
+
 
     public Node parseExpression() {
         if (match(Arrays.asList(TokenType.ID)) != null) {
@@ -336,8 +384,9 @@ public class Parser {
             if (varNode instanceof FunctionCallNode) return varNode;
             Token nextToken = getNext();
             pos++;
-            if (nextToken.t.equals(TokenType.ASSIGNOPERATOR)) {
+            if (nextToken.t.equals(TokenType.ASSIGNOPERATOR) || nextToken.t.equals(TokenType.BINARYOPERATOR)) {
                 Node rfNode = parseFormula();
+                if (nextToken.c.equals(".")) return new FieldReferenceNode(nextToken, varNode, rfNode);
                 return new BinaryOperatorNode(nextToken, varNode, rfNode);
             } else if (nextToken.t.equals(TokenType.LPAR) && varNode instanceof VariableNode) {
                 return parseFunctionCall(varNode);
@@ -369,6 +418,9 @@ public class Parser {
                 }
                 case "while": {
                     return parseWhileBlock();
+                }
+                case "every": {
+                    return parseEveryBlock();
                 }
             }
         } else if (match(Arrays.asList(TokenType.BLOCK)) != null) {

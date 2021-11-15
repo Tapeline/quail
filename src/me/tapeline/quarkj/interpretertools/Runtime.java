@@ -1,8 +1,13 @@
 package me.tapeline.quarkj.interpretertools;
 
+import me.tapeline.quarkj.QFileReader;
+import me.tapeline.quarkj.RuntimeWrapper;
 import me.tapeline.quarkj.language.types.*;
 import me.tapeline.quarkj.parsingtools.nodes.*;
 import me.tapeline.quarkj.parsingtools.nodes.Node;
+import me.tapeline.quarkj.tokenizetools.tokens.Token;
+import me.tapeline.quarkj.tokenizetools.tokens.TokenType;
+import me.tapeline.quarkj.utils.ListUtils;
 import me.tapeline.quarkj.utils.NumUtils;
 import me.tapeline.quarkj.utils.StringUtils;
 import me.tapeline.quarkj.utils.Utilities;
@@ -15,7 +20,6 @@ public class Runtime {
     private final String code;
     public Memory scope;
     public final RuntimeConfig config;
-    public TryCatchNode scopeExceptionHandler = null;
 
     public Runtime(Node rootNode, RuntimeConfig cfg, String code) {
         this.rootNode = rootNode;
@@ -24,17 +28,11 @@ public class Runtime {
         this.code = code;
     }
 
-    public void raiseException(String msg, int pos) {
-        if (scopeExceptionHandler != null) {
-            scope.set(scopeExceptionHandler.variable.token.c, new StringType(msg));
-            NodeRunner_run(scopeExceptionHandler.catchNodes);
-            scopeExceptionHandler = null;
-        } else {
-            System.err.println("[QNodeRunner] (X) " + msg);
-            System.err.println("[QNodeRunner] At " + pos + " symbol in code, at " + Utilities.getLine(pos, code) +
-                    " line.");
-            System.exit(102);
-        }
+    public QType raiseException(String msg, int pos) {
+        DirectInstructionType exception = new DirectInstructionType(DirectInstruction.EXCEPTION);
+        exception.data.put("msg", new StringType(msg));
+        exception.data.put("symbol", new NumType(pos));
+        return exception;
     }
 
     public QType NodeRunner_run(Node node) {
@@ -73,8 +71,15 @@ public class Runtime {
             else
                 args.add(((VariableNode) ((LiteralFunctionNode) node).args).token.c);
             scope.set(((LiteralFunctionNode) node).name.c, new FuncType(((LiteralFunctionNode) node).name.c,
-                        args, ((LiteralFunctionNode) node).code));
+                    args, ((LiteralFunctionNode) node).code));
             return new VoidType(true);
+        }
+
+        if (node instanceof LiteralListNode) {
+            ListType list = new ListType();
+            for (Node v : ((LiteralListNode) node).nodes)
+                list.values.add(NodeRunner_run(v));
+            return list;
         }
 
         if (node instanceof UnaryOperatorNode) {
@@ -90,9 +95,8 @@ public class Runtime {
                     if (operand instanceof BoolType)
                         return new BoolType(!((BoolType) operand).value);
                     else
-                        raiseException("Unable to invert `" + operand.getClass().toString() + "`",
+                        return raiseException("Unable to invert `" + operand.getClass().toString() + "`",
                                 ((UnaryOperatorNode) node).operator.p);
-                    break;
                 case "input": {
                     System.out.print(NodeRunner_run(((UnaryOperatorNode) node).operand));
                     Scanner sc = new Scanner(System.in);
@@ -110,9 +114,8 @@ public class Runtime {
                         double input = Double.parseDouble(rInput);
                         return new NumType(input);
                     } else
-                        raiseException("Unable to convert input string `" + rInput + "`" + " to NumType",
+                        return raiseException("Unable to convert input string `" + rInput + "`" + " to NumType",
                                 ((UnaryOperatorNode) node).operator.p);
-                    break;
                 }
                 case "boolinput": {
                     System.out.print(NodeRunner_run(((UnaryOperatorNode) node).operand));
@@ -131,27 +134,24 @@ public class Runtime {
                     if (valueRaw instanceof StringType && Utilities.isNumeric(((StringType) valueRaw).value))
                         return new NumType(Double.parseDouble(((StringType) valueRaw).value));
                     else
-                        raiseException("Unable to convert `" + valueRaw + "` to NumType",
+                        return raiseException("Unable to convert `" + valueRaw + "` to NumType",
                                 ((VariableNode) ((UnaryOperatorNode) node).operand).token.p);
-                    break;
                 }
                 case "tobool": {
                     QType valueRaw = NodeRunner_run(((UnaryOperatorNode) node).operand);
                     if (valueRaw instanceof StringType && Utilities.isBoolean(((StringType) valueRaw).value))
                         return new BoolType(Boolean.parseBoolean(((StringType) valueRaw).value));
                     else
-                        raiseException("Unable to convert `" + valueRaw + "` to BoolType",
+                        return raiseException("Unable to convert `" + valueRaw + "` to BoolType",
                                 ((VariableNode) ((UnaryOperatorNode) node).operand).token.p);
-                    break;
                 }
                 case "assert": {
                     QType valueRaw = NodeRunner_run(((UnaryOperatorNode) node).operand);
                     if (valueRaw instanceof BoolType && ((BoolType) valueRaw).value)
                         return new BoolType(true);
                     else
-                        raiseException("Assertion error! " + valueRaw + " is not BoolType:true",
+                        return raiseException("Assertion error! " + valueRaw + " is not BoolType:true",
                                 ((UnaryOperatorNode) node).operator.p);
-                    break;
                 }
                 case "return": {
                     DirectInstructionType di = new DirectInstructionType(DirectInstruction.RETURN);
@@ -165,7 +165,55 @@ public class Runtime {
                     return new BoolType(!(NodeRunner_run(((UnaryOperatorNode) node).operand) instanceof VoidType));
                 }
                 case "throw": {
-                    raiseException(NodeRunner_run(((UnaryOperatorNode) node).operand).toString(), ((UnaryOperatorNode) node).operator.p);
+                    return raiseException(NodeRunner_run(((UnaryOperatorNode) node).operand).toString(), ((UnaryOperatorNode) node).operator.p);
+                }
+                case "import": {
+                    QType pathRaw = NodeRunner_run(((UnaryOperatorNode) node).operand);
+                    if (pathRaw instanceof StringType) {
+                        RuntimeWrapper internalRuntime = new RuntimeWrapper(QFileReader.read(
+                                ((StringType) pathRaw).value), false);
+                        QType result = internalRuntime.run();
+                        if (result instanceof DirectInstructionType && ((DirectInstructionType) result).i.equals(
+                                DirectInstruction.EXCEPTION)) {
+                            return raiseException("Module \"" + ((StringType) pathRaw).value + "\" failed! " +
+                                    ((DirectInstructionType) result).data, ((UnaryOperatorNode) node).operator.p);
+                        } else if (result instanceof DirectInstructionType && ((DirectInstructionType) result).i.equals(
+                                DirectInstruction.RETURN)) {
+                            return ((DirectInstructionType) result).data.get("value");
+                        }
+                        return new VoidType(true);
+                    } else return raiseException("`import` accepts only StringType values but not " +
+                            pathRaw.getClass().toString(), ((UnaryOperatorNode) node).operator.p);
+                }
+                case "file_new": {
+                    QType pathRaw = NodeRunner_run(((UnaryOperatorNode) node).operand);
+                    if (pathRaw instanceof StringType) {
+                        QFileReader.create(((StringType) pathRaw).value);
+                    } else return raiseException("`file_new` accepts only StringType `path` but not " +
+                            pathRaw.getClass().toString(), ((UnaryOperatorNode) node).operator.p);
+                }
+                case "file_exists": {
+                    QType pathRaw = NodeRunner_run(((UnaryOperatorNode) node).operand);
+                    if (pathRaw instanceof StringType) {
+                        return new BoolType(QFileReader.exists(((StringType) pathRaw).value));
+                    } else return raiseException("`file_exists` accepts only StringType `path` but not " +
+                            pathRaw.getClass().toString(), ((UnaryOperatorNode) node).operator.p);
+                }
+                case "file_write": {
+                    if (!(((UnaryOperatorNode) node).operand instanceof MultiElementNode &&
+                            ((MultiElementNode) ((UnaryOperatorNode) node).operand).nodes.size() == 2))
+                        return raiseException("`file_write` accepts 2 parameters in () but not " +
+                                ((UnaryOperatorNode) node).operand, ((UnaryOperatorNode) node).operator.p);
+                    MultiElementNode args = (MultiElementNode) ((UnaryOperatorNode) node).operand;
+                    QType pathRaw = NodeRunner_run(args.nodes.get(0));
+                    QType dataRaw = NodeRunner_run(args.nodes.get(1));
+                    if (pathRaw instanceof StringType) {
+                        if (dataRaw instanceof StringType) {
+                            QFileReader.write(((StringType) pathRaw).value, ((StringType) dataRaw).value);
+                        } else return raiseException("`file_exists` accepts only StringType `data` but not " +
+                                pathRaw.getClass().toString(), ((UnaryOperatorNode) node).operator.p);
+                    } else return raiseException("`file_write` accepts only StringType `path` but not " +
+                            pathRaw.getClass().toString(), ((UnaryOperatorNode) node).operator.p);
                 }
             }
         }
@@ -174,9 +222,8 @@ public class Runtime {
             BinaryOperatorNode binNode = ((BinaryOperatorNode) node);
             if (binNode.operator.c.equals("=")) {
                 if (scope.finalized.contains(((VariableNode) binNode.lnode).token.c)) {
-                    raiseException("`" + ((VariableNode) binNode.lnode).token.c + "` is blocked (finalized)",
+                    return raiseException("`" + ((VariableNode) binNode.lnode).token.c + "` is blocked (finalized)",
                             ((VariableNode) binNode.lnode).token.p);
-                    return new VoidType(true);
                 }
                 QType result = NodeRunner_run(binNode.rnode);
                 scope.set(((VariableNode) binNode.lnode).token.c, result);
@@ -187,10 +234,10 @@ public class Runtime {
             switch (binNode.operator.c) {
                 case "+": {
                     if (a instanceof StringType || b instanceof StringType)
-                        raiseException("At `" + node + "`\nUnable to do arithmetic operation on StringType!" +
+                        return raiseException("At `" + node + "`\nUnable to do arithmetic operation on StringType!" +
                                 "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
                     else if (a instanceof BoolType || b instanceof BoolType)
-                        raiseException("At `" + node + "`\nUnable to do arithmetic operation on BoolType!" +
+                        return raiseException("At `" + node + "`\nUnable to do arithmetic operation on BoolType!" +
                                 "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
                     double af = ((NumType) a).value;
                     double bf = ((NumType) b).value;
@@ -198,10 +245,10 @@ public class Runtime {
                 }
                 case "-": {
                     if (a instanceof StringType || b instanceof StringType)
-                        raiseException("At `" + node + "`\nUnable to do arithmetic operation on StringType!" +
+                        return raiseException("At `" + node + "`\nUnable to do arithmetic operation on StringType!" +
                                 "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
                     else if (a instanceof BoolType || b instanceof BoolType)
-                        raiseException("At `" + node + "`\nUnable to do arithmetic operation on BoolType!" +
+                        return raiseException("At `" + node + "`\nUnable to do arithmetic operation on BoolType!" +
                                 "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
                     double af = ((NumType) a).value;
                     double bf = ((NumType) b).value;
@@ -209,10 +256,10 @@ public class Runtime {
                 }
                 case "*": {
                     if (a instanceof StringType || b instanceof StringType)
-                        raiseException("At `" + node + "`\nUnable to do arithmetic operation on StringType!" +
+                        return raiseException("At `" + node + "`\nUnable to do arithmetic operation on StringType!" +
                                 "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
                     else if (a instanceof BoolType || b instanceof BoolType)
-                        raiseException("At `" + node + "`\nUnable to do arithmetic operation on BoolType!" +
+                        return raiseException("At `" + node + "`\nUnable to do arithmetic operation on BoolType!" +
                                 "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
                     double af = ((NumType) a).value;
                     double bf = ((NumType) b).value;
@@ -220,13 +267,11 @@ public class Runtime {
                 }
                 case "/": {
                     if (a instanceof StringType || b instanceof StringType) {
-                        raiseException("At `" + node + "`\nUnable to do arithmetic operation on StringType!" +
+                        return raiseException("At `" + node + "`\nUnable to do arithmetic operation on StringType!" +
                                 "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
-                        return null;
                     } else if (a instanceof BoolType || b instanceof BoolType) {
-                        raiseException("At `" + node + "`\nUnable to do arithmetic operation on BoolType!" +
+                        return raiseException("At `" + node + "`\nUnable to do arithmetic operation on BoolType!" +
                                 "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
-                        return null;
                     }
                     double af = ((NumType) a).value;
                     double bf = ((NumType) b).value;
@@ -234,10 +279,10 @@ public class Runtime {
                 }
                 case "^": {
                     if (a instanceof StringType || b instanceof StringType)
-                        raiseException("At `" + node + "`\nUnable to do arithmetic operation on StringType!" +
+                        return raiseException("At `" + node + "`\nUnable to do arithmetic operation on StringType!" +
                                 "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
                     else if (a instanceof BoolType || b instanceof BoolType)
-                        raiseException("At `" + node + "`\nUnable to do arithmetic operation on BoolType!" +
+                        return raiseException("At `" + node + "`\nUnable to do arithmetic operation on BoolType!" +
                                 "\nDid you forget to convert it?", ((BinaryOperatorNode) node).operator.p);
                     double af = ((NumType) a).value;
                     double bf = ((NumType) b).value;
@@ -250,9 +295,8 @@ public class Runtime {
                         return new BoolType(((NumType) a).value == ((NumType) b).value);
                     else if (a instanceof StringType && b instanceof StringType)
                         return new BoolType(((StringType) a).value.equals(((StringType) b).value));
-                    raiseException("Incomparable types `" + a.getClass().toString() + "` and `" +
+                    return raiseException("Incomparable types `" + a.getClass().toString() + "` and `" +
                             b.getClass().toString() + "`", binNode.operator.p);
-                    break;
                 }
                 case "!=": {
                     if (a instanceof BoolType && b instanceof BoolType)
@@ -261,80 +305,57 @@ public class Runtime {
                         return new BoolType(((NumType) a).value != ((NumType) b).value);
                     else if (a instanceof StringType && b instanceof StringType)
                         return new BoolType(!(((StringType) a).value.equals(((StringType) b).value)));
-                    raiseException("Incomparable types `" + a.getClass().toString() + "` and `" +
+                    return raiseException("Incomparable types `" + a.getClass().toString() + "` and `" +
                             b.getClass().toString() + "`", binNode.operator.p);
-                    break;
                 }
                 case ">": {
                     if (a instanceof NumType && b instanceof NumType)
                         return new BoolType(((NumType) a).value > ((NumType) b).value);
-                    raiseException("Incomparable types `" + a.getClass().toString() + "` and `" +
+                    return raiseException("Incomparable types `" + a.getClass().toString() + "` and `" +
                             b.getClass().toString() + "`", binNode.operator.p);
-                    break;
                 }
                 case "<": {
                     if (a instanceof NumType && b instanceof NumType)
                         return new BoolType(((NumType) a).value < ((NumType) b).value);
-                    raiseException("Incomparable types `" + a.getClass().toString() + "` and `" +
+                    return raiseException("Incomparable types `" + a.getClass().toString() + "` and `" +
                             b.getClass().toString() + "`", binNode.operator.p);
-                    break;
                 }
                 case "<=": {
                     if (a instanceof NumType && b instanceof NumType)
                         return new BoolType(((NumType) a).value <= ((NumType) b).value);
-                    raiseException("Incomparable types `" + a.getClass().toString() + "` and `" +
+                    return raiseException("Incomparable types `" + a.getClass().toString() + "` and `" +
                             b.getClass().toString() + "`", binNode.operator.p);
-                    break;
                 }
                 case ">=": {
                     if (a instanceof NumType && b instanceof NumType)
                         return new BoolType(((NumType) a).value >= ((NumType) b).value);
-                    raiseException("Incomparable types `" + a.getClass().toString() + "` and `" +
+                    return raiseException("Incomparable types `" + a.getClass().toString() + "` and `" +
                             b.getClass().toString() + "`", binNode.operator.p);
-                    break;
                 }
                 case "..": {
                     if (a instanceof StringType && b instanceof StringType)
                         return new StringType(((StringType) a).value + ((StringType) b).value);
-                    raiseException("Unable to concatenate `" + a.getClass().toString() + "` and `" +
+                    return raiseException("Unable to concatenate `" + a.getClass().toString() + "` and `" +
                             b.getClass().toString() + "`", binNode.operator.p);
-                    break;
                 }
                 case "and": {
                     if (a instanceof BoolType && b instanceof BoolType)
                         return new BoolType(((BoolType) a).value && ((BoolType) b).value);
-                    raiseException("Unable to apply `and` to `" + a.getClass().toString() + "` and `" +
+                    return raiseException("Unable to apply `and` to `" + a.getClass().toString() + "` and `" +
                             b.getClass().toString() + "`", binNode.operator.p);
-                    break;
                 }
                 case "or": {
                     if (a instanceof BoolType && b instanceof BoolType)
                         return new BoolType(((BoolType) a).value || ((BoolType) b).value);
-                    raiseException("Unable to apply `or` to `" + a.getClass().toString() + "` and `" +
+                    return raiseException("Unable to apply `or` to `" + a.getClass().toString() + "` and `" +
                             b.getClass().toString() + "`", binNode.operator.p);
-                    break;
-                }
-                case "::": {
-                    if (a instanceof StringType && b instanceof NumType) {
-                        if (((NumType) b).value < ((StringType) a).value.length()) {
-                            return new StringType(((StringType) a).value.charAt((int)
-                                    Math.round(((NumType) b).value))+"");
-                        } else {
-                            raiseException("Index " + ((NumType) b).value + " out of bounds!", binNode.operator.p);
-                            break;
-                        }
-                    } else {
-                        raiseException("Unable to apply `or` to `" + a.getClass().toString() + "` and `" +
-                                b.getClass().toString() + "`", binNode.operator.p);
-                        break;
-                    }
                 }
             }
         } else if (node instanceof VariableNode) {
             if (  scope.mem.containsKey( ((VariableNode) node).token.c )  ) {
                 return scope.mem.get(((VariableNode) node).token.c);
             } else {
-                raiseException("Variable `" + ((VariableNode) node).token.c + "` is not declared in this scope.",
+                return raiseException("Variable `" + ((VariableNode) node).token.c + "` is not declared in this scope.",
                         ((VariableNode) node).token.p);
             }
         } else if (node instanceof RootNode) {
@@ -351,7 +372,7 @@ public class Runtime {
             BinaryOperatorNode conditionRaw = ((IfBlockNode) node).condition;
             QType condition = NodeRunner_run(conditionRaw);
             if (!(condition instanceof BoolType)) {
-                raiseException("If got `" + condition.getClass().toString() + "` type instead of BoolType",
+                return raiseException("If got `" + condition.getClass().toString() + "` type instead of BoolType",
                         conditionRaw.operator.p);
             }
             if (((BoolType) condition).value) {
@@ -366,7 +387,7 @@ public class Runtime {
                         BinaryOperatorNode linkedConditionRaw = ((ElseIfBlockNode) linkedNode).condition;
                         QType linkedCondition = NodeRunner_run(linkedConditionRaw);
                         if (!(linkedCondition instanceof BoolType)) {
-                            raiseException("ElseIf got `" + condition.getClass().toString() +
+                            return raiseException("ElseIf got `" + condition.getClass().toString() +
                                     "` type instead of BoolType", linkedConditionRaw.operator.p);
                         }
                         if (((BoolType) linkedCondition).value) {
@@ -406,6 +427,7 @@ public class Runtime {
                     System.out.println("<MEMDUMP>");
                     break;
                 }
+                case "nothing": break;
             }
         } else if (node instanceof ThroughBlockNode) {
             String var = ((ThroughBlockNode) node).variable.token.c;
@@ -446,22 +468,27 @@ public class Runtime {
                 }
                 return returnValue;
             } else {
-                raiseException("A and B should be NumType values!", ((ThroughBlockNode) node).variable.token.p);
-                return null;
+                return raiseException("A and B should be NumType values!", ((ThroughBlockNode) node).variable.token.p);
             }
         } else if (node instanceof TryCatchNode) {
-            scopeExceptionHandler = (TryCatchNode) node;
-            return NodeRunner_run(((TryCatchNode) node).tryNodes);
+            QType result = NodeRunner_run(((TryCatchNode) node).tryNodes);
+            if (result instanceof DirectInstructionType) {
+                if (((DirectInstructionType) result).i.equals(DirectInstruction.EXCEPTION)) {
+                    scope.set(((TryCatchNode) node).variable.token.c,
+                            ((DirectInstructionType) result).data.get("msg"));
+                    return NodeRunner_run(((TryCatchNode) node).catchNodes);
+                } else return result;
+            }
+            return result;
         } else if (node instanceof FunctionCallNode) {
-            if (!scope.mem.containsKey(((FunctionCallNode) node).operator.c)) raiseException(
+            if (!scope.mem.containsKey(((FunctionCallNode) node).operator.c)) return raiseException(
                     "Function `" + ((FunctionCallNode) node).operator.c + "` is not declared in this scope",
                     ((FunctionCallNode) node).operator.p);
             HashMap<String, QType> backupCollidingVariables = new HashMap<>();
             QType functionRaw = scope.mem.get(((FunctionCallNode) node).operator.c);
             if (!(functionRaw instanceof FuncType)) {
-                raiseException("`" + ((FunctionCallNode) node).operator.c + "` is not a function",
+                return raiseException("`" + ((FunctionCallNode) node).operator.c + "` is not a function",
                         ((FunctionCallNode) node).operator.p);
-                return null;
             }
             FuncType function = ((FuncType) functionRaw);
             for (String varName : function.args)
@@ -498,6 +525,23 @@ public class Runtime {
             Node objectRaw = ((FieldReferenceNode) node).lnode;
             Node field = ((FieldReferenceNode) node).rnode;
             QType object = NodeRunner_run(objectRaw);
+            if (field instanceof FunctionCallNode && ((FunctionCallNode) field).operator.c.equals("_runner")) {
+                if (!(object instanceof FuncType)) return raiseException(object.toString() +
+                        "should be FuncType if you want to call _runner", ((FunctionCallNode) field).operator.p);
+                FunctionCallNode functionCallNode = new FunctionCallNode(
+                        new Token(TokenType.ID, ((FuncType) object).name,
+                        ((FunctionCallNode) field).operator.p),
+                        ((FunctionCallNode) field).operand);
+                return NodeRunner_run(functionCallNode);
+            }
+            if (!(field instanceof VariableNode || field instanceof FunctionCallNode)) {
+                if (!(object instanceof FuncType)) return raiseException(object.toString() +
+                        "should be FuncType if you want to call .()", ((FieldReferenceNode) node).operator.p);
+                FunctionCallNode functionCallNode = new FunctionCallNode(
+                        new Token(TokenType.ID, ((FuncType) object).name, ((FieldReferenceNode) node).operator.p),
+                        field);
+                return NodeRunner_run(functionCallNode);
+            }
             if (object instanceof StringType) {
                 if (field instanceof VariableNode) {
                     switch (((VariableNode) field).token.c) {
@@ -510,7 +554,6 @@ public class Runtime {
                         case "lower":
                             return new StringType(StringUtils.lower(((StringType) object).value));
                         case "length":
-                            return new NumType(StringUtils.len(((StringType) object).value));
                         case "len":
                             return new NumType(StringUtils.len(((StringType) object).value));
                     }
@@ -527,10 +570,9 @@ public class Runtime {
                                             (int) Math.round(((NumType) a).value),
                                             (int) Math.round(((NumType) b).value)));
                                 } else {
-                                    raiseException("`a`, `b` expected to be NumType's, not `" + a.getClass().toString() +
+                                    return raiseException("`a`, `b` expected to be NumType's, not `" + a.getClass().toString() +
                                                     "`, `" + b.getClass().toString() + "`",
                                             ((FieldReferenceNode) node).operator.p);
-                                    return null;
                                 }
                             } else {
                                 QType a = NodeRunner_run(((FunctionCallNode) field).operand);
@@ -538,9 +580,8 @@ public class Runtime {
                                     return new StringType(StringUtils.sub(((StringType) object).value,
                                             (int) Math.round(((NumType) a).value)));
                                 } else {
-                                    raiseException("`a` expected to be NumType's, not `" + a.getClass().toString() +
-                                                    "`", ((FieldReferenceNode) node).operator.p);
-                                    return null;
+                                    return raiseException("`a` expected to be NumType's, not `" + a.getClass().toString() +
+                                            "`", ((FieldReferenceNode) node).operator.p);
                                 }
                             }
                         }
@@ -551,10 +592,20 @@ public class Runtime {
                                 return new StringType(StringUtils.at(((StringType) object).value,
                                         (int) Math.round(((NumType) pos).value)));
                             } else {
-                                raiseException("`pos` expected to be NumType, not `" + pos.getClass().toString() + "`",
+                                return raiseException("`pos` expected to be NumType, not `" + pos.getClass().toString() + "`",
                                         ((FieldReferenceNode) node).operator.p);
-                                return null;
                             }
+                        }
+                        case "split": {
+                            if (((FunctionCallNode) field).operand instanceof MultiElementNode) break;
+                            QType delimiter = NodeRunner_run(((FunctionCallNode) field).operand);
+                            if (delimiter instanceof StringType) {
+                                List<QType> l = new ArrayList<>();
+                                for (String s : ((StringType) object).value.split(((StringType) delimiter).value))
+                                    l.add(new StringType(s));
+                                return ListUtils.newListType(l);
+                            } else return raiseException("`split` accepts only StringType, but not "
+                                    + delimiter.toString(), ((FieldReferenceNode) node).operator.p);
                         }
                     }
                 }
@@ -569,10 +620,94 @@ public class Runtime {
                             return new NumType(NumUtils.ceil(((NumType) object).value));
                     }
                 }
+            } else if (object instanceof ListType) {
+                if (field instanceof VariableNode) {
+                    switch (((VariableNode) field).token.c) {
+                        case "reverse":
+                            return ListUtils.newListType(ListUtils.reverse(((ListType) object).values));
+                        case "length":
+                        case "len": {
+                            return new NumType(((ListType) object).values.size());
+                        }
+                    }
+                } else if (field instanceof FunctionCallNode) {
+                    switch (((FunctionCallNode) field).operator.c) {
+                        case "sub": {
+                            if (((FunctionCallNode) field).operand instanceof MultiElementNode) {
+                                QType a = NodeRunner_run(((MultiElementNode)((FunctionCallNode)
+                                        field).operand).nodes.get(0));
+                                QType b = NodeRunner_run(((MultiElementNode)((FunctionCallNode)
+                                        field).operand).nodes.get(1));
+                                if (a instanceof NumType && b instanceof NumType) {
+                                    return ListUtils.newListType(ListUtils.sub(((ListType) object).values,
+                                            (int) Math.round(((NumType) a).value),
+                                            (int) Math.round(((NumType) b).value)));
+                                } else {
+                                    return raiseException("`a`, `b` expected to be NumType's, not `" + a.getClass().toString() +
+                                                    "`, `" + b.getClass().toString() + "`",
+                                            ((FieldReferenceNode) node).operator.p);
+                                }
+                            } else {
+                                QType a = NodeRunner_run(((FunctionCallNode) field).operand);
+                                if (a instanceof NumType) {
+                                    return ListUtils.newListType(ListUtils.sub(((ListType) object).values,
+                                            (int) Math.round(((NumType) a).value)));
+                                } else {
+                                    return raiseException("`a` expected to be NumType's, not `" + a.getClass().toString() +
+                                            "`", ((FieldReferenceNode) node).operator.p);
+                                }
+                            }
+                        }
+                        case "at": {
+                            if (((FunctionCallNode) field).operand instanceof MultiElementNode) break;
+                            QType pos = NodeRunner_run(((FunctionCallNode) field).operand);
+                            if (pos instanceof NumType) {
+                                return ListUtils.at(((ListType) object).values,
+                                        (int) Math.round(((NumType) pos).value));
+                            } else {
+                                return raiseException("`pos` expected to be NumType, not `" + pos.getClass().toString() + "`",
+                                        ((FieldReferenceNode) node).operator.p);
+                            }
+                        }
+                        case "append":
+                        case "push":
+                        case "add": {
+                            QType content = NodeRunner_run(((FunctionCallNode) field).operand);
+                            ListType newList = ListUtils.newListType(ListUtils.add(((ListType) object).values,
+                                    content));
+                            if (objectRaw instanceof VariableNode)
+                                scope.set(((VariableNode) objectRaw).token.c, newList);
+                            return newList;
+                        }
+                        case "remove":
+                        case "drop": {
+                            QType content = NodeRunner_run(((FunctionCallNode) field).operand);
+                            ListType newList = ListUtils.newListType(ListUtils.drop(((ListType) object).values,
+                                    content));
+                            if (objectRaw instanceof VariableNode)
+                                scope.set(((VariableNode) objectRaw).token.c, newList);
+                            return newList;
+                        }
+                        case "overlap":
+                        case "over": {
+                            if (!(((FunctionCallNode) field).operand instanceof MultiElementNode)) break;
+                            QType pos = NodeRunner_run(((MultiElementNode)((FunctionCallNode)
+                                    field).operand).nodes.get(0));
+                            QType item = NodeRunner_run(((MultiElementNode)((FunctionCallNode)
+                                    field).operand).nodes.get(1));
+                            if (!(pos instanceof NumType)) break;
+                            List<QType> l = ((ListType) object).values;
+                            if (l.size() <= NumUtils.round(((NumType) pos).value)) {
+                                return raiseException("Index out of bounds", ((FunctionCallNode) field).operator.p);
+                            }
+                            l.set(NumUtils.round(((NumType) pos).value), item);
+                            return ListUtils.newListType(l);
+                        }
+                    }
+                }
             }
-            raiseException("Method/Field `" + field.toString() + "` is not defined for `" + objectRaw + "`",
+            return raiseException("Method/Field `" + field.toString() + "` is not defined for `" + objectRaw + "`",
                     ((FieldReferenceNode) node).operator.p);
-            return null;
         } else if (node instanceof LoopStopBlockNode) {
             BinaryOperatorNode conditionRaw = ((LoopStopBlockNode) node).condition;
             while (true) {
@@ -603,6 +738,37 @@ public class Runtime {
                         return result;
                 }
             }
+        } else if (node instanceof EveryBlockNode) {
+            QType list = NodeRunner_run(((EveryBlockNode) node).expr);
+            String var = ((EveryBlockNode) node).variable.token.c;
+            if (list instanceof ListType) {
+                for (QType value : ((ListType) list).values) {
+                    scope.set(var, value);
+                    QType result = NodeRunner_run(((EveryBlockNode) node).nodes);
+                    if (result instanceof DirectInstructionType) {
+                        if (((DirectInstructionType) result).i.equals(DirectInstruction.CONTINUE))
+                            continue;
+                        else if (((DirectInstructionType) result).i.equals(DirectInstruction.BREAK))
+                            break;
+                        else
+                            return result;
+                    }
+                }
+            } else if (list instanceof StringType) {
+                for (int i = 0; i < ((StringType) list).value.length(); i++) {
+                    scope.set(var, new StringType(((StringType) list).value.charAt(i) + ""));
+                    QType result = NodeRunner_run(((EveryBlockNode) node).nodes);
+                    if (result instanceof DirectInstructionType) {
+                        if (((DirectInstructionType) result).i.equals(DirectInstruction.CONTINUE))
+                            continue;
+                        else if (((DirectInstructionType) result).i.equals(DirectInstruction.BREAK))
+                            break;
+                        else
+                            return result;
+                    }
+                }
+            } else return raiseException("`every` accepts only iterables, but not " + list.toString(),
+                    ((EveryBlockNode) node).variable.token.p);
         }
 
         return new VoidType(true);

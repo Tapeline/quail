@@ -12,7 +12,7 @@ public class LiteralStringNode extends Node {
 
     @Override
     public String toString() {
-        return "LiteralStringNode[" + token + "]";
+        return "\"" + token + "\"";
     }
 
 }

@@ -20,8 +20,8 @@ public class IfBlockNode extends Node {
 
     @Override
     public String toString() {
-        return "IfNode?" + condition.toString() + "=" + nodes.toString() + "\n" +
-                "LinkedNodes{" + linkedNodes.toString() + "}\n";
+        return "if (" + condition.toString() + ") do" + nodes.toString() + "\n" +
+                "Linked{" + linkedNodes.toString() + "}";
     }
 
 }

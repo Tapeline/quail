@@ -1,8 +1,6 @@
 package me.tapeline.quarkj;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 
 public class QFileReader {
 
@@ -21,5 +19,30 @@ public class QFileReader {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static boolean exists(String path) {
+        File f = new File(path);
+        return f.exists();
+    }
+
+    public static void create(String path) {
+        write(path, "");
+    }
+
+    public static void write(String path, String content) {
+        try {
+            FileOutputStream fos = new FileOutputStream(path);
+            DataOutputStream outStream = new DataOutputStream(new BufferedOutputStream(fos));
+            outStream.writeUTF(content);
+            outStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void append(String path, String update) {
+        String content = read(path);
+        write(path, content + update);
     }
 }

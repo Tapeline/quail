@@ -14,6 +14,10 @@ public class UnaryOperatorNode extends Node {
 
     @Override
     public String toString() {
+        return operator.toString() + " " + operand.toString();
+    }
+
+    public String srepr() {
         return "UnaryOp-" + operator.toString() + "[" + operand.toString() + "]";
     }
 

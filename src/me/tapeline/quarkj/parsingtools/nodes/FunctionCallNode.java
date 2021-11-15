@@ -14,7 +14,8 @@ public class FunctionCallNode extends Node {
 
     @Override
     public String toString() {
-        return "FunctionCall-" + operator.toString()  + operand.toString();
+        return operator.toString() + (operand instanceof MultiElementNode? operand.toString() : "(" +
+                operand.toString() + ")");
     }
 
 }

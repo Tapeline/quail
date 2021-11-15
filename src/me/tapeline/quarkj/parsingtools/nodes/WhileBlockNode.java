@@ -13,6 +13,10 @@ public class WhileBlockNode extends Node {
 
     @Override
     public String toString() {
+        return "while (" + condition.toString() + ") do" + nodes.toString() + "end";
+    }
+
+    public String sRepresentation() {
         return "WhileNode-" + condition.toString() + "=" + nodes.toString() + "\n";
     }
 

@@ -21,11 +21,10 @@ public class BlockNode extends Node {
 
     @Override
     public String toString() {
-        String s = "Code[";
+        String s = "";
         for (Node n : nodes) {
-            s += ("\n" + n.toString());
+            s += (n.toString() + "\n");
         }
-        s += "]";
         return s;
     }
 }

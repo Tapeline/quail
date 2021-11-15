@@ -13,6 +13,10 @@ public class LoopStopBlockNode extends Node {
 
     @Override
     public String toString() {
+        return "loop " + nodes.toString() + " stop when " + condition.toString();
+    }
+
+    public String srepr() {
         return "LoopNode-" + condition.toString() + "=" + nodes.toString() + "\n";
     }
 

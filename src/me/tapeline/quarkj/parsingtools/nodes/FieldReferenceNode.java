@@ -16,7 +16,7 @@ public class FieldReferenceNode extends Node {
 
     @Override
     public String toString() {
-        return "Field[left=" + lnode.toString() + ", right=" + rnode.toString() + "]";
+        return lnode.toString() + "." + rnode.toString();
     }
 
 }

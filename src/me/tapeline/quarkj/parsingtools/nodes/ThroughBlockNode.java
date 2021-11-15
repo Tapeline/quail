@@ -15,6 +15,10 @@ public class ThroughBlockNode extends Node {
 
     @Override
     public String toString() {
+        return "through " + range.toString() + " as " + variable.toString() + " do " + nodes.toString() + " end";
+    }
+
+    public String srepr() {
         return "ThroughNode-" + range.toString() + ":" + variable.toString() + "=" + nodes.toString() + "\n";
     }
 
