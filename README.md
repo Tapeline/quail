@@ -1,8 +1,8 @@
-# **quark** - A simple scripting language.
+# **quail** - A simple scripting language.
 
-All the docs can be found in `example.quark` file. 
+All the docs can be found in `example.quail` file. 
 
-Guide for installation > https://github.com/Tapeline/quark/wiki/Installing-QuarkJ
+Guide for installation > https://github.com/Tapeline/quark/wiki/Installing-QuailJ
 
 
 **CC BY-NC-SA 4.0**
