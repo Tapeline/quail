@@ -1,11 +1,9 @@
-# **quail** - A simple scripting language.
+# dev-snapshots branch
 
-All the docs can be found in `example.quail` file. 
+```
+DISClAIMER
 
-Guide for installation > https://github.com/Tapeline/quark/wiki/Installing-QuailJ
+This code might not work properly (most likely), this is only snapshots of development process for me, if i want to go somewere else and continue working on project, and for you, if you want to suggest improvements to my code or just wanna see what comes in the next update
 
-
-**CC BY-NC-SA 4.0**
-
-This work is licensed under the Creative Commons «Attribution-NonCommercial-ShareAlike» 4.0 License. To view a copy of this license, visit
-http://creativecommons.org/licenses/by-nc-sa/4.0/.
+You don't have a permission to copy anything from this branch to your projects
+```
