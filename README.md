@@ -1,5 +1,11 @@
 # **quail** - A simple scripting language.
 
+> ! ! !
+> **Lookin' for a regex expert**
+> ! ! !
+> 
+> Plz someone fix my regex (and lexer maybe) at `me.tapeline.quailj.tokenizetools.Lexer` and `tokens.TokenType`
+
 All the docs can be found in `example.quail` file. 
 
 Guide for installation > https://github.com/Tapeline/quark/wiki/Installing-QuailJ
