@@ -6,6 +6,7 @@ import me.tapeline.quailj.debugtools.DebugGUIManager;
 import me.tapeline.quailj.interpretertools.Runtime;
 import me.tapeline.quailj.interpretertools.RuntimeConfig;
 import me.tapeline.quailj.language.types.QType;
+import me.tapeline.quailj.language.types.RuntimeStriker;
 import me.tapeline.quailj.parsingtools.Parser;
 import me.tapeline.quailj.parsingtools.nodes.Node;
 import me.tapeline.quailj.tokenizetools.Lexer;
@@ -23,7 +24,7 @@ public class RuntimeWrapper {
         this.DEBUG = d;
     }
 
-    public QType run() {
+    public QType run() throws RuntimeStriker {
         AdvancedActionLogger aal = new AdvancedActionLogger();
         Lexer lexer = new Lexer(code, aal);
         lexer.lex();
@@ -40,7 +41,7 @@ public class RuntimeWrapper {
         if (DEBUG) debugGUI.displayTree();
 
         Runtime runtime = new Runtime(codeNode, new RuntimeConfig() , code, aal);
-        QType result = runtime.run();
+        QType result = runtime.runTree();
         if (DEBUG) new AALFrame(aal);
         return result;
     }

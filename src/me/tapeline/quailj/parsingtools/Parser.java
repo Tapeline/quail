@@ -497,7 +497,8 @@ public class Parser {
                 "unlock",
                 "deploy",
                 "return",
-                "var"}) != null) {
+                "var",
+                "my"}) != null) {
             Token operator = previous();
             Node right = EParseUnary();
             return new UnaryOperatorNode(operator, right);

@@ -1,14 +1,14 @@
 package me.tapeline.quailj;
 
-import me.tapeline.quailj.language.types.DirectInstruction;
-import me.tapeline.quailj.language.types.DirectInstructionType;
+import me.tapeline.quailj.language.types.RuntimeStriker;
+import me.tapeline.quailj.language.types.RuntimeStrikerTypes;
 import me.tapeline.quailj.language.types.QType;
 
 import java.util.Scanner;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws RuntimeStriker {
         Language.setupAndSelect("en");
         String path;
         Scanner sc = new Scanner(System.in);
@@ -35,14 +35,5 @@ public class Main {
         RuntimeWrapper runtimeWrapper = new RuntimeWrapper(code, debug);
         QType result = runtimeWrapper.run();
         System.out.println("\n-<=====>--------------------------------<=====>-");
-        if (result instanceof DirectInstructionType && ((DirectInstructionType) result).i.equals(
-                DirectInstruction.EXCEPTION)) {
-            System.err.println("Runtime wrapper returned exception instruction!");
-            System.err.println("(X) Unhandled exception!");
-            System.err.println("Error <" + ((DirectInstructionType) result).data.get("msg") + ">,");
-            System.err.println("Additional data: " + ((DirectInstructionType) result).data);
-        } else {
-            System.out.println("RuntimeWrapper returned " + result.toString());
-        }
     }
 }
