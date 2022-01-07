@@ -1,6 +1,10 @@
 package me.tapeline.quailj.utils;
 
+import me.tapeline.quailj.language.types.QType;
 import me.tapeline.quailj.language.types.StringType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class StringUtils {
 
@@ -43,5 +47,30 @@ public class StringUtils {
         String ss = "";
         for (long i = 0; i < cc; i++) ss += s;
         return ss;
+    }
+
+    public static List<QType> div(String s, double c) {
+        int partLen = (int) Math.round(Math.floor(s.length() / c));
+        List<QType> parts = new ArrayList<>();
+        int i = 0;
+        while (i < s.length()) {
+            parts.add(new StringType(s.substring(i, i + partLen)));
+            i += partLen;
+        }
+        if (i - partLen != s.length() - 1) {
+            parts.add(new StringType(s.substring(i)));
+        }
+        return parts;
+    }
+
+    public static List<QType> mod(String s, double c) {
+        int partLen = (int) Math.round(Math.floor(s.length() / c));
+        List<QType> parts = new ArrayList<>();
+        int i = 0;
+        while (i < s.length()) {
+            parts.add(new StringType(s.substring(i, i + partLen)));
+            i += partLen;
+        }
+        return parts;
     }
 }

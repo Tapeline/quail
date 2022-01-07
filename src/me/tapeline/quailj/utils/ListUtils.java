@@ -1,9 +1,6 @@
 package me.tapeline.quailj.utils;
 
-import me.tapeline.quailj.language.types.BoolType;
-import me.tapeline.quailj.language.types.ListType;
-import me.tapeline.quailj.language.types.NumType;
-import me.tapeline.quailj.language.types.QType;
+import me.tapeline.quailj.language.types.*;
 
 import java.util.*;
 
@@ -72,10 +69,40 @@ public class ListUtils {
         return values;
     }
 
+    public static List<QType> removeAll(List<QType> values, List<QType> b) {
+        values.removeAll(b);
+        return values;
+    }
+
     public static List<QType> mult(List<QType> values, double value) {
         long cc = NumUtils.round(value);
         List<QType> v = new ArrayList<>();
         for (long i = 0; i < cc; i++) v.addAll(values);
         return v;
+    }
+
+    public static List<QType> div(List<QType> s, double c) {
+        int partLen = (int) Math.round(Math.floor(s.size() / c));
+        List<QType> parts = new ArrayList<>();
+        int i = 0;
+        while (i < s.size()) {
+            parts.add(new ListType(s.subList(i, i + partLen)));
+            i += partLen;
+        }
+        if (i - partLen != s.size() - 1) {
+            parts.add(new ListType(s.subList(i, s.size()-1)));
+        }
+        return parts;
+    }
+
+    public static List<QType> mod(List<QType> s, double c) {
+        int partLen = (int) Math.round(Math.floor(s.size() / c));
+        List<QType> parts = new ArrayList<>();
+        int i = 0;
+        while (i < s.size()) {
+            parts.add(new ListType(s.subList(i, i + partLen)));
+            i += partLen;
+        }
+        return parts;
     }
 }

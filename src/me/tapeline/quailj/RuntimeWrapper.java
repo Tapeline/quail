@@ -40,7 +40,7 @@ public class RuntimeWrapper {
         if (codeNode == null) System.exit(101);
         if (DEBUG) debugGUI.displayTree();
 
-        Runtime runtime = new Runtime(codeNode, new RuntimeConfig() , code, aal);
+        Runtime runtime = new Runtime(codeNode, new RuntimeConfig() , aal);
         QType result = runtime.runTree();
         if (DEBUG) new AALFrame(aal);
         return result;
