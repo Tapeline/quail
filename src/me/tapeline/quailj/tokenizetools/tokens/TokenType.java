@@ -16,7 +16,7 @@ public enum TokenType {
     BINARYOPERATOR("BINARYOPERATOR", "(\\^|\\/\\/|\\+|-|\\*|\\/|\\%|and|or|==|is same type as|is type of|instanceof|<=|>=|>|<|\\.\\.\\.|\\.|of|'s|'|is)"),
     ASSIGNOPERATOR("ASSIGNOPERATOR", "(=)"),
     UNARYOPERATOR("UNARYOPERATOR",
-            "(reference to|not|my|var|out|input|exists|destroy|put|assert|use|block|throw|notnull|using|deploy|return|yield)[\\s]"),
+            "(reference to|not|negate|my|out|input|exists|destroy|put|assert|use|block|throw|notnull|using|deploy|return)[\\s]"),
     INSTRUCTION("INSTRUCTION", "(milestone|breakpoint|break|continue|memory)[\\s\\W]"),
     ID("ID", "[a-zA-Z_\\@]+((\\d*[a-zA-Z_\\@]*)*)"),
     LPAR("LPAR", "(\\()"),

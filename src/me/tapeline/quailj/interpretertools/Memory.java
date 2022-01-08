@@ -43,7 +43,7 @@ public class Memory {
     }
 
     public QType get(String a) {
-        if (hasParentalDefinition(a)) return enclosing.get(a);
+        if (hasParentalDefinition(a) && enclosing != null) return enclosing.get(a);
         else {
             QType r = mem.get(a);
             if (r instanceof RefType)

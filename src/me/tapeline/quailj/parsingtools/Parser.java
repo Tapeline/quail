@@ -343,9 +343,9 @@ public class Parser {
             }
             case "every": {
                 match(TokenType.KEYWORD);
-                Node expression = parseExpression();
-                requireString(TokenType.KEYWORD, new String[] {"in"}, Language.get("p.loop.no-as-in"));
                 Node var = parseExpression();
+                requireString(TokenType.KEYWORD, new String[] {"in"}, Language.get("p.loop.no-as-in"));
+                Node expression = parseExpression();
                 Node code = parseStatement(false);
                 aal.log("QParser", "Statement parsed.");
                 return new EveryBlockNode(expression, var, blockIfNeeded(code));
@@ -498,7 +498,8 @@ public class Parser {
                 "deploy",
                 "return",
                 "var",
-                "my"}) != null) {
+                "my",
+                "negate"}) != null) {
             Token operator = previous();
             Node right = EParseUnary();
             return new UnaryOperatorNode(operator, right);

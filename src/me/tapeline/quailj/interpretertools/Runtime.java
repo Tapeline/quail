@@ -1,5 +1,6 @@
 package me.tapeline.quailj.interpretertools;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import me.tapeline.quailj.debugtools.AdvancedActionLogger;
 import me.tapeline.quailj.language.types.*;
 import me.tapeline.quailj.parsingtools.nodes.*;
@@ -7,7 +8,7 @@ import me.tapeline.quailj.utils.ListUtils;
 import me.tapeline.quailj.utils.StringUtils;
 import me.tapeline.quailj.utils.Utilities;
 
-import java.util.Scanner;
+import java.util.*;
 
 public class Runtime {
 
@@ -17,6 +18,7 @@ public class Runtime {
     private final AdvancedActionLogger aal;
     public Memory scope;
     public final RuntimeConfig config;
+    public final HashMap<String, FuncType> eventHandlers = new HashMap<>();
 
     public Runtime(Node rootNode, RuntimeConfig cfg, AdvancedActionLogger aal) {
         this.rootNode = rootNode;
@@ -210,15 +212,15 @@ public class Runtime {
                 }
             }
         } else if (node instanceof FieldReferenceNode) {
-            // TODO OBLIGATORY field ref. run()
+            // TODO field ref. run()
         } else if (node instanceof FieldSetNode) {
-            // TODO OBLIGATORY field set. run()
+            // TODO field set. run()
         } else if (node instanceof FunctionCallNode) {
-            // TODO OBLIGATORY function run()
+            // TODO function run()
         } else if (node instanceof GroupNode) {
             return run(((GroupNode) node).node);
         } else if (node instanceof IfBlockNode) {
-            // TODO OBLIGATORY if node run()
+            // TODO if node run()
         } else if (node instanceof InstructionNode) {
             switch (((InstructionNode) node).operator.c) {
                 case "milestone":
@@ -247,6 +249,122 @@ public class Runtime {
             // TODO Literal container node run()
         } else if (node instanceof LiteralDefinitionNode) {
             // TODO Literal def. node run()
+        } else if (node instanceof LiteralEventNode) {
+            FuncType f = new FuncType(((LiteralEventNode) node).name.c,
+                    Collections.singletonList(((LiteralEventNode) node).var.c),
+                    ((LiteralEventNode) node).code);
+            eventHandlers.put(((LiteralEventNode) node).name.c, f);
+        } else if (node instanceof LiteralFunctionNode) {
+            List<String> args = new ArrayList<>();
+            for (Node n : ((MultiElementNode) ((LiteralFunctionNode) node).args).nodes) {
+                if (n instanceof VariableNode)
+                    args.add(((VariableNode) n).token.c);
+                else throw new RuntimeStriker("run:literalfunction:invalid args");
+            }
+            FuncType f = new FuncType(((LiteralFunctionNode) node).name.c,
+                    args, ((LiteralFunctionNode) node).code);
+            if (f.name.equals("that"))
+                return f;
+            else
+                scope.set(f.name, f);
+        } else if (node instanceof LiteralListNode) {
+            ListType l = new ListType();
+            for (Node n : ((LiteralListNode) node).nodes)
+                l.values.add(run(n));
+            return l;
+        } else if (node instanceof LiteralNullNode) {
+            return Void;
+        } else if (node instanceof LoopStopBlockNode) {
+            // TODO loop-stop run()
+        } else if (node instanceof ThroughBlockNode) {
+            // TODO through run()
+        } else if (node instanceof TryCatchNode) {
+            try {
+                run(((TryCatchNode) node).tryNodes);
+            } catch (RuntimeStriker striker) {
+                if (striker.type.equals(RuntimeStrikerTypes.EXCEPTION)) {
+                    scope.set(((TryCatchNode) node).variable.token.c, new StringType(striker.msg));
+                    run(((TryCatchNode) node).catchNodes);
+                    scope.remove(((TryCatchNode) node).variable.token.c);
+                }
+            }
+        } else if (node instanceof UnaryOperatorNode) {
+            switch (((UnaryOperatorNode) node).operator.c) {
+                case "reference to": {
+                    if (((UnaryOperatorNode) node).operand instanceof VariableNode)
+                        return new RefType(((VariableNode) ((UnaryOperatorNode) node).operand).token.c);
+                    else
+                        throw new RuntimeStriker(
+                                "run:unaryop:referenceto:cannot make reference to non-variable value");
+                }
+                case "not":
+                case "negate": {
+                    QType v = run(((UnaryOperatorNode) node).operand);
+                    if (v instanceof BoolType)
+                        return new BoolType(!((BoolType) v).value);
+                    else if (v instanceof NumType)
+                        return new NumType(-((NumType) v).value);
+                    else throw new RuntimeStriker("run:unaryop:not-negate:unacceptable value");
+                }
+                case "my": {
+                    break; // TODO WITH OOP
+                }
+                case "out": {
+                    System.out.println(run(((UnaryOperatorNode) node).operand).toString());
+                }
+                case "put": {
+                    System.out.print(run(((UnaryOperatorNode) node).operand).toString());
+                }
+                case "input": {
+                    Scanner sc = new Scanner(System.in);
+                    return new StringType(sc.nextLine());
+                }
+                case "exists": {
+                    if (((UnaryOperatorNode) node).operand instanceof VariableNode)
+                        return new BoolType(scope.get(((VariableNode)
+                                ((UnaryOperatorNode) node).operand).token.c) != null);
+                    else
+                        throw new RuntimeStriker(
+                                "run:unaryop:exists:cannot check non-variable value");
+                }
+                case "destroy": {
+                    if (((UnaryOperatorNode) node).operand instanceof VariableNode)
+                        scope.remove(((VariableNode) ((UnaryOperatorNode) node).operand).token.c);
+                    else
+                        throw new RuntimeStriker(
+                                "run:unaryop:exists:cannot destroy non-variable value");
+                }
+                case "assert": {
+                    QType v = run(((UnaryOperatorNode) node).operand);
+                    if (v instanceof BoolType && ((BoolType) v).value)
+                        return new BoolType(true);
+                    else throw new RuntimeStriker("assertion error");
+                }
+                case "notnull": {
+                    QType v = run(((UnaryOperatorNode) node).operand);
+                    return new BoolType(v != null && !(v instanceof VoidType));
+                }
+                case "throw": {
+                    throw new RuntimeStriker(run(((UnaryOperatorNode) node).operand).toString());
+                }
+                case "use":
+                case "using": {
+                    // TODO lib stuff
+                }
+                case "deploy": {
+                    // TODO lib stuff
+                }
+                case "return": {
+                    throw new RuntimeStriker(run(((UnaryOperatorNode) node).operand));
+                }
+            }
+        } else if (node instanceof VariableNode) {
+            return scope.get(((VariableNode) node).token.c);
+        } else if (node instanceof WhileBlockNode) {
+            // TODO while run()
+        } else if (node instanceof RootNode) {
+            for (Node n : ((RootNode) node).nodes)
+                run(n);
         }
         return Void;
     }
