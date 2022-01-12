@@ -6,6 +6,12 @@
 > 
 > Plz someone fix my regex (and lexer maybe) at `me.tapeline.quailj.tokenizetools.Lexer` and `tokens.TokenType`
 
+> ! ! !
+> **Massive refactoring in progress**
+> ! ! !
+>
+> You can see what is happening in `dev-snapshots` repo
+
 All the docs can be found in `example.quail` file. 
 
 Guide for installation > https://github.com/Tapeline/quark/wiki/Installing-QuailJ
