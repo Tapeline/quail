@@ -9,7 +9,7 @@ public enum TokenType {
     LITERALNULL("LITERALNULL", "(null|nothing)[\\s]"),
     LITERALBOOL("LITERALBOOL", "(true|false)[\\s]"),
     TYPE("TYPE", "(func|string|bool|num|container|list|metacontainer|object|function)[\\s\\W]"),
-    MODIFIER("MODIFIER", "(local|final)[\\s\\W]"),
+    MODIFIER("MODIFIER", "(local|final|anonymous)[\\s\\W]"),
     BLOCK("BLOCK", "(do|does|end|then|has)[\\s\\W]"),
     COMMA("COMMA", ","),
     KEYWORD("KEYWORD", "(as|in|through|if|elseif|else|try|catch|while|loop|stop when|every|on|when)[\\s\\W]"),

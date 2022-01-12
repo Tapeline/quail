@@ -1,9 +1,11 @@
 package me.tapeline.quailj.interpretertools;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
+import me.tapeline.quailj.QFileReader;
 import me.tapeline.quailj.debugtools.AdvancedActionLogger;
 import me.tapeline.quailj.language.types.*;
+import me.tapeline.quailj.parsingtools.Parser;
 import me.tapeline.quailj.parsingtools.nodes.*;
+import me.tapeline.quailj.tokenizetools.Lexer;
 import me.tapeline.quailj.utils.ListUtils;
 import me.tapeline.quailj.utils.StringUtils;
 import me.tapeline.quailj.utils.Utilities;
@@ -13,6 +15,10 @@ import java.util.*;
 public class Runtime {
 
     public static VoidType Void = new VoidType(); // idk, maybe del dat
+    public static List<String> nativeLibs = new ArrayList<>(Arrays.asList(
+            "canvas",
+            "popups"
+    ));
 
     public final Node rootNode;
     private final AdvancedActionLogger aal;
@@ -25,6 +31,29 @@ public class Runtime {
         this.scope = new Memory();
         this.config = cfg;
         this.aal = aal;
+        defineBuiltIns();
+    }
+
+    public void defineBuiltIns() {
+        this.scope.set("clock", new BuiltinFuncType() {
+            @Override
+            public QType run(Runtime runtime, List<QType> args) {
+                return new NumType((double) System.currentTimeMillis() / 1000.0);
+            }
+        });
+        this.scope.set("nothing", new VoidType());
+    }
+
+    public QType getNativeLib(String name) {
+        switch (name) {
+            case "canvas": {
+                return Void;
+            }
+            case "popups": {
+                return Void;
+            }
+        }
+        return Void;
     }
 
     public QType run(Node node) throws RuntimeStriker {
@@ -139,7 +168,8 @@ public class Runtime {
                         return b;
                     else if (b instanceof VoidType)
                         return a;
-                    break;
+                    else
+                        return a;
                 }
                 case "is type of":
                 case "instanceof": {
@@ -164,6 +194,13 @@ public class Runtime {
                         QType.isBool(a, b))
                         return new BoolType(true);
                     break;
+                }
+                case "=": {
+                    if (!(((BinaryOperatorNode) node).lnode instanceof VariableNode))
+                        throw new RuntimeStriker("run:binaryop:set:cannot place value to non-variable type");
+                    scope.set(((VariableNode) ((BinaryOperatorNode) node).lnode).token.c,
+                            run(((BinaryOperatorNode) node).rnode));
+                    return Void;
                 }
             }
             throw new RuntimeStriker("run:binaryop:no valid case for " + node);
@@ -216,11 +253,39 @@ public class Runtime {
         } else if (node instanceof FieldSetNode) {
             // TODO field set. run()
         } else if (node instanceof FunctionCallNode) {
-            // TODO function run()
+            QType callee = run(((FunctionCallNode) node).id);
+            if (callee == null)
+                throw new RuntimeStriker("run:function:cannot call null " + ((FunctionCallNode) node).id.toString());
+            List<QType> args = new ArrayList<>();
+            for (Node arg : ((MultiElementNode) ((FunctionCallNode) node).args).nodes) {
+                args.add(run(arg));
+            }
+            if (callee instanceof FuncType)
+                return ((FuncType) callee).run(this, args);
+            else if (callee instanceof BuiltinFuncType)
+                return ((BuiltinFuncType) callee).run(this, args);
+            else
+                throw new RuntimeStriker("run:function:cannot call " + callee.toString());
         } else if (node instanceof GroupNode) {
             return run(((GroupNode) node).node);
         } else if (node instanceof IfBlockNode) {
-            // TODO if node run()
+            QType cond = run(((IfBlockNode) node).condition);
+            if (cond instanceof BoolType && ((BoolType) cond).value) {
+                run(((IfBlockNode) node).nodes);
+            } else {
+                for (Node branch : ((IfBlockNode) node).linkedNodes) {
+                    if (branch instanceof ElseIfBlockNode) {
+                        QType condElseIf = run(((ElseIfBlockNode) branch).condition);
+                        if (condElseIf instanceof BoolType && ((BoolType) condElseIf).value) {
+                            run(((ElseIfBlockNode) branch).nodes);
+                            break;
+                        }
+                    } else if (branch instanceof ElseBlockNode) {
+                        run(((ElseBlockNode) branch).nodes);
+                        break;
+                    }
+                }
+            }
         } else if (node instanceof InstructionNode) {
             switch (((InstructionNode) node).operator.c) {
                 case "milestone":
@@ -248,7 +313,20 @@ public class Runtime {
         } else if (node instanceof LiteralContainerNode) {
             // TODO Literal container node run()
         } else if (node instanceof LiteralDefinitionNode) {
-            // TODO Literal def. node run()
+            switch (((LiteralDefinitionNode) node).type.c) {
+                case "string": {
+                    scope.set(((LiteralDefinitionNode) node).variable.c, new StringType(""));
+                    return Void;
+                }
+                case "num": {
+                    scope.set(((LiteralDefinitionNode) node).variable.c, new NumType(0));
+                    return Void;
+                }
+                case "bool": {
+                    scope.set(((LiteralDefinitionNode) node).variable.c, new BoolType(false));
+                    return Void;
+                }
+            }
         } else if (node instanceof LiteralEventNode) {
             FuncType f = new FuncType(((LiteralEventNode) node).name.c,
                     Collections.singletonList(((LiteralEventNode) node).var.c),
@@ -275,9 +353,54 @@ public class Runtime {
         } else if (node instanceof LiteralNullNode) {
             return Void;
         } else if (node instanceof LoopStopBlockNode) {
-            // TODO loop-stop run()
+            while (true) {
+                try {
+                    run(((LoopStopBlockNode) node).nodes);
+                } catch (RuntimeStriker striker) {
+                    if (striker.type.equals(RuntimeStrikerTypes.BREAK))
+                        break;
+                    else if (striker.type.equals(RuntimeStrikerTypes.CONTINUE))
+                        continue;
+                    else if (striker.type.equals(RuntimeStrikerTypes.RETURN))
+                        throw striker;
+                    else if (striker.type.equals(RuntimeStrikerTypes.EXCEPTION))
+                        throw striker;
+                }
+                QType cond = run(((LoopStopBlockNode) node).condition);
+                if (!(cond instanceof BoolType && ((BoolType) cond).value))
+                    return Void;
+            }
         } else if (node instanceof ThroughBlockNode) {
-            // TODO through run()
+            double iterator;
+            double threshold;
+            QType rangeStart = run(((ThroughBlockNode) node).range.lnode);
+            QType rangeEnd = run(((ThroughBlockNode) node).range.rnode);
+            if (!(QType.isNum(rangeStart) && QType.isNum(rangeEnd)))
+                throw new RuntimeStriker("run:through:cannot iterate through non-num range");
+            else {
+                iterator = ((NumType) rangeStart).value;
+                threshold = ((NumType) rangeEnd).value;
+            }
+            double step = ((NumType) rangeStart).value < threshold ? 1 : -1;
+            if (!(((ThroughBlockNode) node).variable instanceof VariableNode))
+                throw new RuntimeStriker("run:through:cannot iterate with non-variable iterator");
+            while (iterator < threshold) {
+                try {
+                    scope.set(((VariableNode) ((ThroughBlockNode) node).variable).token.c,
+                            new NumType(iterator));
+                    run(((ThroughBlockNode) node).nodes);
+                    iterator += step;
+                } catch (RuntimeStriker striker) {
+                    if (striker.type.equals(RuntimeStrikerTypes.BREAK))
+                        break;
+                    else if (striker.type.equals(RuntimeStrikerTypes.CONTINUE))
+                        continue;
+                    else if (striker.type.equals(RuntimeStrikerTypes.RETURN))
+                        throw striker;
+                    else if (striker.type.equals(RuntimeStrikerTypes.EXCEPTION))
+                        throw striker;
+                }
+            }
         } else if (node instanceof TryCatchNode) {
             try {
                 run(((TryCatchNode) node).tryNodes);
@@ -295,7 +418,7 @@ public class Runtime {
                         return new RefType(((VariableNode) ((UnaryOperatorNode) node).operand).token.c);
                     else
                         throw new RuntimeStriker(
-                                "run:unaryop:referenceto:cannot make reference to non-variable value");
+                                "run:unaryop:reference:cannot make reference to non-variable value");
                 }
                 case "not":
                 case "negate": {
@@ -348,11 +471,35 @@ public class Runtime {
                     throw new RuntimeStriker(run(((UnaryOperatorNode) node).operand).toString());
                 }
                 case "use":
-                case "using": {
-                    // TODO lib stuff
-                }
+                case "using":
                 case "deploy": {
-                    // TODO lib stuff
+                    String path = "";
+                    if (((UnaryOperatorNode) node).operand instanceof VariableNode) {
+                        path = ((VariableNode) ((UnaryOperatorNode) node).operand).token.c;
+                    } else if (((UnaryOperatorNode) node).operand instanceof FieldReferenceNode) {
+                        path = QFileReader.resolvePathFromDotNotation(((UnaryOperatorNode) node).operand);
+                    } else if (((UnaryOperatorNode) node).operand instanceof LiteralStringNode) {
+                        path = ((LiteralStringNode) ((UnaryOperatorNode) node).operand).token.c;
+                    }
+
+                    if (!nativeLibs.contains(path)) {
+                        String lib = QFileReader.loadLibrary(path);
+                        if (lib == null) throw new RuntimeStriker("run:use:import failed");
+
+                        Lexer l = new Lexer(lib, aal);
+                        l.lex();
+
+                        Parser p = new Parser(l.fixBooleans(), aal);
+
+                        Runtime compiler = new Runtime(p.parseCode(), new RuntimeConfig(), aal);
+
+                        QType compiled = compiler.runTree();
+
+                        scope.set(path.split("/")[path.split("/").length - 1], compiled);
+                    } else {
+                        scope.set(path, getNativeLib(path));
+                    }
+                    return Void;
                 }
                 case "return": {
                     throw new RuntimeStriker(run(((UnaryOperatorNode) node).operand));
@@ -361,7 +508,23 @@ public class Runtime {
         } else if (node instanceof VariableNode) {
             return scope.get(((VariableNode) node).token.c);
         } else if (node instanceof WhileBlockNode) {
-            // TODO while run()
+            while (true) {
+                QType cond = run(((WhileBlockNode) node).condition);
+                if (!(cond instanceof BoolType && ((BoolType) cond).value))
+                    return Void;
+                try {
+                    run(((WhileBlockNode) node).nodes);
+                } catch (RuntimeStriker striker) {
+                    if (striker.type.equals(RuntimeStrikerTypes.BREAK))
+                        break;
+                    else if (striker.type.equals(RuntimeStrikerTypes.CONTINUE))
+                        continue;
+                    else if (striker.type.equals(RuntimeStrikerTypes.RETURN))
+                        throw striker;
+                    else if (striker.type.equals(RuntimeStrikerTypes.EXCEPTION))
+                        throw striker;
+                }
+            }
         } else if (node instanceof RootNode) {
             for (Node n : ((RootNode) node).nodes)
                 run(n);
@@ -370,8 +533,14 @@ public class Runtime {
     }
 
     public QType runTree() throws RuntimeStriker {
-        if (config.DEBUG) System.out.println(rootNode.toString());
-        return run(rootNode);
+        try {
+            if (config.DEBUG) System.out.println(rootNode.toString());
+            return run(rootNode);
+        } catch (RuntimeStriker striker) {
+            if (striker.type.equals(RuntimeStrikerTypes.RETURN))
+                return striker.retVal;
+            else throw striker;
+        }
     }
 
 }

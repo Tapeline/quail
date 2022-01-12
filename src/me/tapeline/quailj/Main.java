@@ -33,7 +33,21 @@ public class Main {
         }
         System.out.println("-<=====>--------------------------------<=====>-");
         RuntimeWrapper runtimeWrapper = new RuntimeWrapper(code, debug);
-        QType result = runtimeWrapper.run();
+        try {
+            QType result = runtimeWrapper.run();
+            System.out.println("Runtime returned " + result.toString());
+        } catch (RuntimeStriker striker) {
+            if (striker.type.equals(RuntimeStrikerTypes.EXCEPTION)) {
+                System.err.println("An error occured during the execution of program! Details:");
+                String[] strings = striker.msg.split(":");
+                for (int i = 0; i < strings.length - 1; i++) {
+                    for (int j = 0; j < i; j++)
+                        System.err.print(" ");
+                    System.err.println("At " + strings[i]);
+                }
+                System.err.println(strings[strings.length - 1]);
+            } else throw striker;
+        }
         System.out.println("\n-<=====>--------------------------------<=====>-");
     }
 }

@@ -167,6 +167,27 @@ public class Parser {
         return new LiteralFunctionNode(id, multiElementNode, statement);
     }
 
+    public Node parseAnonymousFunction() {
+        aal.log("QParser", "Parsing anonymous function...");
+        requireString(TokenType.LPAR, new String[] {"("},
+                Language.get("p.common.no-par"));
+        MultiElementNode multiElementNode = new MultiElementNode();
+        do {
+            if (!getCurrent().t.equals(TokenType.ID)) break;
+            multiElementNode.addNode(new VariableNode(match(TokenType.ID)));
+            if (getCurrent().t.equals(TokenType.COMMA))
+                match(TokenType.COMMA);
+            else
+                break;
+        } while (getCurrent().t.equals(TokenType.ID));
+        requireString(TokenType.RPAR, new String[] {")"},
+                Language.get("p.common.no-par"));
+
+        BlockNode statement = blockIfNeeded(parseStatement(false));
+        aal.log("QParser", "Anonymous function parsed");
+        return new LiteralFunctionNode(new Token(TokenType.ID, "__anon__", 0), multiElementNode, statement);
+    }
+
     public Node parseBuilder(boolean soft) {
         aal.log("QParser", "Parsing function... Soft?", soft);
         if (soft &&
@@ -224,7 +245,7 @@ public class Parser {
 
     public Node parseContainer(boolean soft) {
         aal.log("QParser", "Parsing container... Soft?", soft);
-        if (soft && !getCurrent().t.equals(TokenType.TYPE) &&
+        if (soft &&
                 !Arrays.asList("metacontainer", "container").contains(getCurrent().c)) {
             aal.log("QParser", "Container not found.");
             return null;
@@ -381,6 +402,16 @@ public class Parser {
             aal.log("QParser", "Statement parsed.");
             return container;
         }
+        if (ct.t.equals(TokenType.TYPE)) {
+            pos++;
+            switch (ct.c) {
+                case "string":
+                case "bool":
+                case "num": {
+                    return new LiteralDefinitionNode(require(TokenType.ID, "Expected id!"), ct);
+                }
+            }
+        }
         Node expression = parseExpression();
         if (expression != null) {
             aal.log("QParser", "Statement parsed.");
@@ -497,6 +528,7 @@ public class Parser {
                 "unlock",
                 "deploy",
                 "return",
+                "throw",
                 "var",
                 "my",
                 "negate"}) != null) {
@@ -590,6 +622,11 @@ public class Parser {
             }
             require(TokenType.RCPAR, Language.get("p.common.no-par"));
             return containerNode;
+        }
+
+        if (getCurrent().c.equals("anonymous")) {
+            pos++;
+            return parseAnonymousFunction();
         }
         error(Language.get("p.expr.no-valid-case"));
         return null;

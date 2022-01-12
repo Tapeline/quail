@@ -1,5 +1,6 @@
 package me.tapeline.quailj.language.types;
 
+import me.tapeline.quailj.interpretertools.Runtime;
 import me.tapeline.quailj.parsingtools.nodes.BlockNode;
 
 import java.util.ArrayList;
@@ -15,6 +16,10 @@ public class FuncType extends QType {
         this.code = code;
         this.args = args;
         this.name = name;
+    }
+
+    public QType run(Runtime runtime, List<QType> args) {
+        return new VoidType();
     }
 
     @Override

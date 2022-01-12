@@ -2,6 +2,6 @@ package me.tapeline.quailj.interpretertools;
 
 public class RuntimeConfig {
 
-    public boolean DEBUG = true;
+    public boolean DEBUG = false;
 
 }
