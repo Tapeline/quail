@@ -267,6 +267,7 @@ public class Parser {
             if (builder != null) {
                 literalContainerNode.builder = (LiteralFunctionNode) builder;
                 aal.log("QParser", "Found custom builder. Replaced.");
+                continue;
             }
 
             Node func = parseFunction(true);
@@ -276,10 +277,10 @@ public class Parser {
                 continue;
             }
 
-            Node expr = parseExpression();
-            if (expr != null) {
-                literalContainerNode.initialize.add(expr);
-                aal.log("QParser", "Added expression");
+            Node stmt = parseStatement(true);
+            if (stmt != null) {
+                literalContainerNode.initialize.add(stmt);
+                aal.log("QParser", "Added statement");
                 continue;
             }
 

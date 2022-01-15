@@ -13,7 +13,7 @@ public class LiteralContainerNode extends Node {
     public boolean isMeta = false;
     public String name;
     public LiteralFunctionNode builder = new LiteralFunctionNode(new Token(TokenType.ID,
-            this.hashCode() + "builder", 0), new MultiElementNode(), new BlockNode());
+            "no-builder", 0), new MultiElementNode(), new BlockNode());
     public String alike = "container";
 
     public LiteralContainerNode(String name, boolean im, String alike) {

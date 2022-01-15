@@ -56,6 +56,31 @@ public class Runtime {
         return Void;
     }
 
+    public ContainerType overrideContainerContents(ContainerType dest, ContainerType src) {
+        dest.content.putAll(src.content);
+        dest.customBehaviour.putAll(src.customBehaviour);
+        if (src.builder != null && !(src.builder.code.nodes.get(0) instanceof UnaryOperatorNode &&
+                ((UnaryOperatorNode) src.builder.code.nodes.get(0)).operator.c.equals("return") &&
+                ((UnaryOperatorNode) src.builder.code.nodes.get(0)).operand instanceof LiteralNullNode))
+            dest.builder = src.builder;
+        return dest;
+    }
+
+    public ContainerType inheritContainer(ContainerType parent, ContainerType child, boolean primary) {
+        if (parent.like.equals("container")) {
+            child = overrideContainerContents(child, parent);
+            return child;
+        } else {
+            QType p = scope.get(parent.like);
+            if (p instanceof ContainerType) {
+                parent = inheritContainer((ContainerType) p, parent, true);
+                child = overrideContainerContents(child, parent);
+                return child;
+            }
+        }
+        return child;
+    }
+
     public QType run(Node node) throws RuntimeStriker {
         if (node instanceof BinaryOperatorNode) {
             QType a = run(((BinaryOperatorNode) node).lnode);
@@ -311,7 +336,109 @@ public class Runtime {
         } else if (node instanceof LiteralBoolNode) {
             return new BoolType(Boolean.parseBoolean(((LiteralBoolNode) node).token.c));
         } else if (node instanceof LiteralContainerNode) {
-            // TODO Literal container node run()
+            if (((LiteralContainerNode) node).isMeta) {
+                ContainerType ct = new ContainerType(new HashMap<String, QType>(), true);
+                if (!((LiteralContainerNode) node).alike.equals("container")) {
+                    ct.like = ((LiteralContainerNode) node).alike;
+                    QType parent = scope.get(ct.like);
+                    if (parent instanceof ContainerType) {
+                        ct = inheritContainer((ContainerType) parent, ct, true);
+                    }
+                }
+                for (Node init : ((LiteralContainerNode) node).initialize) {
+                    if (init instanceof LiteralDefinitionNode) {
+                        switch (((LiteralDefinitionNode) init).type.c) {
+                            case "string": {
+                                ct.content.put(((LiteralDefinitionNode) init).variable.c, new StringType(""));
+                                return Void;
+                            }
+                            case "num": {
+                                ct.content.put(((LiteralDefinitionNode) init).variable.c, new NumType(0));
+                                return Void;
+                            }
+                            case "bool": {
+                                ct.content.put(((LiteralDefinitionNode) init).variable.c, new BoolType(false));
+                                return Void;
+                            }
+                        }
+                    } else if (init instanceof BinaryOperatorNode &&
+                            ((BinaryOperatorNode) init).operator.c.equals("=")) {
+                        if (!(((BinaryOperatorNode) init).lnode instanceof VariableNode))
+                            throw new RuntimeStriker("run:literal-container:init:cannot set value to non-variable");
+                        ct.content.put(((VariableNode) ((BinaryOperatorNode) init).lnode).token.c,
+                                run(((BinaryOperatorNode) init).rnode));
+                    } else if (init instanceof LiteralFunctionNode) {
+                        List<String> args = new ArrayList<>();
+                        for (Node n : ((MultiElementNode) ((LiteralFunctionNode) init).args).nodes) {
+                            if (n instanceof VariableNode)
+                                args.add(((VariableNode) n).token.c);
+                            else throw new RuntimeStriker("run:literal-container:init:literal-function:invalid args");
+                        }
+                        FuncType f = new FuncType(((LiteralFunctionNode) init).name.c,
+                                args, ((LiteralFunctionNode) init).code);
+                        ct.content.put(((LiteralFunctionNode) init).name.c, f);
+                    }
+                }
+                if (((LiteralContainerNode) node).builder.name.c.equals("no-builder")) {
+                    if (ct.builder != null && !(ct.builder.code.nodes.get(0) instanceof UnaryOperatorNode &&
+                            ((UnaryOperatorNode) ct.builder.code.nodes.get(0)).operator.c.equals("return") &&
+                            ((UnaryOperatorNode) ct.builder.code.nodes.get(0)).operand instanceof LiteralNullNode)) {
+                        ct.builder = new FuncType("__builder__", new ArrayList<String>(), new BlockNode());
+                    }
+                } else {
+                    List<String> args = new ArrayList<>();
+                    for (Node n : ((MultiElementNode) ((LiteralContainerNode) node).builder.args).nodes) {
+                        if (n instanceof VariableNode)
+                            args.add(((VariableNode) n).token.c);
+                        else throw new RuntimeStriker("run:literal-container:init:builder:invalid args");
+                    }
+                    ct.builder = new FuncType("__builder__", args, ((LiteralContainerNode) node).builder.code);
+                }
+                ct.name = ((LiteralContainerNode) node).name;
+                ct.like = ((LiteralContainerNode) node).alike;
+                scope.set(((LiteralContainerNode) node).name, ct);
+            } else if (!((LiteralContainerNode) node).isMeta) {
+                HashMap<String, QType> content = new HashMap<>();
+                for (Node init : ((LiteralContainerNode) node).initialize) {
+                    if (init instanceof LiteralDefinitionNode) {
+                        switch (((LiteralDefinitionNode) init).type.c) {
+                            case "string": {
+                                content.put(((LiteralDefinitionNode) init).variable.c, new StringType(""));
+                                return Void;
+                            }
+                            case "num": {
+                                content.put(((LiteralDefinitionNode) init).variable.c, new NumType(0));
+                                return Void;
+                            }
+                            case "bool": {
+                                content.put(((LiteralDefinitionNode) init).variable.c, new BoolType(false));
+                                return Void;
+                            }
+                        }
+                    } else if (init instanceof BinaryOperatorNode &&
+                            ((BinaryOperatorNode) init).operator.c.equals("=")) {
+                        if (!(((BinaryOperatorNode) init).lnode instanceof VariableNode))
+                            throw new RuntimeStriker("run:literal-container:init:cannot set value to non-variable");
+                        content.put(((VariableNode) ((BinaryOperatorNode) init).lnode).token.c,
+                                run(((BinaryOperatorNode) init).rnode));
+                    } else if (init instanceof LiteralFunctionNode) {
+                        List<String> args = new ArrayList<>();
+                        for (Node n : ((MultiElementNode) ((LiteralFunctionNode) init).args).nodes) {
+                            if (n instanceof VariableNode)
+                                args.add(((VariableNode) n).token.c);
+                            else throw new RuntimeStriker("run:literal-container:init:literal-function:invalid args");
+                        }
+                        FuncType f = new FuncType(((LiteralFunctionNode) init).name.c,
+                                args, ((LiteralFunctionNode) init).code);
+                        content.put(((LiteralFunctionNode) init).name.c, f);
+                    }
+                }
+                ContainerType ct = new ContainerType(content, false);
+                ct.name = ((LiteralContainerNode) node).name;
+                if (((LiteralContainerNode) node).name.equals("_anonymous"))
+                    return ct;
+                else scope.set(((LiteralContainerNode) node).name, ct);
+            }
         } else if (node instanceof LiteralDefinitionNode) {
             switch (((LiteralDefinitionNode) node).type.c) {
                 case "string": {
