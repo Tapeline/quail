@@ -106,8 +106,9 @@ public class Parser {
 
     public Token requireOpening() {
         Token t = tokens.get(pos++);
-        if (t.t.equals(TokenType.LCPAR)
-         || t.c.equals("do") || t.c.equals("does") || t.c.equals("has")  || t.c.equals("then")) {
+        if (t.c.equals("{") || t.t.equals(TokenType.LCPAR)
+         || t.c.equals("do") || t.c.equals("does") || t.c.equals("has")  || t.c.equals("then")
+         || t.c.equals("with")) {
             return t;
         } else {
             error("Expected opening keyword or left curve bracket, but got " + t.c);
@@ -117,7 +118,7 @@ public class Parser {
 
     public Token requireClosing() {
         Token t = tokens.get(pos++);
-        if (t.t.equals(TokenType.RCPAR) || t.c.equals("end")) {
+        if (t.c.equals("}") ||t.t.equals(TokenType.RCPAR) || t.c.equals("end")) {
             return t;
         } else {
             error("Expected closing keyword or right curve bracket, but got " + t.c);
@@ -133,11 +134,11 @@ public class Parser {
 
     public Node parseFunction(boolean soft) {
         aal.log("QParser", "Parsing function... Soft?", soft);
-        if (soft && !Arrays.asList("func", "function").contains(getCurrent().c)) {
+        if (soft && !Arrays.asList("func", "function", "method", "staticmethod").contains(getCurrent().c)) {
             aal.log("QParser", "Function not found.");
             return null;
         }
-        requireString(TokenType.TYPE, new String[] {"func", "function"},
+        Token type = requireString(TokenType.TYPE, new String[] {"func", "function", "method", "staticmethod"},
                 Language.get("p.expected-func-event-container"));
         boolean isAnonymous = getCurrent().t.equals(TokenType.LPAR);
         Token id = new Token(TokenType.ID, "__anon__", getCurrent().p);
@@ -164,7 +165,7 @@ public class Parser {
         } else {
             aal.log("QParser", "Function", id.c, "parsed");
         }
-        return new LiteralFunctionNode(id, multiElementNode, statement);
+        return new LiteralFunctionNode(id, multiElementNode, statement, type.c.equals("staticmethod"));
     }
 
     public Node parseAnonymousFunction() {
@@ -243,6 +244,58 @@ public class Parser {
         return new LiteralEventNode(eventId, var, statement, as);
     }
 
+    public Node parseBehaviour(boolean soft) {
+        aal.log("QParser", "Parsing behaviour... Soft?", soft);
+        if (soft &&
+                !Objects.equals("override", getCurrent().c)) {
+            aal.log("QParser", "Behaviour not found.");
+            return null;
+        }
+        Token t = requireString(TokenType.KEYWORD, new String[] {"override"},
+                Language.get("p.expected-func-event-container"));
+        String bh = getCurrent().c;
+        pos++;
+
+        requireString(TokenType.LPAR, new String[] {"("},
+                Language.get("p.common.no-par"));
+        MultiElementNode multiElementNode = new MultiElementNode();
+        do {
+            if (!getCurrent().t.equals(TokenType.ID)) break;
+            multiElementNode.addNode(new VariableNode(match(TokenType.ID)));
+            if (getCurrent().t.equals(TokenType.COMMA))
+                match(TokenType.COMMA);
+            else
+                break;
+        } while (getCurrent().t.equals(TokenType.ID));
+        requireString(TokenType.RPAR, new String[] {")"},
+                Language.get("p.common.no-par"));
+
+        BlockNode statement = blockIfNeeded(parseStatement(false));
+        aal.log("QParser", "Behaviour parsed");
+
+        bh = bh.replaceAll("\\+", "__add__");
+        bh = bh.replaceAll("-", "__sub__");
+        bh = bh.replaceAll("//", "__divint__");
+        bh = bh.replaceAll("/", "__div__");
+        bh = bh.replaceAll("\\*", "__mul__");
+        bh = bh.replaceAll("\\^", "__pow__");
+        bh = bh.replaceAll("%", "__mod__");
+        bh = bh.replaceAll("==", "__cmpeq__");
+        bh = bh.replaceAll("!=", "__cmpuneq__");
+        bh = bh.replaceAll("<=", "__cmplet__");
+        bh = bh.replaceAll(">=", "__cmpget__");
+        bh = bh.replaceAll(">", "__cmpgt__");
+        bh = bh.replaceAll("<", "__cmplt__");
+        bh = bh.replaceAll("get", "__get__");
+        bh = bh.replaceAll("tostring", "__tostring__");
+        bh = bh.replaceAll("tonumber", "__tonumber__");
+        bh = bh.replaceAll("tobool", "__tobool__");
+        bh = bh.replaceAll("not", "__not__");
+        bh = bh.replaceAll("set", "__set__");
+        t.c = bh;
+        return new LiteralFunctionNode(t, multiElementNode, statement);
+    }
+
     public Node parseContainer(boolean soft) {
         aal.log("QParser", "Parsing container... Soft?", soft);
         if (soft &&
@@ -277,6 +330,13 @@ public class Parser {
                 continue;
             }
 
+            Node bh = parseBehaviour(true);
+            if (bh != null) {
+                literalContainerNode.initialize.add(bh);
+                aal.log("QParser", "Added behaviour");
+                continue;
+            }
+
             Node stmt = parseStatement(true);
             if (stmt != null) {
                 literalContainerNode.initialize.add(stmt);
@@ -299,6 +359,7 @@ public class Parser {
             case "do":
             case "does":
             case "then":
+            case "with":
             case "{":
                 aal.log("QParser", "Found block statement. Parsing...");
                 match(TokenType.BLOCK);

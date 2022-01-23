@@ -11,4 +11,6 @@ public abstract class BuiltinFuncType extends QType {
     public String toString() {
         return "native function";
     }
+
+    public abstract List<QType> metaRun(Runtime runtime, List<QType> metaArgs);
 }

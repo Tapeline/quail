@@ -59,6 +59,6 @@ public class Memory {
 
     public String dump() {
         return "MemoryDump:\nMemory: " + mem.toString() + "\nFinalized (Blocked): " +
-                finalized.toString() + "\nEnclosing: " + enclosing.dump();
+                finalized.toString() + "\nEnclosing: " + (enclosing != null? enclosing.dump() : "{}");
     }
 }

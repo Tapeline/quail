@@ -9,11 +9,19 @@ public class LiteralFunctionNode extends Node {
     public final Token name;
     public final Node args;
     public final BlockNode code;
+    public boolean s = false;
 
     public LiteralFunctionNode(Token name, Node args, BlockNode code) {
         this.name = name;
         this.args = args;
         this.code = code;
+    }
+
+    public LiteralFunctionNode(Token name, Node args, BlockNode code, boolean s) {
+        this.name = name;
+        this.args = args;
+        this.code = code;
+        this.s = s;
     }
 
     @Override

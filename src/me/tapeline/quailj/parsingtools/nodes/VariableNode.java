@@ -14,7 +14,7 @@ public class VariableNode extends Node {
 
     @Override
     public String toString() {
-        return "Variable " + token;
+        return token.c;
     }
 
     public String srepr() {
