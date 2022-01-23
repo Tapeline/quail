@@ -4,7 +4,8 @@
 > **Lookin' for a regex expert**
 > ! ! !
 > 
-> Plz someone fix my regex (and lexer maybe) at `me.tapeline.quailj.tokenizetools.Lexer` and `tokens.TokenType`
+> Plz someone fix my regex (and lexer maybe) at `me.tapeline.quailj.tokenizetools.Lexer` and `tokens.TokenType`. If you want, write to Issues
+>
 
 > ! ! !
 > **Massive refactoring in progress**
