@@ -19,10 +19,16 @@ public class FuncType extends QType {
         this.args = args;
         this.name = name;
     }
+    public FuncType(String name, List<String> args, BlockNode code, boolean r) {
+        this.code = code;
+        this.args = args;
+        this.name = name;
+        this.restrictMetacalls = r;
+    }
 
     public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         Memory mem = new Memory(runtime.scope);
-        for (int i = 0; i < args.size(); i++) {
+        for (int i = 0; i < Math.min(args.size(), a.size()); i++) {
             mem.set(args.get(i), a.get(i));
         }
         try {
@@ -40,10 +46,10 @@ public class FuncType extends QType {
         return "FuncType " + name;
     }
 
-    public List<QType> metaRun(Runtime runtime, List<QType> a) throws RuntimeStriker {
+    public QType metaRun(Runtime runtime, List<QType> a) throws RuntimeStriker {
         List<QType> result = new ArrayList<>();
         Memory mem = new Memory(runtime.scope);
-        for (int i = 0; i < args.size(); i++) {
+        for (int i = 0; i < Math.min(args.size(), a.size()); i++) {
             mem.set(args.get(i), a.get(i));
         }
         try {
@@ -55,7 +61,6 @@ public class FuncType extends QType {
         }
         if (result.size() < 1)
             result.add(new VoidType());
-        result.add(mem.get(args.get(0)));
-        return result;
+        return result.get(0);
     }
 }

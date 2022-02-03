@@ -4,4 +4,5 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 public abstract class Node {
     public abstract DefaultMutableTreeNode toTree();
+    public int pos;
 }

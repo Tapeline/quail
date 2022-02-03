@@ -18,15 +18,17 @@ public class RuntimeWrapper {
 
     private final boolean DEBUG;
     private final String code;
+    private final String name;
 
-    public RuntimeWrapper(String code, boolean d) {
+    public RuntimeWrapper(String code, boolean d, String name) {
         this.code = code;
         this.DEBUG = d;
+        this.name = name;
     }
 
     public QType run() throws RuntimeStriker {
         AdvancedActionLogger aal = new AdvancedActionLogger();
-        Lexer lexer = new Lexer(code, aal);
+        Lexer lexer = new Lexer(code, aal, name);
         lexer.lex();
         List<Token> tokens = lexer.fixBooleans();
         DebugGUIManager debugGUI = new DebugGUIManager();
@@ -34,13 +36,13 @@ public class RuntimeWrapper {
         if (tokens == null) System.exit(100);
         if (DEBUG) debugGUI.displayTokens();
 
-        Parser parser = new Parser(tokens, aal);
+        Parser parser = new Parser(tokens, aal, name, code);
         Node codeNode = parser.parseCode();
         debugGUI.setNodeTree(codeNode);
         if (codeNode == null) System.exit(101);
         if (DEBUG) debugGUI.displayTree();
 
-        Runtime runtime = new Runtime(codeNode, new RuntimeConfig() , aal);
+        Runtime runtime = new Runtime(codeNode, new RuntimeConfig() , aal, name, code);
         QType result = runtime.runTree();
         if (DEBUG) new AALFrame(aal);
         return result;

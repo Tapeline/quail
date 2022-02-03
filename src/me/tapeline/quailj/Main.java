@@ -11,9 +11,11 @@ public class Main {
     public static void main(String[] args) throws RuntimeStriker {
         Language.setupAndSelect("en");
         String path;
+        boolean useFancyFrame = false;
         Scanner sc = new Scanner(System.in);
-        if (args.length == 2) {
+        if (args.length == 3) {
             path = args[0];
+            useFancyFrame = Boolean.parseBoolean(args[2]);
         } else {
             System.out.println("-<=====>- Welcome to Quail interpreter -<=====>-");
             System.out.println("::::            Quail  v0.5-beta            ::::");
@@ -24,20 +26,22 @@ public class Main {
         }
         String code = QFileReader.read(path);
         boolean debug;
-        if (args.length == 2) {
+        if (args.length == 3) {
             debug = Boolean.parseBoolean(args[1]);
         } else {
             System.out.println(":::: Do you want to see debug messages");
             System.out.println(":::: (Tokens, AST, etc.)? Type true|false>");
             debug = sc.nextBoolean();
         }
-        System.out.println("-<=====>--------------------------------<=====>-");
-        RuntimeWrapper runtimeWrapper = new RuntimeWrapper(code, debug);
+        if (useFancyFrame) System.out.println("-<=====>--------------------------------<=====>-");
+        RuntimeWrapper runtimeWrapper = new RuntimeWrapper(code, debug, path);
         try {
             QType result = runtimeWrapper.run();
-            System.out.println("Runtime returned " + result.toString());
+            if (debug) System.out.println("Runtime returned " + result.toString());
         } catch (RuntimeStriker striker) {
             if (striker.type.equals(RuntimeStrikerTypes.EXCEPTION)) {
+                System.err.println("In file: " + path + ", line " + striker.posline + ", column " +
+                        striker.poschar + ":\n");
                 System.err.println("An error occured during the execution of program! Details:");
                 String[] strings = striker.msg.split(":");
                 for (int i = 0; i < strings.length - 1; i++) {
@@ -48,6 +52,6 @@ public class Main {
                 System.err.println(strings[strings.length - 1]);
             } else throw striker;
         }
-        System.out.println("\n-<=====>--------------------------------<=====>-");
+        if (useFancyFrame) System.out.println("\n-<=====>--------------------------------<=====>-");
     }
 }

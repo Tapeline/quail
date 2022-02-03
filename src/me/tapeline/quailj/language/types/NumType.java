@@ -10,7 +10,7 @@ public class NumType extends QType {
 
     @Override
     public String toString() {
-        return Double.toString(value);
+        return value % 1 == 0? Long.toString(Math.round(value)) : Double.toString(value);
     }
 
 }

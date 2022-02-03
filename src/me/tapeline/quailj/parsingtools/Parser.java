@@ -4,6 +4,7 @@ import me.tapeline.quailj.Language;
 import me.tapeline.quailj.debugtools.*;
 import me.tapeline.quailj.parsingtools.nodes.*;
 import me.tapeline.quailj.tokenizetools.tokens.*;
+import me.tapeline.quailj.utils.Utilities;
 
 import java.util.*;
 
@@ -11,16 +12,22 @@ public class Parser {
 
     private final List<Token> tokens;
     private final RootNode scope = new RootNode();
+    private final String name;
     private int pos = 0;
+    private String code;
     public AdvancedActionLogger aal;
 
-    public Parser(List<Token> tokens, AdvancedActionLogger aal) {
+    public Parser(List<Token> tokens, AdvancedActionLogger aal, String name, String code) {
         this.tokens = tokens;
         this.aal = aal;
+        this.name = name;
+        this.code = code;
     }
 
     public void error(String msg) {
-        System.err.println("[QParser] (X) At " + pos + " symbol in code: " + msg);
+        int[] lineNo = Utilities.getLine(tokens.get(pos).p, code);
+        System.err.println("In file: " + name + ", line " + lineNo[0] + ", column " + lineNo[1] + ":\n" +
+                "Unable parse (" + msg + "): " + code.substring(pos));
         aal.err("QParser", "At " + pos + " symbol in code: " + msg);
         new AALFrame(aal);
         Scanner sc = new Scanner(System.in);
@@ -299,13 +306,14 @@ public class Parser {
     public Node parseContainer(boolean soft) {
         aal.log("QParser", "Parsing container... Soft?", soft);
         if (soft &&
-                !Arrays.asList("metacontainer", "container").contains(getCurrent().c)) {
+                !Arrays.asList("metacontainer", "container", "class").contains(getCurrent().c)) {
             aal.log("QParser", "Container not found.");
             return null;
         }
-        boolean isMeta = requireString(TokenType.TYPE, new String[] {"metacontainer", "container"},
-                Language.get("p.expected-func-event-container")).c.equals("metacontainer");
+        Token type = requireString(TokenType.TYPE, new String[] {"metacontainer", "container", "class"},
+                Language.get("p.expected-func-event-container"));
         Token id = require(TokenType.ID, Language.get("p.event.no-id"));
+        boolean isMeta = (type.c.equals("metacontainer") || type.c.equals("class"));
         String like = "container";
         if (getCurrent().c.equals("like")) {
             pos++;
@@ -362,7 +370,7 @@ public class Parser {
             case "with":
             case "{":
                 aal.log("QParser", "Found block statement. Parsing...");
-                match(TokenType.BLOCK);
+                pos++;
                 BlockNode block = new BlockNode();
                 while (!getCurrent().c.equals("end") && !getCurrent().c.equals("}"))
                     block.addNode(parseStatement(false));
@@ -474,6 +482,9 @@ public class Parser {
                 }
             }
         }
+        if (ct.t.equals(TokenType.STATEMENT)) {
+            return new UnaryOperatorNode(match(TokenType.STATEMENT), parseExpression());
+        }
         Node expression = parseExpression();
         if (expression != null) {
             aal.log("QParser", "Statement parsed.");
@@ -535,7 +546,7 @@ public class Parser {
 
     private Node EParseEquality() {
         Node expr = EParseComparison();
-        while ( match(TokenType.BINARYOPERATOR, new String[] {"==", "!=", "is same as", "is"}) != null) {
+        while ( match(TokenType.BINARYOPERATOR, new String[] {"==", "!=", "is same as", "is", "in", "..."}) != null) {
             Token operator = previous();
             Node right = EParseComparison();
             expr = new BinaryOperatorNode(operator, expr, right);
@@ -564,14 +575,25 @@ public class Parser {
     }
 
     private Node EParseFactor() {
-        Node expr = EParseUnary();
+        Node expr = EParsePower();
         while ( match(TokenType.BINARYOPERATOR, new String[] {"/", "*"}) != null) {
+            Token operator = previous();
+            Node right = EParsePower();
+            expr = new BinaryOperatorNode(operator, expr, right);
+        }
+        return expr;
+    }
+
+    private Node EParsePower() {
+        Node expr = EParseUnary();
+        while ( match(TokenType.BINARYOPERATOR, new String[] {"^"}) != null) {
             Token operator = previous();
             Node right = EParseUnary();
             expr = new BinaryOperatorNode(operator, expr, right);
         }
         return expr;
     }
+
 
     private Node EParseUnary() {
         if (match(TokenType.UNARYOPERATOR, new String[] {
@@ -628,7 +650,7 @@ public class Parser {
                                 TokenType.LITERALSTRING},
                         Language.get("p.expr.expected-id-after-dot"));
                 expr = new FieldReferenceNode(name, expr, new VariableNode(name));
-            } else if (match(TokenType.BINARYOPERATOR, new String[] {"of"}) != null) {
+            } else if (match(TokenType.BINARYOPERATOR, new String[] {"of", "at"}) != null) {
                 Token name = requireMultiple(new TokenType[]{
                                 TokenType.ID,
                                 TokenType.LITERALBOOL,

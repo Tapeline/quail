@@ -4,6 +4,7 @@ import me.tapeline.quailj.debugtools.AALFrame;
 import me.tapeline.quailj.debugtools.AdvancedActionLogger;
 import me.tapeline.quailj.tokenizetools.tokens.Token;
 import me.tapeline.quailj.tokenizetools.tokens.TokenType;
+import me.tapeline.quailj.utils.Utilities;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,14 +15,16 @@ import java.util.regex.Pattern;
 public class Lexer {
 
     private final String code;
+    private final String name;
     private List<Token> tokens = new ArrayList<>();
     private int pos;
     private boolean stop = false;
     private AdvancedActionLogger aal;
 
-    public Lexer(String code, AdvancedActionLogger aal) {
+    public Lexer(String code, AdvancedActionLogger aal, String name) {
         this.code = code;
         this.aal = aal;
+        this.name = name;
     }
 
     public static List<String> findAll(Pattern r, String sub) {
@@ -65,13 +68,17 @@ public class Lexer {
                 Token token = new Token(i, content.replaceAll("&q;", "\""), pos);
                 pos += result.get(0).length();
                 if (!token.t.equals(TokenType.WHITESPACE) &&
-                    !token.t.equals(TokenType.COMMENT)) tokens.add(token);
+                    !token.t.equals(TokenType.COMMENT) &&
+                    !token.t.equals(TokenType.SEMICOLON)) tokens.add(token);
                 aal.log("QLexer", "Found ", token);
                 return true;
             }
         }
-        System.err.println("[QLexer] (X) Exception occured: Unparsable code: `" + code.substring(pos) + "`");
-        aal.err("QLexer", "Exception occured: Unparsable code: `" + code.substring(pos) + "`");
+        int[] lineNo = Utilities.getLine(pos, code);
+        System.err.println("In file: " + name + ", line " + lineNo[0] + ", column " + lineNo[1] + ":\n" +
+                "Unable to match tokens: " + code.substring(pos));
+        aal.err("QLexer", "In file: " + name + ", line 0, column " + pos + ":\n" +
+                "Unable to match tokens: " + code.substring(pos));
         new AALFrame(aal);
         stop = true;
         Scanner sc = new Scanner(System.in);
@@ -100,6 +107,20 @@ public class Lexer {
                         tokens.set(i, new Token(TokenType.LITERALNULL, "null", tokens.get(i).p));
                         break;
                 }
+            } else if (tokens.get(i).t.equals(TokenType.ASSIGNOPERATOR))
+                tokens.set(i, new Token(TokenType.ASSIGNOPERATOR, "=", tokens.get(i).p));
+            else if (tokens.get(i).t.equals(TokenType.BINARYOPERATOR)) {
+                Token t = tokens.get(i);
+                t.c = t.c.replaceAll("plus", "\\+");
+                t.c = t.c.replaceAll("minus", "\\-");
+                t.c = t.c.replaceAll("in power of", "\\^");
+                t.c = t.c.replaceAll("multiplied by", "\\*");
+                t.c = t.c.replaceAll("divided by", "\\/");
+                t.c = t.c.replaceAll("is greater than", "\\>");
+                t.c = t.c.replaceAll("is less than", "\\<");
+                t.c = t.c.replaceAll("is greater or equal to", "\\>=");
+                t.c = t.c.replaceAll("is less or equal to", "\\<=");
+                tokens.set(i, t);
             }
         }
         return tokens;

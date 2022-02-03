@@ -73,4 +73,12 @@ public class StringUtils {
         }
         return parts;
     }
+
+    public static List<QType> split(String s, String d) {
+        String[] l = s.split(d);
+        List<QType> ll = new ArrayList<>();
+        for (String s1 : l)
+            ll.add(new StringType(s1));
+        return ll;
+    }
 }

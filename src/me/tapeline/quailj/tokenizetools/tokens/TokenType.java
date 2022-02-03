@@ -8,15 +8,20 @@ public enum TokenType {
     LITERALNUM("LITERALNUM", "-?\\d+(\\.\\d+)?"),
     LITERALNULL("LITERALNULL", "(null|nothing)[\\s]"),
     LITERALBOOL("LITERALBOOL", "(true|false)[\\s]"),
-    TYPE("TYPE", "(func|string|bool|num|container|list|metacontainer|object|function|method|staticmethod)[\\s\\W]"),
+    TYPE("TYPE", "(func|string|bool|num|container|list|metacontainer|object|function|method|staticmethod|class)[\\s\\W]"),
     MODIFIER("MODIFIER", "(local|final|anonymous)[\\s\\W]"),
     BLOCK("BLOCK", "(do|does|end|then|has|with)[\\s\\W]"),
     COMMA("COMMA", ","),
     KEYWORD("KEYWORD", "(as|in|through|if|elseif|else|try|catch|while|loop|stop when|every|on|when|override)[\\s\\W]"),
-    BINARYOPERATOR("BINARYOPERATOR", "(\\^|\\/\\/|\\+|-|\\*|\\/|\\%|and|or|==|is same type as|is type of|instanceof|<=|>=|>|<|\\.\\.\\.|\\.|of|'s|'|is)"),
-    ASSIGNOPERATOR("ASSIGNOPERATOR", "(=)"),
+    BINARYOPERATOR("BINARYOPERATOR",
+              "(\\^|\\/\\/|\\+|-|\\*|\\/|\\%|and|or|==|at|in|is same type as|"+
+                  "is type of|instanceof|<=|>=|>|<|\\.\\.\\.|\\.|of|'s|'|" +
+                  "in power of|plus|minus|divided by|multiplied by|is greater than|is less than|is greater or equal to|" +
+                  "is less or equal to|is)"),
+    ASSIGNOPERATOR("ASSIGNOPERATOR", "(=|should have|should be|should now be|should now be set|should be set)"),
     UNARYOPERATOR("UNARYOPERATOR",
-            "(reference to|not|negate|my|out|input|exists|destroy|put|assert|use|block|throw|notnull|using|deploy|return)[\\s]"),
+            "(not|negate|notnull|exists)[\\s]"),
+    STATEMENT("STATEMENT", "(destroy|assert|use|block|throw|using|deploy|return)[\\s]"),
     INSTRUCTION("INSTRUCTION", "(milestone|breakpoint|break|continue|memory)[\\s\\W]"),
     ID("ID", "[a-zA-Z_\\@]+((\\d*[a-zA-Z_\\@]*)*)"),
     LPAR("LPAR", "(\\()"),
@@ -25,14 +30,14 @@ public enum TokenType {
     RSPAR("RSPAR", "(\\])"),
     LCPAR("LCPAR", "(\\{)"),
     RCPAR("RCPAR", "(\\})"),
-    COLON("COLON", "(\\:)"),
+    SEMICOLON("SEMICOLON", "(\\;)"),
     COMMENT("COMMENT", "#.*"),
     WHITESPACE("WHITESPACE", "\\s+");
 
-    public static List<TokenType> tokenTypeList = Arrays.asList(
+    public static final List<TokenType> tokenTypeList = Arrays.asList(
             LITERALSTRING, LITERALNUM, LITERALNULL, BINARYOPERATOR, LPAR, RPAR, LSPAR, RSPAR, LCPAR, RCPAR,
-            ASSIGNOPERATOR, COMMA, LITERALBOOL, TYPE, MODIFIER, BLOCK, KEYWORD, UNARYOPERATOR, INSTRUCTION,
-            ID, COMMENT, WHITESPACE);
+            ASSIGNOPERATOR, COMMA, LITERALBOOL, TYPE, MODIFIER, BLOCK, KEYWORD, UNARYOPERATOR, STATEMENT,
+            INSTRUCTION, ID, COMMENT, SEMICOLON, WHITESPACE);
     private final String s;
     public final String regex;
 

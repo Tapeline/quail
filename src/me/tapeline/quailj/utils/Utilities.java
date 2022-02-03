@@ -22,15 +22,15 @@ public class Utilities {
         return s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false");
     }
 
-    public static int getLine(int pos, String code) {
+    public static int[] getLine(int pos, String code) {
         List<String> split = Arrays.asList(code.split("\n"));
         int sum = 0;
         for (int i = 0; i < split.size(); i++) {
             sum += split.get(i).length();
             if (sum <= pos && sum + split.get(i+1).length() > pos)
-                return i;
+                return new int[] {i, pos - sum + 1};
         }
-        return 1;
+        return new int[] {1, pos};
     }
 
     public static BoolType compare(QType a, QType b) {
@@ -46,5 +46,22 @@ public class Utilities {
             return new BoolType( ((ContainerType) a).isMeta == ((ContainerType) b).isMeta);
         }
         return null;
+    }
+
+    public static String transformOp(String bh) {
+        bh = bh.replaceAll("\\+", "__add__");
+        bh = bh.replaceAll("-", "__sub__");
+        bh = bh.replaceAll("//", "__divint__");
+        bh = bh.replaceAll("/", "__div__");
+        bh = bh.replaceAll("\\*", "__mul__");
+        bh = bh.replaceAll("\\^", "__pow__");
+        bh = bh.replaceAll("%", "__mod__");
+        bh = bh.replaceAll("==", "__cmpeq__");
+        bh = bh.replaceAll("!=", "__cmpuneq__");
+        bh = bh.replaceAll("<=", "__cmplet__");
+        bh = bh.replaceAll(">=", "__cmpget__");
+        bh = bh.replaceAll(">", "__cmpgt__");
+        bh = bh.replaceAll("<", "__cmplt__");
+        return bh;
     }
 }

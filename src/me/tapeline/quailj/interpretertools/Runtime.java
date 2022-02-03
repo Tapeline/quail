@@ -9,6 +9,7 @@ import me.tapeline.quailj.tokenizetools.Lexer;
 import me.tapeline.quailj.utils.ListUtils;
 import me.tapeline.quailj.utils.StringUtils;
 import me.tapeline.quailj.utils.Utilities;
+import org.json.JSONObject;
 
 import java.util.*;
 
@@ -23,11 +24,16 @@ public class Runtime {
     public final Node rootNode;
     private final AdvancedActionLogger aal;
     public Memory scope;
+    public final String codepath;
+    public final String code;
     public final RuntimeConfig config;
     public final HashMap<String, FuncType> eventHandlers = new HashMap<>();
+    public Node current;
 
-    public Runtime(Node rootNode, RuntimeConfig cfg, AdvancedActionLogger aal) {
+    public Runtime(Node rootNode, RuntimeConfig cfg, AdvancedActionLogger aal, String codepath, String code) {
         this.rootNode = rootNode;
+        this.codepath = codepath;
+        this.code = code;
         this.scope = new Memory();
         this.config = cfg;
         this.aal = aal;
@@ -42,43 +48,301 @@ public class Runtime {
             }
 
             @Override
-            public List<QType> metaRun(Runtime runtime, List<QType> metaArgs) {
+            public QType metaRun(Runtime runtime, List<QType> metaArgs) {
+                return null;
+            }
+        });
+        this.scope.set("millis", new BuiltinFuncType() {
+            @Override
+            public QType run(Runtime runtime, List<QType> args) {
+                return new NumType((double) System.currentTimeMillis());
+            }
+
+            @Override
+            public QType metaRun(Runtime runtime, List<QType> metaArgs) {
+                return null;
+            }
+        });
+        this.scope.set("tostring", new BuiltinFuncType() {
+            @Override
+            public QType run(Runtime runtime, List<QType> args) throws RuntimeStriker {
+                if (args.get(0) instanceof ContainerType &&
+                        ((ContainerType) args.get(0)).content.containsKey("__tostring__") &&
+                        ((ContainerType) args.get(0)).content.get("__tostring__") instanceof FuncType) {
+                    List<QType> metaArgs = new ArrayList<>(Collections.singletonList(args.get(0)));
+                    metaArgs.addAll(args);
+                    return ((FuncType) ((ContainerType) args.get(0)).content.get("__tostring__")).
+                            metaRun(runtime, metaArgs);
+                } else return new StringType(args.get(0).toString());
+            }
+
+            @Override
+            public QType metaRun(Runtime runtime, List<QType> metaArgs) {
+                return null;
+            }
+        });
+        this.scope.set("tonumber", new BuiltinFuncType() {
+            @Override
+            public QType run(Runtime runtime, List<QType> args) throws RuntimeStriker {
+                if (args.get(0) instanceof ContainerType &&
+                        ((ContainerType) args.get(0)).content.containsKey("__tonumber__") &&
+                        ((ContainerType) args.get(0)).content.get("__tonumber__") instanceof FuncType) {
+                    List<QType> metaArgs = new ArrayList<>(Collections.singletonList(args.get(0)));
+                    metaArgs.addAll(args);
+                    return ((FuncType) ((ContainerType) args.get(0)).content.get("__tonumber__")).
+                            metaRun(runtime, metaArgs);
+                } else {
+                    try {
+                        double d = Double.parseDouble(args.get(0).toString());
+                        return new NumType(d);
+                    } catch (NumberFormatException nfe) {
+                        throw new RuntimeStriker("tonumber:cannot parse number");
+                    }
+                }
+            }
+
+            @Override
+            public QType metaRun(Runtime runtime, List<QType> metaArgs) {
+                return null;
+            }
+        });
+
+        this.scope.set("tobool", new BuiltinFuncType() {
+            @Override
+            public QType run(Runtime runtime, List<QType> args) throws RuntimeStriker {
+                if (args.get(0) instanceof ContainerType &&
+                        ((ContainerType) args.get(0)).content.containsKey("__tobool__") &&
+                        ((ContainerType) args.get(0)).content.get("__tobool__") instanceof FuncType) {
+                    List<QType> metaArgs = new ArrayList<>(Collections.singletonList(args.get(0)));
+                    metaArgs.addAll(args);
+                    return ((FuncType) ((ContainerType) args.get(0)).content.get("__tobool__")).
+                            metaRun(runtime, metaArgs);
+                } else {
+                    try {
+                        boolean b = Boolean.parseBoolean(args.get(0).toString());
+                        return new BoolType(b);
+                    } catch (NumberFormatException nfe) {
+                        throw new RuntimeStriker("tobool:cannot parse bool");
+                    }
+                }
+            }
+
+            @Override
+            public QType metaRun(Runtime runtime, List<QType> metaArgs) {
+                return null;
+            }
+        });
+
+        this.scope.set("filewrite", new BuiltinFuncType() {
+            @Override
+            public QType run(Runtime runtime, List<QType> args) throws RuntimeStriker {
+                if (args.size() < 2)
+                    throw new RuntimeStriker("filewrite:invalid args length");
+                QFileReader.write(args.get(0).toString(), args.get(1).toString());
+                return Void;
+            }
+
+            @Override
+            public QType metaRun(Runtime runtime, List<QType> metaArgs) {
+                return null;
+            }
+        });
+
+        this.scope.set("fileread", new BuiltinFuncType() {
+            @Override
+            public QType run(Runtime runtime, List<QType> args) throws RuntimeStriker {
+                if (args.size() < 1)
+                    throw new RuntimeStriker("fileread:invalid args length");
+                return new StringType(QFileReader.read(args.get(0).toString()));
+            }
+
+            @Override
+            public QType metaRun(Runtime runtime, List<QType> metaArgs) {
+                return null;
+            }
+        });
+
+        this.scope.set("filenew", new BuiltinFuncType() {
+            @Override
+            public QType run(Runtime runtime, List<QType> args) throws RuntimeStriker {
+                if (args.size() < 1)
+                    throw new RuntimeStriker("filenew:invalid args length");
+                QFileReader.create(args.get(0).toString());
+                return Void;
+            }
+
+            @Override
+            public QType metaRun(Runtime runtime, List<QType> metaArgs) {
+                return null;
+            }
+        });
+
+        this.scope.set("out", new BuiltinFuncType() {
+            @Override
+            public QType run(Runtime runtime, List<QType> args) throws RuntimeStriker {
+                System.out.println(args.size() > 1? args.get(0).toString() : "");
+                return Void;
+            }
+
+            @Override
+            public QType metaRun(Runtime runtime, List<QType> metaArgs) {
+                return null;
+            }
+        });
+
+        this.scope.set("put", new BuiltinFuncType() {
+            @Override
+            public QType run(Runtime runtime, List<QType> args) throws RuntimeStriker {
+                System.out.print(args.size() > 1? args.get(0).toString() : "");
+                return Void;
+            }
+
+            @Override
+            public QType metaRun(Runtime runtime, List<QType> metaArgs) {
+                return null;
+            }
+        });
+
+        this.scope.set("input", new BuiltinFuncType() {
+            @Override
+            public QType run(Runtime runtime, List<QType> args) throws RuntimeStriker {
+                Scanner sc = new Scanner(System.in);
+                return new StringType(sc.nextLine());
+            }
+
+            @Override
+            public QType metaRun(Runtime runtime, List<QType> metaArgs) {
                 return null;
             }
         });
         this.scope.set("nothing", new VoidType());
+        this.scope.set("million", new NumType(1000000D));
+        this.scope.set("billion", new NumType(1000000000D));
+        this.scope.set("trillion", new NumType(1000000000000D));
     }
 
     public QType getNativeLib(String name) {
         switch (name) {
-            case "canvas": {
-                return Void;
-            }
-            case "popups": {
-                return Void;
+            case "storage": {
+                HashMap<String, QType> content = new HashMap<>();
+                content.put("loadjson", new BuiltinFuncType() {
+                    @Override
+                    public QType run(Runtime runtime, List<QType> args) throws RuntimeStriker {
+                        if (args.size() < 1 || !(args.get(0) instanceof StringType))
+                            throw new RuntimeStriker("storage:loadjson:invalid args");
+                        String c = QFileReader.read(((StringType) args.get(0)).value);
+                        if (c == null)
+                            throw new RuntimeStriker("storage:loadjson:file is null");
+                        JSONObject cfg = new JSONObject(c);
+                        HashMap<String, QType> parsed = new HashMap<>();
+                        return null;
+                    }
+
+                    @Override
+                    public QType metaRun(Runtime runtime, List<QType> metaArgs) {
+                        return null;
+                    }
+                });
+                return new ContainerType(content, false);
             }
         }
         return Void;
     }
 
+    public QType runFieldFunction(QType v, String name, List<QType> args, Memory scope) throws RuntimeStriker {
+        if (QType.isStr(v)) {
+            switch (name) {
+                case "at": {
+                    if (!(args.get(0) instanceof NumType))
+                        throw new RuntimeStriker("run:field:string:at-func:1st arg is not number");
+                    return new StringType(StringUtils.at(((StringType) v).value,
+                                    (int) Math.round(((NumType) args.get(0)).value)));
+                }
+                case "sub": {
+                    if (args.size() == 1) {
+                        if (!(args.get(0) instanceof NumType))
+                            throw new RuntimeStriker("run:field:string:at-func:1st arg is not number");
+                        return new StringType(StringUtils.sub(((StringType) v).value,
+                                (int) Math.round(((NumType) args.get(0)).value)));
+                    } else if (args.size() > 1) {
+                        if (QType.isNum(args.get(0), args.get(0)))
+                            throw new RuntimeStriker("run:field:string:at-func:1st and 2nd args is not number");
+                        return new StringType(StringUtils.sub(((StringType) v).value,
+                                (int) Math.round(((NumType) args.get(0)).value),
+                                (int) Math.round(((NumType) args.get(1)).value)));
+                    }
+                }
+                case "split": {
+                    if (args.size() > 1 && !(args.get(0) instanceof StringType))
+                        throw new RuntimeStriker("run:field:string:split-func:delimiter must be string type");
+                    return new ListType(StringUtils.split(((StringType) v).value,
+                            args.size() < 1? " " : ((StringType) args.get(0)).value));
+                }
+            }
+        } else if (QType.isList(v)) {
+
+        }
+        throw new RuntimeStriker("run:field:cannot run " + name);
+    }
+
+    public QType runField(FieldReferenceNode node, Memory scope) throws RuntimeStriker {
+        QType v = run(node.lnode, scope);
+        if (!(node.rnode instanceof VariableNode))
+            throw new RuntimeStriker("run:field:cannot run non-variable node");
+        if (QType.isStr(v)) {
+            switch (((VariableNode) node.rnode).token.c) {
+                case "reverse":
+                    return new StringType(StringUtils.reverse(((StringType) v).value));
+                case "capitalize":
+                    return new StringType(StringUtils.capitalize(((StringType) v).value));
+                case "lower":
+                    return new StringType(StringUtils.lower(((StringType) v).value));
+                case "upper":
+                    return new StringType(StringUtils.upper(((StringType) v).value));
+                case "length":
+                case "len":
+                    return new NumType(StringUtils.len(((StringType) v).value));
+            }
+        } else if (QType.isNum(v)) {
+            switch (((VariableNode) node.rnode).token.c) {
+                case "floor":
+                    return new NumType(Math.floor(((NumType) v).value));
+                case "round":
+                    return new NumType(Math.round(((NumType) v).value));
+                case "ceil":
+                    return new NumType(Math.ceil(((NumType) v).value));
+                case "absolute":
+                case "abs":
+                    return new NumType(Math.abs(((NumType) v).value));
+                case "negated":
+                case "neg":
+                    return new NumType(-((NumType) v).value);
+            }
+        } else if (QType.isList(v)) {
+            switch (((VariableNode) node.rnode).token.c) {
+                case "length":
+                case "len":
+                    return new NumType(((ListType) v).values.size());
+                case "reverse":
+                    return new ListType(ListUtils.reverse(((ListType) v).values));
+            }
+        }
+        throw new RuntimeStriker("run:field:cannot run " + ((VariableNode) node.rnode).token.c);
+    }
+
     public ContainerType overrideContainerContents(ContainerType dest, ContainerType src) {
         dest.content.putAll(src.content);
-        dest.customBehaviour.putAll(src.customBehaviour);
-        if (src.builder != null && !(src.builder.code.nodes.get(0) instanceof UnaryOperatorNode &&
-                ((UnaryOperatorNode) src.builder.code.nodes.get(0)).operator.c.equals("return") &&
-                ((UnaryOperatorNode) src.builder.code.nodes.get(0)).operand instanceof LiteralNullNode))
-            dest.builder = src.builder;
         return dest;
     }
 
-    public ContainerType inheritContainer(ContainerType parent, ContainerType child, boolean primary) {
+    public ContainerType inheritContainer(ContainerType parent, ContainerType child) {
         if (parent.like.equals("container")) {
             child = overrideContainerContents(child, parent);
             return child;
         } else {
             QType p = scope.get(parent.like);
             if (p instanceof ContainerType) {
-                parent = inheritContainer((ContainerType) p, parent, true);
+                parent = inheritContainer((ContainerType) p, parent);
                 child = overrideContainerContents(child, parent);
                 return child;
             }
@@ -91,9 +355,19 @@ public class Runtime {
     }
 
     public QType run(Node node, Memory scope) throws RuntimeStriker {
+        current = node;
         if (node instanceof BinaryOperatorNode) {
             QType a = run(((BinaryOperatorNode) node).lnode, scope);
             QType b = run(((BinaryOperatorNode) node).rnode, scope);
+            if (a instanceof ContainerType) {
+                String containerImpl = Utilities.transformOp(((BinaryOperatorNode) node).operator.c);
+                if (((ContainerType) a).content.containsKey(containerImpl) &&
+                        ((ContainerType) a).content.get(containerImpl) instanceof FuncType) {
+                    List<QType> metaArgs = new ArrayList<>(Arrays.asList(a, b));
+                    return ((FuncType) ((ContainerType) a).content.get(containerImpl)).
+                            metaRun(this, metaArgs);
+                }
+            }
             switch (((BinaryOperatorNode) node).operator.c) {
                 case "+":
                 case "-":
@@ -105,6 +379,7 @@ public class Runtime {
                 case "<=":
                 case ">=": {
                     if (QType.isNum(a, b)) {
+                        assert a instanceof NumType;
                         switch (((BinaryOperatorNode) node).operator.c) {
                             case  "+": return new NumType (((NumType) a).value +  ((NumType) b).value);
                             case  "-": return new NumType (((NumType) a).value -  ((NumType) b).value);
@@ -117,6 +392,7 @@ public class Runtime {
                             case "//": return new NumType (Math.floor(((NumType) a).value /  ((NumType) b).value));
                         }
                     } else if (QType.isNum(b) && QType.isStr(a)) {
+                        assert a instanceof StringType;
                         switch (((BinaryOperatorNode) node).operator.c) {
                             case  "*": return new StringType(StringUtils.mult(((StringType) a).value,
                                     ((NumType) b).value));
@@ -134,6 +410,7 @@ public class Runtime {
                                     ((NumType) b).value));
                         }
                     } else if (QType.isNum(b) && QType.isList(a)) {
+                        assert a instanceof ListType;
                         switch (((BinaryOperatorNode) node).operator.c) {
                             case "*": return new ListType(ListUtils.mult(((ListType) a).values,
                                         ((NumType) b).value));
@@ -151,12 +428,14 @@ public class Runtime {
                                         ((NumType) b).value));
                         }
                     } else if (QType.isList(a, b)) {
+                        assert a instanceof ListType;
                         switch (((BinaryOperatorNode) node).operator.c) {
                             case "+": return ListUtils.concat((ListType) a, (ListType) b);
                             case "-": return new ListType(ListUtils.removeAll(((ListType) a).values,
                                     ((ListType) b).values));
                         }
                     } else if (QType.isStr(a, b)) {
+                        assert a instanceof StringType;
                         switch (((BinaryOperatorNode) node).operator.c) {
                             case "+": return new StringType(((StringType) a).value + ((StringType) b).value);
                             case "-": return new StringType(((StringType) a).value.replaceAll(
@@ -244,9 +523,9 @@ public class Runtime {
         } else if (node instanceof EveryBlockNode) {
             QType range = run(((EveryBlockNode) node).expr, scope);
             if (!(QType.isList(range) || QType.isStr(range))) // TODO container every-loop
-                throw new RuntimeStriker("run:everyloop:invalid range");
+                throw new RuntimeStriker("run:every-loop:invalid range");
             if (!(((EveryBlockNode) node).variable instanceof VariableNode))
-                throw new RuntimeStriker("run:everyloop:range iterator");
+                throw new RuntimeStriker("run:every-loop:range iterator");
             if (QType.isList(range)) {
                 for (int i = 0; i < ((ListType) range).values.size(); i++) {
                     scope.set(((VariableNode) ((EveryBlockNode) node).variable).token.c,
@@ -283,7 +562,9 @@ public class Runtime {
                 }
             }
         } else if (node instanceof FieldReferenceNode) {
-            QType parent = run(((FieldReferenceNode) node).lnode);
+            QType parent = run(((FieldReferenceNode) node).lnode, scope);
+            if (QType.isNum(parent) || QType.isList(parent) || QType.isStr(parent))
+                return runField((FieldReferenceNode) node, scope);
             if (!(((FieldReferenceNode) node).rnode instanceof VariableNode))
                 throw new RuntimeStriker("run:field-set:cannot get value of non-variable type");
             if (parent instanceof ContainerType) {
@@ -297,71 +578,54 @@ public class Runtime {
             if (parent instanceof ContainerType) {
                 ((ContainerType) parent).content.put(((VariableNode) ((FieldSetNode) node).rnode).token.c,
                         run(((FieldSetNode) node).value, scope));
-                setField(((FieldSetNode) node).lnode, parent, scope);
             }
         } else if (node instanceof FunctionCallNode) {
             boolean isMetacall = false;
+            QType callee = run(((FunctionCallNode) node).id, scope);
+            if (callee == null)
+                throw new RuntimeStriker("run:function:cannot call null " + ((FunctionCallNode) node).id.toString());
             QType parent = null;
             if (((FunctionCallNode) node).id instanceof FieldReferenceNode) {
                 parent = run(((FieldReferenceNode) ((FunctionCallNode) node).id).lnode, scope);
                 if (parent instanceof ContainerType && ((ContainerType) parent).isMeta)
                     isMetacall = true;
             }
-            QType callee = run(((FunctionCallNode) node).id, scope);
-            if (callee == null)
-                throw new RuntimeStriker("run:function:cannot call null " + ((FunctionCallNode) node).id.toString());
             List<QType> args = new ArrayList<>();
             for (Node arg : ((MultiElementNode) ((FunctionCallNode) node).args).nodes) {
                 args.add(run(arg, scope));
             }
             if (callee instanceof FuncType) {
-                if (!isMetacall && parent != null)
+                if (((FuncType) callee).restrictMetacalls || (!isMetacall && parent == null))
                     return ((FuncType) callee).run(this, args);
                 else {
                     List<QType> metaArgs = new ArrayList<>(Collections.singletonList(parent));
                     metaArgs.addAll(args);
-                    List<QType> metacallResult = ((FuncType) callee).metaRun(this, metaArgs);
-                    if (metacallResult == null || metacallResult.size() < 1)
-                        throw new RuntimeStriker("run:function:metacall:internal error! metacall returned null");
-                    setField(((FieldReferenceNode) ((FunctionCallNode) node).id).lnode,
-                            metacallResult.get(1), scope);
-                    return metacallResult.get(0);
+                    return ((FuncType) callee).metaRun(this, metaArgs);
                 }
             } else if (callee instanceof BuiltinFuncType) {
-                if (!isMetacall && parent != null)
+                if (((BuiltinFuncType) callee).restrictMetacalls || (!isMetacall && parent == null))
                     return ((BuiltinFuncType) callee).run(this, args);
                 else {
                     List<QType> metaArgs = new ArrayList<>(Collections.singletonList(parent));
                     metaArgs.addAll(args);
-                    List<QType> metacallResult = ((BuiltinFuncType) callee).metaRun(this, metaArgs);
-                    if (metacallResult == null || metacallResult.size() < 1)
-                        throw new RuntimeStriker("run:function:metacall:internal error! metacall returned null");
-                    setField(((FieldReferenceNode) ((FunctionCallNode) node).id).lnode,
-                            metacallResult.get(1), scope);
-                    return metacallResult.get(0);
+                    return ((BuiltinFuncType) callee).metaRun(this, metaArgs);
                 }
             } else if (callee instanceof ContainerType) {
                 ContainerType ct = (ContainerType) callee;
-                if (ct.isMeta) {
-                    if (ct.builder != null) {
-                        List<QType> builderArgs = new ArrayList<>(Collections.singletonList(ct));
-                        builderArgs.addAll(args);
-                        return ct.builder.run(this, builderArgs);
-                    }
-                } else {
-                    if (ct.content.containsKey("__builder__")) {
-                        List<QType> builderArgs = new ArrayList<>(Collections.singletonList(ct));
-                        builderArgs.addAll(args);
-                        QType builder = ct.content.get("__builder__");
-                        if (builder instanceof FuncType)
-                            return ((FuncType) ct.content.get("__builder__")).run(this, builderArgs);
-                        else
-                            throw new RuntimeStriker("run:function:cannot call " + callee);
-                    }
+                if (ct.content.containsKey("__builder__")) {
+                    if (!(ct.content.get("__builder__") instanceof FuncType))
+                        throw new RuntimeStriker("run:function:cannot call " + callee);
+                    List<QType> builderArgs = new ArrayList<>(Collections.singletonList(ct));
+                    builderArgs.addAll(args);
+                    return ((FuncType) ct.content.get("__builder__")).run(this, builderArgs);
                 }
+            } else {
+                if (((FunctionCallNode) node).id instanceof FieldReferenceNode) {
+                    QType v = run(((FieldReferenceNode) ((FunctionCallNode) node).id).lnode, scope);
+                    String s = ((FieldReferenceNode) ((FunctionCallNode) node).id).rnode.toString();
+                    return runFieldFunction(v, s, args, scope);
+                } else throw new RuntimeStriker("run:function:cannot call " + callee);
             }
-            else
-                throw new RuntimeStriker("run:function:cannot call " + callee);
         } else if (node instanceof GroupNode) {
             return run(((GroupNode) node).node, scope);
         } else if (node instanceof IfBlockNode) {
@@ -413,7 +677,7 @@ public class Runtime {
                     ct.like = ((LiteralContainerNode) node).alike;
                     QType parent = scope.get(ct.like);
                     if (parent instanceof ContainerType) {
-                        ct = inheritContainer((ContainerType) parent, ct, true);
+                        ct = inheritContainer((ContainerType) parent, ct);
                     }
                 }
                 for (Node init : ((LiteralContainerNode) node).initialize) {
@@ -446,29 +710,24 @@ public class Runtime {
                             else throw new RuntimeStriker("run:literal-container:init:literal-function:invalid args");
                         }
                         FuncType f = new FuncType(((LiteralFunctionNode) init).name.c,
-                                args, ((LiteralFunctionNode) init).code);
+                                args, ((LiteralFunctionNode) init).code, ((LiteralFunctionNode) init).s);
                         ct.content.put(((LiteralFunctionNode) init).name.c, f);
                     }
                 }
-                if (((LiteralContainerNode) node).builder.name.c.equals("no-builder")) {
-                    if (ct.builder != null && !(ct.builder.code.nodes.get(0) instanceof UnaryOperatorNode &&
-                            ((UnaryOperatorNode) ct.builder.code.nodes.get(0)).operator.c.equals("return") &&
-                            ((UnaryOperatorNode) ct.builder.code.nodes.get(0)).operand instanceof LiteralNullNode)) {
-                        ct.builder = new FuncType("__builder__", new ArrayList<>(), new BlockNode());
-                    }
-                } else {
+                if (!((LiteralContainerNode) node).builder.name.c.equals("no-builder")) {
                     List<String> args = new ArrayList<>();
                     for (Node n : ((MultiElementNode) ((LiteralContainerNode) node).builder.args).nodes) {
                         if (n instanceof VariableNode)
                             args.add(((VariableNode) n).token.c);
                         else throw new RuntimeStriker("run:literal-container:init:builder:invalid args");
                     }
-                    ct.builder = new FuncType("__builder__", args, ((LiteralContainerNode) node).builder.code);
+                    ct.content.put("__builder__",
+                            new FuncType("__builder__", args, ((LiteralContainerNode) node).builder.code));
                 }
                 ct.name = ((LiteralContainerNode) node).name;
                 ct.like = ((LiteralContainerNode) node).alike;
                 scope.set(((LiteralContainerNode) node).name, ct);
-            } else if (!((LiteralContainerNode) node).isMeta) {
+            } else {
                 HashMap<String, QType> content = new HashMap<>();
                 for (Node init : ((LiteralContainerNode) node).initialize) {
                     if (init instanceof LiteralDefinitionNode) {
@@ -500,7 +759,7 @@ public class Runtime {
                             else throw new RuntimeStriker("run:literal-container:init:literal-function:invalid args");
                         }
                         FuncType f = new FuncType(((LiteralFunctionNode) init).name.c,
-                                args, ((LiteralFunctionNode) init).code);
+                                args, ((LiteralFunctionNode) init).code, ((LiteralFunctionNode) init).s);
                         content.put(((LiteralFunctionNode) init).name.c, f);
                     }
                 }
@@ -583,7 +842,7 @@ public class Runtime {
             double step = ((NumType) rangeStart).value < threshold ? 1 : -1;
             if (!(((ThroughBlockNode) node).variable instanceof VariableNode))
                 throw new RuntimeStriker("run:through:cannot iterate with non-variable iterator");
-            while (iterator < threshold) {
+            while (iterator <= threshold) {
                 try {
                     scope.set(((VariableNode) ((ThroughBlockNode) node).variable).token.c,
                             new NumType(iterator));
@@ -612,13 +871,6 @@ public class Runtime {
             }
         } else if (node instanceof UnaryOperatorNode) {
             switch (((UnaryOperatorNode) node).operator.c) {
-                case "reference to": {
-                    if (((UnaryOperatorNode) node).operand instanceof VariableNode)
-                        return new RefType(((VariableNode) ((UnaryOperatorNode) node).operand).token.c);
-                    else
-                        throw new RuntimeStriker(
-                                "run:unaryop:reference:cannot make reference to non-variable value");
-                }
                 case "not":
                 case "negate": {
                     QType v = run(((UnaryOperatorNode) node).operand, scope);
@@ -627,18 +879,6 @@ public class Runtime {
                     else if (v instanceof NumType)
                         return new NumType(-((NumType) v).value);
                     else throw new RuntimeStriker("run:unaryop:not-negate:unacceptable value");
-                }
-                case "out": {
-                    System.out.println(run(((UnaryOperatorNode) node).operand, scope).toString());
-                    break;
-                }
-                case "put": {
-                    System.out.print(run(((UnaryOperatorNode) node).operand, scope).toString());
-                    break;
-                }
-                case "input": {
-                    Scanner sc = new Scanner(System.in);
-                    return new StringType(sc.nextLine());
                 }
                 case "exists": {
                     if (((UnaryOperatorNode) node).operand instanceof VariableNode)
@@ -681,15 +921,15 @@ public class Runtime {
                     }
 
                     if (!nativeLibs.contains(path)) {
-                        String lib = QFileReader.loadLibrary(path);
-                        if (lib == null) throw new RuntimeStriker("run:use:import failed");
+                        String lib = QFileReader.loadLibrary(path + ".q");
+                        if (lib == null) throw new RuntimeStriker("run:use:import failed:file not found");
 
-                        Lexer l = new Lexer(lib, aal);
+                        Lexer l = new Lexer(lib, aal, codepath);
                         l.lex();
 
-                        Parser p = new Parser(l.fixBooleans(), aal);
+                        Parser p = new Parser(l.fixBooleans(), aal, codepath, code);
 
-                        Runtime compiler = new Runtime(p.parseCode(), new RuntimeConfig(), aal);
+                        Runtime compiler = new Runtime(p.parseCode(), new RuntimeConfig(), aal, codepath, code);
 
                         QType compiled = compiler.runTree();
 
@@ -738,23 +978,12 @@ public class Runtime {
         } catch (RuntimeStriker striker) {
             if (striker.type.equals(RuntimeStrikerTypes.RETURN))
                 return striker.retVal;
-            else throw striker;
-        }
-    }
-
-    public void setField(Node n, QType v, Memory scope) throws RuntimeStriker {
-        if (n instanceof VariableNode) {
-            scope.set(((VariableNode) n).token.c, v);
-        } else if (n instanceof FieldReferenceNode) {
-            QType inner = run(((FieldReferenceNode) n).lnode, scope);
-            if (inner instanceof ContainerType) {
-                if (!(((FieldReferenceNode) n).rnode instanceof VariableNode))
-                    throw new RuntimeStriker("run:field-set:cannot place value to non-variable type");
-                ((ContainerType) inner).content.put(((VariableNode) ((FieldReferenceNode) n).rnode).token.c,
-                        v);
-                setField(((FieldReferenceNode) n).lnode, inner, scope);
+            else {
+                int[] lineNo = Utilities.getLine(current.pos, code);
+                striker.poschar = lineNo[1];
+                striker.posline = lineNo[0];
+                throw striker;
             }
         }
     }
-
 }

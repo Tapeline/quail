@@ -5,6 +5,8 @@ public class RuntimeStriker extends Exception {
     public RuntimeStrikerTypes type;
     public String msg;
     public QType retVal;
+    public int posline;
+    public int poschar;
 
     public RuntimeStriker(RuntimeStrikerTypes typ) {
         super(typ.name());
