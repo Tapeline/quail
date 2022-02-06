@@ -17,7 +17,7 @@ public enum TokenType {
               "(\\^|\\/\\/|\\+|-|\\*|\\/|\\%|and|or|==|at|in|is same type as|"+
                   "is type of|instanceof|<=|>=|>|<|\\.\\.\\.|\\.|of|'s|'|" +
                   "in power of|plus|minus|divided by|multiplied by|is greater than|is less than|is greater or equal to|" +
-                  "is less or equal to|is)"),
+                  "is less or equal to|is|step)"),
     ASSIGNOPERATOR("ASSIGNOPERATOR", "(=|should have|should be|should now be|should now be set|should be set)"),
     UNARYOPERATOR("UNARYOPERATOR",
             "(not|negate|notnull|exists)[\\s]"),

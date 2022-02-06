@@ -9,6 +9,10 @@ public class QType {
         return a instanceof NumType && b instanceof NumType;
     }
 
+    public static boolean isNum(QType a, QType b, QType c) {
+        return a instanceof NumType && b instanceof NumType && c instanceof NumType;
+    }
+
     public static boolean isBool(QType a) {
         return a instanceof BoolType;
     }

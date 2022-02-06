@@ -6,10 +6,7 @@ import me.tapeline.quailj.language.types.*;
 import me.tapeline.quailj.parsingtools.Parser;
 import me.tapeline.quailj.parsingtools.nodes.*;
 import me.tapeline.quailj.tokenizetools.Lexer;
-import me.tapeline.quailj.utils.ListUtils;
-import me.tapeline.quailj.utils.StringUtils;
-import me.tapeline.quailj.utils.Utilities;
-import org.json.JSONObject;
+import me.tapeline.quailj.utils.*;
 
 import java.util.*;
 
@@ -17,8 +14,7 @@ public class Runtime {
 
     public static VoidType Void = new VoidType(); // idk, maybe del dat
     public static List<String> nativeLibs = new ArrayList<>(Arrays.asList(
-            "canvas",
-            "popups"
+        "random"
     ));
 
     public final Node rootNode;
@@ -179,8 +175,8 @@ public class Runtime {
 
         this.scope.set("out", new BuiltinFuncType() {
             @Override
-            public QType run(Runtime runtime, List<QType> args) throws RuntimeStriker {
-                System.out.println(args.size() > 1? args.get(0).toString() : "");
+            public QType run(Runtime runtime, List<QType> args) {
+                System.out.println(args.size() > 0? args.get(0).toString() : "");
                 return Void;
             }
 
@@ -192,8 +188,8 @@ public class Runtime {
 
         this.scope.set("put", new BuiltinFuncType() {
             @Override
-            public QType run(Runtime runtime, List<QType> args) throws RuntimeStriker {
-                System.out.print(args.size() > 1? args.get(0).toString() : "");
+            public QType run(Runtime runtime, List<QType> args) {
+                System.out.print(args.size() > 0? args.get(0).toString() : "");
                 return Void;
             }
 
@@ -205,7 +201,7 @@ public class Runtime {
 
         this.scope.set("input", new BuiltinFuncType() {
             @Override
-            public QType run(Runtime runtime, List<QType> args) throws RuntimeStriker {
+            public QType run(Runtime runtime, List<QType> args) {
                 Scanner sc = new Scanner(System.in);
                 return new StringType(sc.nextLine());
             }
@@ -215,6 +211,7 @@ public class Runtime {
                 return null;
             }
         });
+
         this.scope.set("nothing", new VoidType());
         this.scope.set("million", new NumType(1000000D));
         this.scope.set("billion", new NumType(1000000000D));
@@ -223,19 +220,13 @@ public class Runtime {
 
     public QType getNativeLib(String name) {
         switch (name) {
-            case "storage": {
-                HashMap<String, QType> content = new HashMap<>();
-                content.put("loadjson", new BuiltinFuncType() {
+            case "random": {
+                HashMap<String, QType> lib = new HashMap<>();
+
+                lib.put("random", new BuiltinFuncType() {
                     @Override
                     public QType run(Runtime runtime, List<QType> args) throws RuntimeStriker {
-                        if (args.size() < 1 || !(args.get(0) instanceof StringType))
-                            throw new RuntimeStriker("storage:loadjson:invalid args");
-                        String c = QFileReader.read(((StringType) args.get(0)).value);
-                        if (c == null)
-                            throw new RuntimeStriker("storage:loadjson:file is null");
-                        JSONObject cfg = new JSONObject(c);
-                        HashMap<String, QType> parsed = new HashMap<>();
-                        return null;
+                        return new NumType(Math.random());
                     }
 
                     @Override
@@ -243,7 +234,51 @@ public class Runtime {
                         return null;
                     }
                 });
-                return new ContainerType(content, false);
+
+                lib.put("randint", new BuiltinFuncType() {
+                    @Override
+                    public QType run(Runtime runtime, List<QType> args) throws RuntimeStriker {
+                        Assert.size(args, 2, "random:randint");
+                        Assert.require(QType.isNum(args.get(0), args.get(1)), "random:randint:invalid args");
+                        return new NumType(Math.random() * (((NumType) args.get(1)).value -
+                                ((NumType) args.get(0)).value));
+                    }
+
+                    @Override
+                    public QType metaRun(Runtime runtime, List<QType> metaArgs) {
+                        return null;
+                    }
+                });
+
+                lib.put("choice", new BuiltinFuncType() {
+                    @Override
+                    public QType run(Runtime runtime, List<QType> args) throws RuntimeStriker {
+                        Assert.size(args, 1, "random:choice");
+                        Assert.require(QType.isList(args.get(0)), "random:chioce:invalid args");
+                        return ((ListType) args.get(0)).values.get(
+                                (int) (Math.random() * ((ListType) args.get(0)).values.size())
+                        );
+                    }
+
+                    @Override
+                    public QType metaRun(Runtime runtime, List<QType> metaArgs) {
+                        return null;
+                    }
+                });
+
+                lib.put("coin", new BuiltinFuncType() {
+                    @Override
+                    public QType run(Runtime runtime, List<QType> args) {
+                        return new BoolType(Math.random() < 0.5);
+                    }
+
+                    @Override
+                    public QType metaRun(Runtime runtime, List<QType> metaArgs) {
+                        return null;
+                    }
+                });
+
+                return new ContainerType(lib, false);
             }
         }
         return Void;
@@ -252,21 +287,21 @@ public class Runtime {
     public QType runFieldFunction(QType v, String name, List<QType> args, Memory scope) throws RuntimeStriker {
         if (QType.isStr(v)) {
             switch (name) {
+                case "get":
                 case "at": {
-                    if (!(args.get(0) instanceof NumType))
-                        throw new RuntimeStriker("run:field:string:at-func:1st arg is not number");
+                    Assert.size(args, 1, "field:string:at");
+                    Assert.require(QType.isStr(args.get(0)), "run:field:string:at:invalid args");
                     return new StringType(StringUtils.at(((StringType) v).value,
-                                    (int) Math.round(((NumType) args.get(0)).value)));
+                            (int) Math.round(((NumType) args.get(0)).value)));
                 }
                 case "sub": {
                     if (args.size() == 1) {
-                        if (!(args.get(0) instanceof NumType))
-                            throw new RuntimeStriker("run:field:string:at-func:1st arg is not number");
+                        Assert.require(QType.isNum(args.get(0)), "run:field:string:sub:invalid args");
                         return new StringType(StringUtils.sub(((StringType) v).value,
                                 (int) Math.round(((NumType) args.get(0)).value)));
                     } else if (args.size() > 1) {
-                        if (QType.isNum(args.get(0), args.get(0)))
-                            throw new RuntimeStriker("run:field:string:at-func:1st and 2nd args is not number");
+                        Assert.require(QType.isNum(args.get(0), args.get(1)),
+                                "run:field:string:sub:invalid args");
                         return new StringType(StringUtils.sub(((StringType) v).value,
                                 (int) Math.round(((NumType) args.get(0)).value),
                                 (int) Math.round(((NumType) args.get(1)).value)));
@@ -274,23 +309,23 @@ public class Runtime {
                 }
                 case "split": {
                     if (args.size() > 1 && !(args.get(0) instanceof StringType))
-                        throw new RuntimeStriker("run:field:string:split-func:delimiter must be string type");
+                        throw new RuntimeStriker("run:field:string:split:delimiter must be string type");
                     return new ListType(StringUtils.split(((StringType) v).value,
-                            args.size() < 1? " " : ((StringType) args.get(0)).value));
+                            args.size() < 1 ? " " : ((StringType) args.get(0)).value));
                 }
-            }
-        } else if (QType.isList(v)) {
-
-        }
-        throw new RuntimeStriker("run:field:cannot run " + name);
-    }
-
-    public QType runField(FieldReferenceNode node, Memory scope) throws RuntimeStriker {
-        QType v = run(node.lnode, scope);
-        if (!(node.rnode instanceof VariableNode))
-            throw new RuntimeStriker("run:field:cannot run non-variable node");
-        if (QType.isStr(v)) {
-            switch (((VariableNode) node.rnode).token.c) {
+                case "replace": {
+                    Assert.size(args, 2, "field:string:replace");
+                    Assert.require(QType.isStr(args.get(0), args.get(1)),
+                            "run:field:string:replace:invalid args");
+                    return new StringType(((StringType) v).value.replaceAll(
+                            ((StringType) args.get(0)).value,
+                            ((StringType) args.get(1)).value));
+                }
+                case "find": {
+                    Assert.size(args, 1, "field:string:find");
+                    Assert.require(QType.isStr(args.get(0)), "run:field:string:find:invalid args");
+                    return new NumType(((StringType) v).value.indexOf(((StringType) args.get(0)).value));
+                }
                 case "reverse":
                     return new StringType(StringUtils.reverse(((StringType) v).value));
                 case "capitalize":
@@ -304,7 +339,7 @@ public class Runtime {
                     return new NumType(StringUtils.len(((StringType) v).value));
             }
         } else if (QType.isNum(v)) {
-            switch (((VariableNode) node.rnode).token.c) {
+            switch (name) {
                 case "floor":
                     return new NumType(Math.floor(((NumType) v).value));
                 case "round":
@@ -319,7 +354,43 @@ public class Runtime {
                     return new NumType(-((NumType) v).value);
             }
         } else if (QType.isList(v)) {
-            switch (((VariableNode) node.rnode).token.c) {
+            switch (name) {
+                case "add":
+                case "append": {
+                    Assert.size(args, 1, "field:list:add");
+                    ((ListType) v).values.addAll(args);
+                    return v;
+                }
+                case "remove": {
+                    Assert.size(args, 1, "field:list:remove");
+                    ((ListType) v).values.removeAll(args);
+                    return v;
+                }
+                case "removeat": {
+                    Assert.size(args, 1, "field:list:remove");
+                    Assert.require(QType.isNum(args.get(0)), "run:field:list:removeat:invalid args");
+                    ((ListType) v).values.remove(NumUtils.round(((NumType) args.get(0)).value));
+                }
+                case "sub": {
+                    if (args.size() == 1) {
+                        Assert.require(QType.isNum(args.get(0)), "run:field:list:sub:invalid args");
+                        return new ListType(ListUtils.sub(((ListType) v).values,
+                                (int) Math.round(((NumType) args.get(0)).value)));
+                    } else if (args.size() > 1) {
+                        Assert.require(QType.isNum(args.get(0), args.get(1)),
+                                "run:field:list:sub:invalid args");
+                        return new ListType(ListUtils.sub(((ListType) v).values,
+                                (int) Math.round(((NumType) args.get(0)).value),
+                                (int) Math.round(((NumType) args.get(1)).value)));
+                    }
+                }
+                case "at":
+                case "get": {
+                    Assert.size(args, 1, "field:list:at");
+                    Assert.require(QType.isStr(args.get(0)), "run:field:list:at:invalid args");
+                    return ListUtils.at(((ListType) v).values,
+                            (int) Math.round(((NumType) args.get(0)).value));
+                }
                 case "length":
                 case "len":
                     return new NumType(((ListType) v).values.size());
@@ -327,7 +398,7 @@ public class Runtime {
                     return new ListType(ListUtils.reverse(((ListType) v).values));
             }
         }
-        throw new RuntimeStriker("run:field:cannot run " + ((VariableNode) node.rnode).token.c);
+        throw new RuntimeStriker("run:field:cannot run " + name);
     }
 
     public ContainerType overrideContainerContents(ContainerType dest, ContainerType src) {
@@ -515,6 +586,52 @@ public class Runtime {
                             run(((BinaryOperatorNode) node).rnode, scope));
                     return Void;
                 }
+                case "...": {
+                    Assert.require(QType.isNum(a, b), "run:binaryop:range:expected numbers");
+                    ListType l = new ListType();
+                    int step = ((NumType) a).value < ((NumType) b).value? 1 : -1;
+                    for (double i = ((NumType) a).value; i != ((NumType) b).value; i += step)
+                        l.values.add(new NumType(i));
+                    return l;
+                }
+                case "step": {
+                    Assert.require(((BinaryOperatorNode) node).lnode instanceof BinaryOperatorNode,
+                            "run:binaryop:step:expected range as lvalue");
+                    Assert.require(((BinaryOperatorNode) ((BinaryOperatorNode) node).lnode).operator.c.equals("..."),
+                            "run:binaryop:step:expected range as lvalue");
+                    QType rangeStart = run(((BinaryOperatorNode) ((BinaryOperatorNode) node).lnode).lnode);
+                    QType rangeEnd = run(((BinaryOperatorNode) ((BinaryOperatorNode) node).lnode).rnode);
+                    QType rangeStep = run(((BinaryOperatorNode) node).rnode);
+                    Assert.require(QType.isNum(rangeStart, rangeEnd, rangeStep),
+                            "run:binaryop:step:expected numbers");
+                    double iter = ((NumType) rangeStart).value;
+                    boolean canRun = true;
+                    ListType l = new ListType();
+                    while (canRun) {
+                        l.values.add(new NumType(iter));
+                        iter += ((NumType) rangeStep).value;
+                        if (((NumType) rangeStart).value < ((NumType) rangeEnd).value) {
+                            if (((NumType) rangeEnd).value < iter)
+                                canRun = false;
+                        } else {
+                            if (((NumType) rangeEnd).value > iter)
+                                canRun = false;
+                        }
+                    }
+                    return l;
+                }
+                case "->": {
+                    List<String> args = new ArrayList<>();
+                    if (((BinaryOperatorNode) node).lnode instanceof MultiElementNode) {
+                        for (Node n : ((MultiElementNode) ((BinaryOperatorNode) node).lnode).nodes) {
+                            if (n instanceof VariableNode)
+                                args.add(((VariableNode) n).token.c);
+                            else throw new RuntimeStriker("run:binaryop:anonymous function:invalid args");
+                        }
+                    }
+                    return new FuncType("__anon__", args,
+                            Parser.blockIfNeeded(((BinaryOperatorNode) node).rnode));
+                }
             }
             throw new RuntimeStriker("run:binaryop:no valid case for " + node);
         } else if (node instanceof BlockNode) {
@@ -563,8 +680,6 @@ public class Runtime {
             }
         } else if (node instanceof FieldReferenceNode) {
             QType parent = run(((FieldReferenceNode) node).lnode, scope);
-            if (QType.isNum(parent) || QType.isList(parent) || QType.isStr(parent))
-                return runField((FieldReferenceNode) node, scope);
             if (!(((FieldReferenceNode) node).rnode instanceof VariableNode))
                 throw new RuntimeStriker("run:field-set:cannot get value of non-variable type");
             if (parent instanceof ContainerType) {
@@ -595,7 +710,7 @@ public class Runtime {
                 args.add(run(arg, scope));
             }
             if (callee instanceof FuncType) {
-                if (((FuncType) callee).restrictMetacalls || (!isMetacall && parent == null))
+                if (((FuncType) callee).restrictMetacalls || (!isMetacall))
                     return ((FuncType) callee).run(this, args);
                 else {
                     List<QType> metaArgs = new ArrayList<>(Collections.singletonList(parent));
@@ -603,7 +718,7 @@ public class Runtime {
                     return ((FuncType) callee).metaRun(this, metaArgs);
                 }
             } else if (callee instanceof BuiltinFuncType) {
-                if (((BuiltinFuncType) callee).restrictMetacalls || (!isMetacall && parent == null))
+                if (((BuiltinFuncType) callee).restrictMetacalls || (!isMetacall))
                     return ((BuiltinFuncType) callee).run(this, args);
                 else {
                     List<QType> metaArgs = new ArrayList<>(Collections.singletonList(parent));
@@ -799,7 +914,7 @@ public class Runtime {
             FuncType f = new FuncType(((LiteralFunctionNode) node).name.c,
                     args, ((LiteralFunctionNode) node).code);
             f.restrictMetacalls = ((LiteralFunctionNode) node).s;
-            if (f.name.equals("that"))
+            if (f.name.equals("__anon__"))
                 return f;
             else
                 scope.set(f.name, f);

@@ -536,7 +536,7 @@ public class Parser {
 
     private Node EParseAnd() {
         Node expr = EParseEquality();
-        while (match(TokenType.BINARYOPERATOR, new String[] {"and"}) != null) {
+        while (match(TokenType.BINARYOPERATOR, new String[] {"and", "step"}) != null) {
             Token operator = previous();
             Node right = EParseEquality();
             expr = new BinaryOperatorNode(operator, expr, right);
