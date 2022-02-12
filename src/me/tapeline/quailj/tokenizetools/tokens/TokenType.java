@@ -14,10 +14,12 @@ public enum TokenType {
     COMMA("COMMA", ","),
     KEYWORD("KEYWORD", "(as|in|through|if|elseif|else|try|catch|while|loop|stop when|every|on|when|override)[\\s\\W]"),
     BINARYOPERATOR("BINARYOPERATOR",
-              "(\\^|\\/\\/|\\+|-|\\*|\\/|\\%|and|or|==|at|in|is same type as|"+
-                  "is type of|instanceof|<=|>=|>|<|\\.\\.\\.|\\.|of|'s|'|" +
-                  "in power of|plus|minus|divided by|multiplied by|is greater than|is less than|is greater or equal to|" +
-                  "is less or equal to|is|step)"),
+              "(\\^|\\/\\/|\\+|-|\\*|\\/|\\%|==|"+
+                  "<=|>=|>|<|\\.\\.\\.|\\.|'s|')"),
+    WORDBINARYOPERATOR("BINARYOPERATOR",
+            "(is type of|instanceof|and|or|at|in|is same type as|of|" +
+            "in power of|plus|minus|divided by|multiplied by|is greater than|is less than|is greater or equal to|" +
+            "is less or equal to|is|step)[\\s\\W]"),
     ASSIGNOPERATOR("ASSIGNOPERATOR", "(=|should have|should be|should now be|should now be set|should be set)"),
     UNARYOPERATOR("UNARYOPERATOR",
             "(not|negate|notnull|exists)[\\s]"),
@@ -35,9 +37,9 @@ public enum TokenType {
     WHITESPACE("WHITESPACE", "\\s+");
 
     public static final List<TokenType> tokenTypeList = Arrays.asList(
-            LITERALSTRING, LITERALNUM, LITERALNULL, BINARYOPERATOR, LPAR, RPAR, LSPAR, RSPAR, LCPAR, RCPAR,
-            ASSIGNOPERATOR, COMMA, LITERALBOOL, TYPE, MODIFIER, BLOCK, KEYWORD, UNARYOPERATOR, STATEMENT,
-            INSTRUCTION, ID, COMMENT, SEMICOLON, WHITESPACE);
+            LITERALSTRING, LITERALNUM, LITERALNULL, BINARYOPERATOR, WORDBINARYOPERATOR, LPAR, RPAR, LSPAR,
+            RSPAR, LCPAR, RCPAR, ASSIGNOPERATOR, COMMA, LITERALBOOL, TYPE, MODIFIER, BLOCK, KEYWORD,
+            UNARYOPERATOR, STATEMENT, INSTRUCTION, ID, COMMENT, SEMICOLON, WHITESPACE);
     private final String s;
     public final String regex;
 

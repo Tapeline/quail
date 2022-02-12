@@ -203,7 +203,8 @@ public class Runtime {
             @Override
             public QType run(Runtime runtime, List<QType> args) {
                 Scanner sc = new Scanner(System.in);
-                return new StringType(sc.nextLine());
+                String s = sc.nextLine();
+                return new StringType(s);
             }
 
             @Override
@@ -582,8 +583,7 @@ public class Runtime {
                 case "=": {
                     if (!(((BinaryOperatorNode) node).lnode instanceof VariableNode))
                         throw new RuntimeStriker("run:binaryop:set:cannot place value to non-variable type");
-                    scope.set(((VariableNode) ((BinaryOperatorNode) node).lnode).token.c,
-                            run(((BinaryOperatorNode) node).rnode, scope));
+                    scope.set(((VariableNode) ((BinaryOperatorNode) node).lnode).token.c, b);
                     return Void;
                 }
                 case "...": {

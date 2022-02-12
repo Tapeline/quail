@@ -65,7 +65,8 @@ public class Lexer {
             List<String> result = findAll(regex, sub);
             if (result != null && result.size() > 0) {
                 String content = result.get(0).trim().replaceAll("\"", "");
-                Token token = new Token(i, content.replaceAll("&q;", "\""), pos);
+                Token token = new Token(i.equals(TokenType.WORDBINARYOPERATOR)? TokenType.BINARYOPERATOR : i,
+                        content.replaceAll("&q;", "\""), pos);
                 pos += result.get(0).length();
                 if (!token.t.equals(TokenType.WHITESPACE) &&
                     !token.t.equals(TokenType.COMMENT) &&

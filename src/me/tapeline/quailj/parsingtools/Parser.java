@@ -30,6 +30,7 @@ public class Parser {
                 "Unable parse (" + msg + "): " + code.substring(pos));
         aal.err("QParser", "At " + pos + " symbol in code: " + msg);
         new AALFrame(aal);
+        new TokenListFrame(tokens);
         Scanner sc = new Scanner(System.in);
         sc.next();
         System.exit(101);
