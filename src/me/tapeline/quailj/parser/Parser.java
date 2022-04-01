@@ -5,6 +5,7 @@ import me.tapeline.quailj.lexer.TokenType;
 import me.tapeline.quailj.parser.nodes.*;
 import me.tapeline.quailj.types.RuntimeStriker;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -141,13 +142,21 @@ public class Parser {
         bh = bh.replaceAll(">", "_cmpgt");
         bh = bh.replaceAll("<", "_cmplt");
         bh = bh.replaceAll("get", "_get");
-        bh = bh.replaceAll("tostring", "_tostring_");
+        bh = bh.replaceAll("tostring", "_tostring");
         bh = bh.replaceAll("tonumber", "_tonumber");
         bh = bh.replaceAll("tobool", "_tobool");
         bh = bh.replaceAll("not", "_not");
         bh = bh.replaceAll("!", "_not");
         bh = bh.replaceAll("set", "_set");
         return bh;
+    }
+
+    public static MultiElementNode multiElementIfNeeded(Node node) {
+        if (!(node instanceof MultiElementNode)) {
+            MultiElementNode b = new MultiElementNode(new Token(TokenType.ID, "", node.codePos));
+            b.addNode(node);
+            return b;
+        } else return (MultiElementNode) node;
     }
 
 
@@ -220,6 +229,7 @@ public class Parser {
                 }
 
                 if (getCurrent().c.equals("else")) {
+                    pos++;
                     Node elseCode = null;
                     if (matchStart() != null) {
                         elseCode = new BlockNode(previous().p);
@@ -266,8 +276,7 @@ public class Parser {
                 Token t = match(TokenType.KEYWORD);
                 Node expr = parseExpression();
                 if (expr == null) error("Null expression");
-                if (!(expr instanceof BinaryOperatorNode) ||
-                        !((BinaryOperatorNode) expr).operator.c.equals(":")) error("Expected range");
+                if (!(expr instanceof BinaryOperatorNode)) error("Expected range");
                 requireString(TokenType.KEYWORD, new String[] {"as"},
                         "Expected `as`");
                 VariableNode variableNode = new VariableNode(require(TokenType.ID,
@@ -281,8 +290,8 @@ public class Parser {
                 Token t = match(TokenType.KEYWORD);
                 VariableNode variableNode = new VariableNode(require(TokenType.ID,
                         "Expected variable"));
-                requireString(TokenType.KEYWORD, new String[] {"in"},
-                        "Expected `as`");
+                requireString(TokenType.BINARYOPERATOR, new String[] {"in"},
+                        "Expected `in`");
                 Node expr = parseExpression();
                 if (expr == null) error("Null expression");
                 return new EveryBlockNode(expr, variableNode, blockIfNeeded(parseStatement()), t.p);
@@ -312,8 +321,7 @@ public class Parser {
             }
         }
 
-        if (getCurrent().c.equals("nothing")) {
-            pos++;
+        if (match(new String[] {"break", "continue", "breakpoint", "memory", "nothing"}) != null) {
             return new InstructionNode(previous());
         }
 
@@ -372,14 +380,16 @@ public class Parser {
             case "method":
             case "staticmethod": {
                 Token name = require(TokenType.ID, "Expected id");
-                Node args = parseExpression();
+                MultiElementNode args = new MultiElementNode(getCurrent());
+                if (getCurrent().c.equals("(")) args = multiElementIfNeeded(parseExpression());
                 BlockNode b = blockIfNeeded(parseStatement());
                 return new LiteralFunctionNode(name, args, b, t.c.equals("staticmethod"));
             }
             case "override": {
                 Token override = getCurrent();
                 pos++;
-                Node args = parseExpression();
+                MultiElementNode args = new MultiElementNode(getCurrent());
+                if (getCurrent().c.equals("(")) args = multiElementIfNeeded(parseExpression());
                 BlockNode b = blockIfNeeded(parseStatement());
                 return new LiteralFunctionNode(new Token(
                         override.t, getSystemField(override.c), override.p
@@ -387,7 +397,8 @@ public class Parser {
             }
             case "object": {
                 pos++;
-                Node args = parseExpression();
+                MultiElementNode args = new MultiElementNode(getCurrent());
+                if (getCurrent().c.equals("(")) args = multiElementIfNeeded(parseExpression());
                 BlockNode b = blockIfNeeded(parseStatement());
                 return new LiteralFunctionNode(new Token(t.t, "_builder", t.p), args,
                         b, false);
@@ -406,9 +417,22 @@ public class Parser {
         EXPRESSION PARSING
     */
     private Node EParseAssignment() throws RuntimeStriker {
+        if (match(new String[] {"num", "string", "list", "bool"}) != null) {
+            Token t = previous();
+            String type = t.c;
+            t.c = "=";
+            Token name = require(TokenType.ID, "Expected ID after initializer");
+            return new BinaryOperatorNode(t, new VariableNode(name),
+                    type.equals("num")? new LiteralNumNode(new Token(TokenType.LITERALNUM, "0", t.p)) :
+                    type.equals("string")? new LiteralStringNode(new Token(TokenType.LITERALSTRING, "", t.p)) :
+                    type.equals("list")? new LiteralListNode(new Token(TokenType.LITERALNUM, "[", t.p)) :
+                    type.equals("bool")? new LiteralBoolNode(new Token(TokenType.LITERALBOOL, "false", t.p)) :
+                    new LiteralNullNode(t));
+        }
+
         Node expr = EParseOr();
 
-        if (match(new String[] {"="}) != null) {
+        if (match(new String[] {"=", "<-"}) != null) {
             Token equals = previous();
             Node value = EParseAssignment();
             if (expr instanceof VariableNode) {
@@ -446,7 +470,7 @@ public class Parser {
     private Node EParseEquality() throws RuntimeStriker {
         Node expr = EParseComparison();
         while ( match(TokenType.BINARYOPERATOR, new String[] {
-                "==", "!=", "is same as", "is", "in", "..."}) != null) {
+                "==", "!=", "is same as", "is", "in", ":"}) != null) {
             Token operator = previous();
             Node right = EParseComparison();
             expr = new BinaryOperatorNode(operator, expr, right);
@@ -476,7 +500,7 @@ public class Parser {
 
     private Node EParseFactor() throws RuntimeStriker {
         Node expr = EParsePower();
-        while ( match(TokenType.BINARYOPERATOR, new String[] {"/", "*"}) != null) {
+        while ( match(TokenType.BINARYOPERATOR, new String[] {"/", "*", "//", "%"}) != null) {
             Token operator = previous();
             Node right = EParsePower();
             expr = new BinaryOperatorNode(operator, expr, right);
@@ -559,6 +583,15 @@ public class Parser {
 
         if (match(TokenType.LPAR) != null)  {
             Node expr = parseExpression();
+            if (match(TokenType.COMMA) != null) {
+                MultiElementNode list = new MultiElementNode(previous());
+                list.addNode(expr);
+                do {
+                    list.addNode(parseExpression());
+                } while (match(TokenType.COMMA) != null);
+                require(TokenType.RPAR, "Expected closing bracket");
+                return list;
+            }
             require(TokenType.RPAR, "Expected closing bracket");
             return expr;
         }
@@ -603,6 +636,8 @@ public class Parser {
             BlockNode stmt = blockIfNeeded(parseStatement());
             return new LiteralFunctionNode(t, expr, stmt, false);
         }
+
+
         error("Expression parsing error");
         return null;
     }

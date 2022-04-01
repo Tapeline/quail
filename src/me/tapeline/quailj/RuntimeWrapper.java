@@ -4,6 +4,8 @@ import me.tapeline.quailj.lexer.Lexer;
 import me.tapeline.quailj.lexer.Token;
 import me.tapeline.quailj.parser.Parser;
 import me.tapeline.quailj.parser.nodes.Node;
+import me.tapeline.quailj.platformspecific.IOManager;
+import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.types.QType;
 import me.tapeline.quailj.types.RuntimeStriker;
 
@@ -23,17 +25,13 @@ public class RuntimeWrapper {
         try {
             Lexer lexer = new Lexer(code);
             List<Token> tokens = lexer.lexAndFix();
-            System.out.println(tokens.toString());
 
             Parser parser = new Parser(tokens);
             Node root = parser.parse();
 
-            System.out.println(root.toString());
+            Runtime runtime = new Runtime(root, new IOManager());
 
-            /*Runtime runtime = new Runtime(root);
-            QType result = runtime.run();
-
-            return result;*/
+            return runtime.run(root, runtime.scope);
         } catch (RuntimeStriker striker) {
             if (striker.isNotException()) {
                 return striker.val;
@@ -41,7 +39,6 @@ public class RuntimeWrapper {
                 throw striker;
             }
         }
-        return null;
     }
 
 }

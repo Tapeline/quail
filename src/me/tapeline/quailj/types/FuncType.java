@@ -1,38 +1,26 @@
 package me.tapeline.quailj.types;
 
-/*import java.util.ArrayList;
+import me.tapeline.quailj.parser.nodes.BlockNode;
+import me.tapeline.quailj.runtime.Memory;
+import me.tapeline.quailj.runtime.Runtime;
+
 import java.util.HashMap;
 import java.util.List;
 
-public class FuncType implements QType {
+public class FuncType extends QType {
 
     public String name;
     public List<String> args;
-    //public BlockNode code;
+    public BlockNode code;
     public boolean restrictMetacalls = false;
 
     public static HashMap<String, QType> tableToClone = new HashMap<>();
-
-    public HashMap<String, QType> table = new HashMap<>();
-
-    public FuncType(String name) {
-        this.code = new BlockNode();
-        this.args = new ArrayList<>();
-        this.name = name;
-        table.putAll(tableToClone);
-    }
-
-    public FuncType(String name, List<String> args) {
-        this.code = new BlockNode();
-        this.args = args;
-        this.name = name;
-        table.putAll(tableToClone);
-    }
 
     public FuncType(String name, List<String> args, BlockNode code) {
         this.code = code;
         this.args = args;
         this.name = name;
+        this.table = new HashMap<>();
         table.putAll(tableToClone);
     }
 
@@ -41,6 +29,7 @@ public class FuncType implements QType {
         this.args = args;
         this.name = name;
         this.restrictMetacalls = r;
+        this.table = new HashMap<>();
         table.putAll(tableToClone);
     }
 
@@ -62,9 +51,21 @@ public class FuncType implements QType {
     }
 
     @Override
+    public QType copy() {
+        FuncType v = new FuncType(
+                this.name,
+                this.args,
+                this.code,
+                this.restrictMetacalls
+        );
+        v.table.putAll(this.table);
+        return v;
+    }
+
+    @Override
     public String toString() {
         return "func " + name;
     }
 
 
-}*/
+}

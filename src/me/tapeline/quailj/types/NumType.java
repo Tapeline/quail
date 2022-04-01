@@ -2,16 +2,23 @@ package me.tapeline.quailj.types;
 
 import java.util.HashMap;
 
-public class NumType implements QType {
+public class NumType extends QType {
 
     public static HashMap<String, QType> tableToClone = new HashMap<>();
 
-    public HashMap<String, QType> table = new HashMap<>();
     public double value = 0D;
 
     public NumType(double d) {
         value = d;
+        this.table = new HashMap<>();
         table.putAll(tableToClone);
+    }
+
+    @Override
+    public QType copy() {
+        NumType v = new NumType(this.value);
+        v.table.putAll(this.table);
+        return v;
     }
 
     @Override

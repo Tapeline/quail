@@ -1,6 +1,6 @@
 package me.tapeline.quailj;
 
-import me.tapeline.quailj.platformspecific.QFileMan;
+import me.tapeline.quailj.platformspecific.IOManager;
 import me.tapeline.quailj.types.QType;
 import me.tapeline.quailj.types.RuntimeStriker;
 import me.tapeline.quailj.types.VoidType;
@@ -18,7 +18,7 @@ public class Main {
             path = args[1];
         }
 
-        String code = QFileMan.read(path);
+        String code = IOManager.fileInput(path);
         RuntimeWrapper wrapper = new RuntimeWrapper(code, debug);
         QType result = wrapper.run();
 

@@ -13,7 +13,7 @@ public enum TokenType {
     BLOCK("BLOCK", "(do|does|end|then|has|with)[\\s\\W]"),
     KEYWORD("KEYWORD", "(as|through|if|elseif|else|try|catch|while|loop|stop when|every|on|when|override)[\\s\\W]"),
     BINARYOPERATOR("BINARYOPERATOR",
-            "(\\^|\\/\\/|\\+|-|\\*|\\/|\\%|==|=|"+
+            "(\\^|\\/\\/|\\+|-|\\*|\\/|\\%|\\:|<-|==|=|"+
                     "<=|>=|>|<|\\.\\.\\.|\\.|'|,)"),
     WORDBINARYOPERATOR("BINARYOPERATOR",
             "(is type of|instanceof|and|or|at|in|is same type as|of|" +
@@ -21,8 +21,8 @@ public enum TokenType {
                     "is less or equal to|is|step|should have|should be|should now be|should now be set|should be set|'s)[\\s\\W]"),
     UNARYOPERATOR("UNARYOPERATOR", "(!)"),
     WORDUNARYOPERATOR("UNARYOPERATOR", "(not|negate|notnull|exists)[\\s]"),
-    EFFECT("EFFECT", "(destroy|assert|use|block|throw|using|deploy|return)[\\s]"),
-    INSTRUCTION("INSTRUCTION", "(milestone|breakpoint|break|continue|memory)[\\s\\W]"),
+    EFFECT("EFFECT", "(assert|use|throw|using|deploy|return)[\\s]"),
+    INSTRUCTION("INSTRUCTION", "(breakpoint|break|continue|memory)[\\s\\W]"),
     ID("ID", "[a-zA-Z_\\@]+((\\d*[a-zA-Z_\\@]*)*)"),
     LPAR("LPAR", "(\\()"),
     RPAR("RPAR", "(\\))"),
