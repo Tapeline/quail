@@ -43,9 +43,13 @@ public class Utilities {
         else if (a instanceof ListType && b instanceof ListType)
             return ListUtils.compare(((ListType) a).values, ((ListType) b).values);
         else if (a instanceof ContainerType && b instanceof ContainerType) {
-            return new BoolType( ((ContainerType) a).isMeta() == ((ContainerType) b).isMeta());
+            if (a.table.size() != b.table.size()) return new BoolType(false);
+            for (String key : a.table.keySet())
+                if (!compare(a.table.get(key), b.table.get(key)).value)
+                    return new BoolType(false);
+            return new BoolType(true);
         }
-        return null;
+        return new BoolType(false);
     }
 
     public static String transformOp(String bh) {

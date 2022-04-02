@@ -6,6 +6,7 @@ import me.tapeline.quailj.parser.Parser;
 import me.tapeline.quailj.parser.nodes.*;
 import me.tapeline.quailj.platformspecific.IOManager;
 import me.tapeline.quailj.runtime.builtins.*;
+import me.tapeline.quailj.runtime.builtins.intype_list.*;
 import me.tapeline.quailj.runtime.builtins.intype_nums.NumFuncCeil;
 import me.tapeline.quailj.runtime.builtins.intype_nums.NumFuncFloor;
 import me.tapeline.quailj.runtime.builtins.intype_nums.NumFuncRound;
@@ -44,6 +45,7 @@ public class Runtime {
         scope.set("clock", new FuncClock());
         scope.set("millis", new FuncMillis());
 
+        scope.set("refreshtypes", new FuncRefreshtypes());
         scope.set("tostring", new FuncTostring());
         scope.set("tonum", new FuncTonum());
         scope.set("tobool", new FuncTobool());
@@ -77,7 +79,15 @@ public class Runtime {
         StringType.tableToClone.put("reverse", new StringFuncReverse());
 
         scope.set("Bool", new ContainerType("Bool", "container", new HashMap<>(), true));
+
         scope.set("List", new ContainerType("List", "container", new HashMap<>(), true));
+        ListType.tableToClone.put("add", new ListFuncAdd());
+        ListType.tableToClone.put("find", new ListFuncFind());
+        ListType.tableToClone.put("get", new ListFuncGet());
+        ListType.tableToClone.put("remove", new ListFuncRemove());
+        ListType.tableToClone.put("removeitem", new ListFuncRemoveitem());
+        ListType.tableToClone.put("reverse", new ListFuncReverse());
+        ListType.tableToClone.put("size", new ListFuncSize());
 
     }
 

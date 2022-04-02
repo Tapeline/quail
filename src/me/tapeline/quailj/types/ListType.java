@@ -22,6 +22,7 @@ public class ListType extends QType {
 
     public ListType() {
         values = new ArrayList<>();
+        this.table = new HashMap<>();
         table.putAll(tableToClone);
     }
 
