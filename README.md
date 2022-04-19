@@ -4,7 +4,7 @@
 > **Lookin' for a regex expert**
 > ! ! !
 > 
-> Plz someone fix my regex (and lexer maybe) at `me.tapeline.quailj.tokenizetools.Lexer` and `tokens.TokenType`. If you want, write to Issues
+> Plz someone fix my regex (and lexer maybe) at `me.tapeline.quailj.lexer.Lexer` and `tokens.TokenType`. If you want, write to Issues
 >
 
 Guide for installation > https://github.com/Tapeline/quark/wiki/Installing-QuailJ
