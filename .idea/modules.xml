@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/QuailReforged.iml" filepath="$PROJECT_DIR$/QuailReforged.iml" />
+      <module fileurl="file://$PROJECT_DIR$/quail.iml" filepath="$PROJECT_DIR$/quail.iml" />
     </modules>
   </component>
 </project>

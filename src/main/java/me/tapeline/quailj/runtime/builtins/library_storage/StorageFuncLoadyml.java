@@ -30,10 +30,8 @@ public class StorageFuncLoadyml extends FuncType {
             return l;
         } else if (o instanceof Map) {
             HashMap<String, QType> m = new HashMap<>();
-            m.put("_storage_stored", new ListType());
             for (String s : ((Map<String, QType>) o).keySet()) {
                 m.put(s, load(((Map<?, ?>) o).get(s)));
-                ((ListType) m.get("_storage_stored")).values.add(new StringType(s));
             }
             return new ContainerType(m);
         }

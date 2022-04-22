@@ -1,6 +1,7 @@
 package me.tapeline.quailj.types;
 
 import java.util.HashMap;
+import java.util.function.BiConsumer;
 
 public class ContainerType extends QType {
 
@@ -37,6 +38,7 @@ public class ContainerType extends QType {
         return m instanceof BoolType? ((BoolType) m).value : false;
     }
 
+
     @Override
     public QType copy() {
         HashMap<String, QType> newTable = new HashMap<>();
@@ -68,7 +70,24 @@ public class ContainerType extends QType {
                 s += "\"" + key + "\" = " + repr + ", ";
             }
         }
-        return s.substring(0, s.length() - 2) + "}";
+        return s.equals("{")? "{}" : s.substring(0, s.length() - 2) + "}";
+    }
+
+    public String allToString() {
+        String s = "{";
+        for (String key : table.keySet()) {
+            String repr = table.get(key).toString();
+            if (table.get(key) instanceof StringType)
+                repr = '"' + repr + '"';
+            if (table.get(key) instanceof FuncType)
+                repr = "\"func:" + repr + '"';
+            if (table.get(key) instanceof JavaType)
+                repr = "\"java:" + repr + '"';
+            if (table.get(key) instanceof VoidType)
+                repr = "null";
+            s += "\"" + key + "\" = " + repr + ", ";
+        }
+        return s.equals("{")? "{}" : s.substring(0, s.length() - 2) + "}";
     }
 
 }

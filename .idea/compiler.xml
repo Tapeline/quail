@@ -6,11 +6,11 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="QuailReforged" />
+        <module name="quail" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="QuailReforged" target="1.8" />
+      <module name="quail" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

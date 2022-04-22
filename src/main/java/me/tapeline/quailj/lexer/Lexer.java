@@ -4,6 +4,7 @@ import me.tapeline.quailj.types.RuntimeStriker;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -89,9 +90,9 @@ public class Lexer {
                 }
             } else if (Arrays.asList(
                     "should have", "should be", "should now be",
-                    "should now be set", "should be set").contains(tokens.get(i).c))
+                    "should now be set", "should be set").contains(tokens.get(i).c)) {
                 tokens.set(i, new Token(TokenType.BINARYOPERATOR, "=", tokens.get(i).p));
-            else if (tokens.get(i).t.equals(TokenType.WORDBINARYOPERATOR)) {
+            } else if (tokens.get(i).t.equals(TokenType.BINARYOPERATOR)) {
                 Token t = tokens.get(i);
                 t.c = t.c.replaceAll("plus", "\\+");
                 t.c = t.c.replaceAll("minus", "\\-");
@@ -102,6 +103,9 @@ public class Lexer {
                 t.c = t.c.replaceAll("is less than", "\\<");
                 t.c = t.c.replaceAll("is greater or equal to", "\\>=");
                 t.c = t.c.replaceAll("is less or equal to", "\\<=");
+                t.c = t.c.replaceAll("&&", "and");
+                t.c = t.c.replaceAll("\\|\\|", "or");
+                t.t = TokenType.BINARYOPERATOR;
                 tokens.set(i, t);
             }
         }

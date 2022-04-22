@@ -18,16 +18,8 @@ public class StorageFuncSaveyml extends FuncType {
     private Object save(QType q) {
         if (q instanceof ContainerType) {
             Map<String, Object> m = new LinkedHashMap<>();
-            QType stored = q.table.get("_storage_stored");
-            List<String> whatToSave = new ArrayList<>();
-            if (stored instanceof ListType)
-                for (QType qs : ((ListType) stored).values)
-                    whatToSave.add(qs.toString());
-            q.table.forEach((k, v) -> {
-                if (whatToSave.size() == 0)
-                    m.put(k, save(v));
-                else if (whatToSave.contains(k))
-                    m.put(k, save(v));
+            forEachNotBuiltIn(q, (k, v) -> {
+                m.put(k, save(v));
             });
             return m;
         } else if (q instanceof ListType) {

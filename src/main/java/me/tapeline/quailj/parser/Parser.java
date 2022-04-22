@@ -1,5 +1,6 @@
 package me.tapeline.quailj.parser;
 
+import me.tapeline.quailj.lexer.Lexer;
 import me.tapeline.quailj.lexer.Token;
 import me.tapeline.quailj.lexer.TokenType;
 import me.tapeline.quailj.parser.nodes.*;
@@ -322,7 +323,7 @@ public class Parser {
             }
         }
 
-        if (match(new String[] {"break", "continue", "breakpoint", "memory", "nothing"}) != null) {
+        if (match(new String[] {"break", "continue", "breakpoint", "memory"}) != null) {
             return new InstructionNode(previous());
         }
 
@@ -363,6 +364,13 @@ public class Parser {
             Token t = previous();
             Node expr = parseExpression();
             if (expr == null) error("Null expression");
+            if (t.c.equals("use") || t.c.equals("using")) {
+                if (getCurrent().c.equals("as")) {
+                    pos++;
+                    return new EffectNode(t, expr, require(TokenType.ID,
+                            "Expected ID after as in use").c);
+                }
+            }
             return new EffectNode(t, expr);
         } else return null;
     }
@@ -388,7 +396,7 @@ public class Parser {
 
     public Node parseFunction() throws RuntimeStriker {
         Token t = match(new String[] {
-                "function", "func", "method", "staticmethod", "override", "object", "procedure"
+                "function", "func", "method", "staticmethod", "override", "object"
         });
         if (t == null) return null;
         switch (t.c) {
@@ -419,15 +427,6 @@ public class Parser {
                 BlockNode b = blockIfNeeded(parseStatement());
                 return new LiteralFunctionNode(new Token(t.t, "_builder", t.p), args,
                         b, false);
-            }
-            case "procedure": {
-                Token name = require(TokenType.ID, "Expected id");
-                MultiElementNode args = new MultiElementNode(getCurrent());
-                if (getCurrent().c.equals("(")) args = multiElementIfNeeded(parseExpression());
-                BlockNode b = blockIfNeeded(parseStatement());
-                LiteralFunctionNode n = new LiteralFunctionNode(name, args, b, t.c.equals("staticmethod"));
-                n.isProcedure = true;
-                return n;
             }
         }
         return null;
@@ -466,6 +465,25 @@ public class Parser {
             } else if (expr instanceof FieldReferenceNode) {
                 FieldReferenceNode get = (FieldReferenceNode) expr;
                 return new FieldSetNode(getCurrent(), get.lnode, get.rnode, value);
+            } else {
+                return new BinaryOperatorNode(equals, expr, value);
+            }
+        } else if (match(TokenType.SHORTBINARYOPERATOR) != null) {
+            Token equals = previous();
+            Node value = EParseAssignment();
+            if (expr instanceof VariableNode) {
+                return new BinaryOperatorNode(new Token(TokenType.BINARYOPERATOR,
+                        "=", equals.p), expr, new BinaryOperatorNode(
+                                new Token(TokenType.BINARYOPERATOR,
+                                        equals.c.substring(0, equals.c.length() - 1),
+                                        equals.p), expr, value));
+            } else if (expr instanceof FieldReferenceNode) {
+                FieldReferenceNode get = (FieldReferenceNode) expr;
+                return new FieldSetNode(getCurrent(), get.lnode, get.rnode,
+                        new BinaryOperatorNode(
+                        new Token(TokenType.BINARYOPERATOR,
+                                equals.c.substring(0, equals.c.length() - 1),
+                                equals.p), get, value));
             } else {
                 return new BinaryOperatorNode(equals, expr, value);
             }
