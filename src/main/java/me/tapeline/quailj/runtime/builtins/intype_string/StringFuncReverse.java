@@ -1,10 +1,9 @@
 package me.tapeline.quailj.runtime.builtins.intype_string;
 
 import me.tapeline.quailj.runtime.Runtime;
+import me.tapeline.quailj.types.*;
 import me.tapeline.quailj.types.FuncType;
 import me.tapeline.quailj.types.QType;
-import me.tapeline.quailj.types.RuntimeStriker;
-import me.tapeline.quailj.types.StringType;
 import me.tapeline.quailj.utils.Assert;
 
 import java.util.Arrays;
@@ -17,12 +16,12 @@ public class StringFuncReverse extends FuncType {
     }
 
     @Override
-    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
+    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
         Assert.size(a, 1, "string reverse:invalid args size");
-        Assert.require(a.get(0) instanceof StringType, "string reverse:invalid arg0 type");
-        StringBuilder sb = new StringBuilder(((StringType) a.get(0)).value);
+        Assert.require(a.get(0).v instanceof StringType, "string reverse:invalid arg0 type");
+        StringBuilder sb = new StringBuilder(((StringType) a.get(0).v).value);
         sb.reverse();
-        return new StringType(sb.toString());
+        return new QValue(sb.toString());
     }
 
     @Override

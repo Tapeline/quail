@@ -29,7 +29,9 @@ public class Utilities {
         opToString.put("tobool", "_tobool");
         opToString.put("not", "_not");
         opToString.put("!", "_not");
-        opToString.put("set", "_set");
+        opToString.put("index", "_index");
+        opToString.put("setindex", "_setindex");
+        opToString.put("call", "_call");
     }
 
     public static boolean isNumeric(String strNum) {
@@ -59,19 +61,19 @@ public class Utilities {
         return new int[] {1, pos};
     }
 
-    public static BoolType compare(QType a, QType b) {
-        if (a instanceof BoolType && b instanceof BoolType)
-            return new BoolType( ((BoolType) a).value == ((BoolType) b).value);
-        else if (a instanceof NumType && b instanceof NumType)
-            return new BoolType( ((NumType) a).value == ((NumType) b).value);
-        else if (a instanceof StringType && b instanceof StringType)
-            return new BoolType( ((StringType) a).value.equals(((StringType) b).value));
-        else if (a instanceof ListType && b instanceof ListType)
-            return ListUtils.compare(((ListType) a).values, ((ListType) b).values);
-        else if (a instanceof ContainerType && b instanceof ContainerType) {
-            if (a.table.size() != b.table.size()) return new BoolType(false);
-            for (String key : a.table.keySet())
-                if (!compare(a.table.get(key), b.table.get(key)).value)
+    public static BoolType compare(QValue a, QValue b) {
+        if (QValue.isBool(a, b))
+            return new BoolType( ((BoolType) a.v).value == ((BoolType) b.v).value);
+        else if (QValue.isNum(a, b))
+            return new BoolType( ((NumType) a.v).value == ((NumType) b.v).value);
+        else if (QValue.isStr(a, b))
+            return new BoolType( ((StringType) a.v).value.equals(((StringType) b.v).value));
+        else if (QValue.isList(a, b))
+            return ListUtils.compare(((ListType) a.v).values, ((ListType) b.v).values);
+        else if (QValue.isCont(a, b)) {
+            if (a.v.table.size() != b.v.table.size()) return new BoolType(false);
+            for (String key : a.v.table.keySet())
+                if (!compare(a.v.table.get(key), b.v.table.get(key)).value)
                     return new BoolType(false);
             return new BoolType(true);
         }

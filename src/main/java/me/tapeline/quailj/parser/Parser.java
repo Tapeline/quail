@@ -5,6 +5,7 @@ import me.tapeline.quailj.lexer.Token;
 import me.tapeline.quailj.lexer.TokenType;
 import me.tapeline.quailj.parser.nodes.*;
 import me.tapeline.quailj.types.RuntimeStriker;
+import me.tapeline.quailj.utils.Utilities;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,7 +56,7 @@ public class Parser {
             Token current = tokens.get(pos);
             if (tokenType.equals(current.t)) {
                 for (String s : acceptable) {
-                    if (current.c.equals(s)) {
+                    if (current.c.equals(s) && !current.t.equals(TokenType.LITERALSTRING)) {
                         pos++;
                         return current;
                     }
@@ -69,7 +70,7 @@ public class Parser {
         if (pos < tokens.size()) {
             Token current = tokens.get(pos);
             for (String s : acceptable) {
-                if (current.c.equals(s)) {
+                if (current.c.equals(s) && !current.t.equals(TokenType.LITERALSTRING)) {
                     pos++;
                     return current;
                 }
@@ -102,7 +103,7 @@ public class Parser {
 
     public Token requireString(TokenType tokenType, String[] acceptable, String customMessage) throws RuntimeStriker {
         Token token = require(tokenType, customMessage);
-        for (String s : acceptable) if (token.c.equals(s)) return token;
+        for (String s : acceptable) if (token.c.equals(s) && !token.t.equals(TokenType.LITERALSTRING)) return token;
         error(customMessage);
         return null;
     }
@@ -130,27 +131,7 @@ public class Parser {
     }
 
     public static String getSystemField(String bh) {
-        bh = bh.replaceAll("\\+", "_add");
-        bh = bh.replaceAll("-", "_sub");
-        bh = bh.replaceAll("//", "_divint");
-        bh = bh.replaceAll("/", "_div");
-        bh = bh.replaceAll("\\*", "_mul");
-        bh = bh.replaceAll("\\^", "_pow");
-        bh = bh.replaceAll("%", "_mod");
-        bh = bh.replaceAll("==", "_cmpeq");
-        bh = bh.replaceAll("!=", "_cmpuneq");
-        bh = bh.replaceAll("<=", "_cmplet");
-        bh = bh.replaceAll(">=", "_cmpget");
-        bh = bh.replaceAll(">", "_cmpgt");
-        bh = bh.replaceAll("<", "_cmplt");
-        bh = bh.replaceAll("get", "_get");
-        bh = bh.replaceAll("tostring", "_tostring");
-        bh = bh.replaceAll("tonumber", "_tonumber");
-        bh = bh.replaceAll("tobool", "_tobool");
-        bh = bh.replaceAll("not", "_not");
-        bh = bh.replaceAll("!", "_not");
-        bh = bh.replaceAll("set", "_set");
-        return bh;
+        return Utilities.opToString.get(bh);
     }
 
     public static MultiElementNode multiElementIfNeeded(Node node) {
@@ -210,7 +191,8 @@ public class Parser {
                 } else ifCode = parseStatement();
                 IfBlockNode ifBlockNode = new IfBlockNode(ifCondition, blockIfNeeded(ifCode));
 
-                while (getCurrent().c.equals("elseif")) {
+                while (getCurrent() != null && getCurrent().c.equals("elseif")) {
+                    pos++;
                     Node expr2 = parseExpression();
                     if (expr2 == null) error("Null expression");
                     BinaryOperatorNode elseIfCondition = new BinaryOperatorNode(
@@ -230,7 +212,7 @@ public class Parser {
                     ifBlockNode.linkedNodes.add(elseIfBlockNode);
                 }
 
-                if (getCurrent().c.equals("else")) {
+                if (getCurrent() != null && getCurrent().c.equals("else")) {
                     pos++;
                     Node elseCode = null;
                     if (matchStart() != null) {
@@ -465,6 +447,9 @@ public class Parser {
             } else if (expr instanceof FieldReferenceNode) {
                 FieldReferenceNode get = (FieldReferenceNode) expr;
                 return new FieldSetNode(getCurrent(), get.lnode, get.rnode, value);
+            } else if (expr instanceof IndexReferenceNode) {
+                IndexReferenceNode get = (IndexReferenceNode) expr;
+                return new IndexSetNode(getCurrent(), get.lnode, get.rnode, value);
             } else {
                 return new BinaryOperatorNode(equals, expr, value);
             }
@@ -484,6 +469,13 @@ public class Parser {
                         new Token(TokenType.BINARYOPERATOR,
                                 equals.c.substring(0, equals.c.length() - 1),
                                 equals.p), get, value));
+            } else if (expr instanceof IndexReferenceNode) {
+                IndexReferenceNode get = (IndexReferenceNode) expr;
+                return new IndexSetNode(getCurrent(), get.lnode, get.rnode,
+                        new BinaryOperatorNode(
+                                new Token(TokenType.BINARYOPERATOR,
+                                        equals.c.substring(0, equals.c.length() - 1),
+                                        equals.p), get, value));
             } else {
                 return new BinaryOperatorNode(equals, expr, value);
             }
@@ -571,7 +563,8 @@ public class Parser {
                 "negate",
                 "!",
                 "-",
-                "##"}) != null) {
+                "&",
+                "*"}) != null) {
             Token operator = previous();
             Node right = EParseUnary();
             return new UnaryOperatorNode(operator, right);
@@ -587,11 +580,17 @@ public class Parser {
             } while (match(TokenType.COMMA) != null);
         }
         require(TokenType.RPAR, "Expected closing bracket");
+        if (match(new String[] {"["}) != null) {
+            Token t = previous();
+            Node index = EParseOr();
+            require(TokenType.RSPAR, "Expected ] to close indexation");
+            return new IndexReferenceNode(t, new FunctionCallNode(callee, args, callee.codePos), index);
+        }
         return new FunctionCallNode(callee, args, callee.codePos);
     }
 
     private Node EParseCall() throws RuntimeStriker {
-        Node expr = EParsePrimary();
+        Node expr = EParsePostfix();
         while (true) {
             if (match(TokenType.LPAR) != null) {
                 expr = EFinishCall(expr);
@@ -618,13 +617,28 @@ public class Parser {
         return expr;
     }
 
+    private Node EParsePostfix() throws RuntimeStriker {
+        Node expr = EParsePrimary();
+        if (match(new String[] {"["}) != null) {
+            Token t = previous();
+            Node index = EParseOr();
+            require(TokenType.RSPAR, "Expected ] to close indexation");
+            return new IndexReferenceNode(t, expr, index);
+        }
+        return expr;
+    }
+
     private Node EParsePrimary() throws RuntimeStriker {
         if (match(TokenType.LITERALBOOL  ) != null) return new LiteralBoolNode  (previous());
         if (match(TokenType.LITERALNULL  ) != null) return new LiteralNullNode  (previous());
         if (match(TokenType.LITERALNUM   ) != null) return new LiteralNumNode   (previous());
         if (match(TokenType.LITERALSTRING) != null) return new LiteralStringNode(previous());
 
-        if (match(TokenType.ID) != null) return new VariableNode(previous());
+        if (match(TokenType.ID) != null) {
+            VariableNode v = new VariableNode(previous());
+            if (match(TokenType.CONSUME) != null) v.isConsumer = true;
+            return v;
+        }
 
         if (match(TokenType.LPAR) != null)  {
             if (getCurrent().t.equals(TokenType.RPAR))
@@ -637,9 +651,19 @@ public class Parser {
                     list.addNode(parseExpression());
                 } while (match(TokenType.COMMA) != null);
                 require(TokenType.RPAR, "Expected closing bracket");
+                if (match(TokenType.LAMBDAARROW) != null) {
+                    Token arrow = previous();
+                    BlockNode stmt = blockIfNeeded(parseStatement());
+                    return new LiteralFunctionNode(arrow, list, stmt, false);
+                }
                 return list;
             }
             require(TokenType.RPAR, "Expected closing bracket");
+            if (match(TokenType.LAMBDAARROW) != null) {
+                Token arrow = previous();
+                BlockNode stmt = blockIfNeeded(parseStatement());
+                return new LiteralFunctionNode(arrow, expr, stmt, false);
+            }
             return expr;
         }
 

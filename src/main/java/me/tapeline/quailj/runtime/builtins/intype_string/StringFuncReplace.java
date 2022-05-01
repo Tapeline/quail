@@ -14,12 +14,12 @@ public class StringFuncReplace extends FuncType {
     }
 
     @Override
-    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
+    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
         Assert.size(a, 2, "string replace:invalid args size");
-        Assert.require(QType.isStr(a.get(0), a.get(1), a.get(2)), "string replace:invalid types");
-        return new StringType("" + ((StringType) a.get(0)).value.replace(
-                ((StringType) a.get(1)).value,
-                ((StringType) a.get(2)).value));
+        Assert.require(QType.isStr(a.get(0).v, a.get(1).v, a.get(2).v), "string replace:invalid types");
+        return new QValue("" + ((StringType) a.get(0).v).value.replace(
+                ((StringType) a.get(1).v).value,
+                ((StringType) a.get(2).v).value));
     }
 
     @Override

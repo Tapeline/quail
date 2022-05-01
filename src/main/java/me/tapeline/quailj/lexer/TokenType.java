@@ -22,10 +22,12 @@ public enum TokenType {
                     "in power of|plus|minus|divided by|multiplied by|is greater than|is less than|is greater or equal to|" +
                     "is less or equal to|is|step|should have|should be|should now be|should now be set|"+
                     "should be set|'s)[\\s\\W]"),
-    UNARYOPERATOR("UNARYOPERATOR", "(!|##)"),
+    UNARYOPERATOR("UNARYOPERATOR", "(!|\\&|\\*)"),
     WORDUNARYOPERATOR("UNARYOPERATOR", "(not|negate|notnull|exists)[\\s]"),
     EFFECT("EFFECT", "(assert|use|throw|using|deploy|return)[\\s]"),
     INSTRUCTION("INSTRUCTION", "(breakpoint|break|continue|memory)[\\s\\W]"),
+    CONSUME("CONSUME", "\\.\\.\\."),
+    LAMBDAARROW("LAMBDAARROW", "->"),
     ID("ID", "[a-zA-Z_\\@]+((\\d*[a-zA-Z_\\@]*)*)"),
     LPAR("LPAR", "(\\()"),
     RPAR("RPAR", "(\\))"),
@@ -37,7 +39,7 @@ public enum TokenType {
     WHITESPACE("WHITESPACE", "\\s+");
 
     public static final List<TokenType> tokenTypeList = Arrays.asList(
-            LITERALSTRING, LITERALNUM, LITERALNULL, LITERALBOOL, COMMA,
+            LITERALSTRING, LITERALNUM, LITERALNULL, LITERALBOOL, COMMA, CONSUME, LAMBDAARROW,
             TYPE, BLOCK, KEYWORD, SHORTBINARYOPERATOR, BINARYOPERATOR, WORDBINARYOPERATOR,
             UNARYOPERATOR, WORDUNARYOPERATOR, EFFECT, INSTRUCTION, ID, LPAR, RPAR,
             LSPAR, RSPAR, LCPAR, RCPAR, COMMENT, WHITESPACE);

@@ -1,10 +1,9 @@
 package me.tapeline.quailj.runtime.builtins.intype_nums;
 
 import me.tapeline.quailj.runtime.Runtime;
+import me.tapeline.quailj.types.*;
 import me.tapeline.quailj.types.FuncType;
-import me.tapeline.quailj.types.NumType;
 import me.tapeline.quailj.types.QType;
-import me.tapeline.quailj.types.RuntimeStriker;
 import me.tapeline.quailj.utils.Assert;
 
 import java.util.Collections;
@@ -17,9 +16,9 @@ public class NumFuncRound extends FuncType {
     }
 
     @Override
-    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
-        Assert.require(QType.isNum(a.get(0)), "round:NaN");
-        return new NumType(Math.round(((NumType) a.get(0)).value));
+    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+        Assert.require(QType.isNum(a.get(0).v), "round:NaN");
+        return new QValue(Math.round(((NumType) a.get(0).v).value));
     }
 
     @Override

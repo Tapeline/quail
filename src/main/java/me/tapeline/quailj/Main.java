@@ -1,10 +1,9 @@
 package me.tapeline.quailj;
 
 import me.tapeline.quailj.platformspecific.IOManager;
-import me.tapeline.quailj.types.QType;
-import me.tapeline.quailj.types.RuntimeStriker;
-import me.tapeline.quailj.types.RuntimeStrikerType;
-import me.tapeline.quailj.types.VoidType;
+import me.tapeline.quailj.runtime.Runtime;
+import me.tapeline.quailj.types.*;
+import me.tapeline.quailj.utils.Pair;
 import me.tapeline.quailj.utils.Utilities;
 
 public class Main {
@@ -17,7 +16,8 @@ public class Main {
 
 	    if (args.length < 2) {
             debug = false;
-            path = "/home/tapeline/test.q";
+        // path = "/home/tapeline/QuailProjects/Expressive/parser.q";
+        path = "/home/tapeline/test.q";
         } else {
             debug = args[0].equalsIgnoreCase("true");
             path = args[1];
@@ -25,9 +25,11 @@ public class Main {
 
         String code = IOManager.fileInput(path);
         RuntimeWrapper wrapper = new RuntimeWrapper(code, debug, io, path);
+        Pair<QValue, Runtime> resultPair = null;
         try {
-            QType result = wrapper.run();
-            if (result != null && !(result instanceof VoidType)) {
+            resultPair = wrapper.run();
+            QValue result = resultPair.a;
+            if (result != null && !(result.v instanceof VoidType)) {
                 io.consolePut("Runtime returned " + result + "\n");
             }
         } catch (RuntimeStriker striker) {
@@ -43,6 +45,7 @@ public class Main {
                     System.err.println("At " + strings[i]);
                 }
                 System.err.println(strings[strings.length - 1]);
+                System.err.println("\nTraced Actions:\n" + Runtime.mainRecord.toString(0));
             } else throw striker;
         }
     }

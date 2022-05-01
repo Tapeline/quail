@@ -1,15 +1,13 @@
 package me.tapeline.quailj.runtime.builtins.library_canvas;
 
-import me.tapeline.quailj.types.ContainerType;
-
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
 
 public class QCanvas extends Canvas {
 
-    public List<double[]> drawings = new ArrayList<>();
+    public List<short[]> drawings = new ArrayList<>();
     public List<String[]> text = new ArrayList<>();
 
     public static final int DR_LINE = 0;
@@ -23,12 +21,26 @@ public class QCanvas extends Canvas {
         setSize(w, h);
     }
 
+    public boolean containsPixel(int x, int y, int r, int g, int b) {
+        for (short[] d : drawings)
+            if (d[1] == r && d[2] == g && d[3] == b && d[4] == x && d[5] == y)
+                return true;
+        return false;
+    }
+
+    public boolean containsDrawing(short[] d) {
+        for (short[] dd : drawings)
+            if (Arrays.equals(dd, d))
+                return true;
+        return false;
+    }
+
     public void paint(Graphics graphics) {
         Graphics2D g = (Graphics2D) graphics;
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
-        List<double[]> current = new ArrayList<>(drawings);
-        for (double[] drawing : current) {
+        List<short[]> current = new ArrayList<>(drawings);
+        for (short[] drawing : current) {
             switch ((int) drawing[0]) {
                 case DR_LINE: {
                     float[] hsb = Color.RGBtoHSB((int) drawing[1], (int) drawing[2], (int) drawing[3], null);
@@ -44,7 +56,8 @@ public class QCanvas extends Canvas {
                     Color c = Color.getHSBColor(hsb[0], hsb[1], hsb[2]);
                     int[] xy = new int[] {(int) drawing[4], (int) drawing[5]};
                     g.setColor(c);
-                    g.drawLine(xy[0], xy[1], xy[0] + 1, xy[1] + 1);
+                    g.drawRect(xy[0], xy[1], 1, 1);
+                    //g.drawLine(xy[0], xy[1], xy[0] + 1, xy[1] + 1);
                     break;
                 }
                 case DR_TEXT: {

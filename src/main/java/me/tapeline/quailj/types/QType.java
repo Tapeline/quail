@@ -5,7 +5,7 @@ import java.util.function.BiConsumer;
 
 public class QType {
 
-    public HashMap<String, QType> table;
+    public HashMap<String, QValue> table;
 
     public static boolean isFunc(QType... a) {
         for (QType q : a) if (!(q instanceof FuncType)) return false;
@@ -24,7 +24,7 @@ public class QType {
         return v;
     }
 
-    public static QType nullSafe(QType v) {
+    public static QType nullSafeLegacy(QType v) {
         return v == null? new VoidType() : v;
     }
 
@@ -78,12 +78,12 @@ public class QType {
 
     public QType nullSafeGet(String v) {
         if (table.containsKey(v))
-            return table.get(v);
+            return table.get(v).v;
         return new VoidType();
     }
 
-    public static void forEachNotBuiltIn(QType q, BiConsumer<String, QType> action) {
-        HashMap<String, QType> toClone = new HashMap<>();
+    public static void forEachNotBuiltIn(QType q, BiConsumer<String, QValue> action) {
+        HashMap<String, QValue> toClone = new HashMap<>();
         if (isNum(q)) toClone = NumType.tableToClone;
         if (isBool(q)) toClone = BoolType.tableToClone;
         if (isFunc(q)) toClone = FuncType.tableToClone;
@@ -91,7 +91,7 @@ public class QType {
         if (isList(q)) toClone = ListType.tableToClone;
         if (isStr(q)) toClone = StringType.tableToClone;
         if (q instanceof VoidType) toClone = VoidType.tableToClone;
-        HashMap<String, QType> finalToClone = toClone;
+        HashMap<String, QValue> finalToClone = toClone;
         q.table.forEach((k, v) -> {
             if (!finalToClone.containsKey(k) && !k.startsWith("_")) {
                 action.accept(k, v);

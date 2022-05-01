@@ -13,12 +13,12 @@ public class CanvasFuncClear extends FuncType {
     }
 
     @Override
-    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
+    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
         Assert.size(a, 1, "canvas clear:invalid args size");
-        Assert.require(a.get(0) instanceof JavaType, "canvas clear:invalid arg0 type");
-        Assert.require(((JavaType<?>) a.get(0)).value instanceof QWindow, "canvas clear: invalid arg0 type");
-        ((QWindow) ((JavaType<?>) a.get(0)).value).canvas.drawings.clear();
-        return new VoidType();
+        Assert.require(a.get(0).v instanceof JavaType, "canvas clear:invalid arg0 type");
+        Assert.require(((JavaType<?>) a.get(0).v).value instanceof QWindow, "canvas clear: invalid arg0 type");
+        ((QWindow) ((JavaType<?>) a.get(0).v).value).canvas.drawings.clear();
+        return new QValue();
     }
 
     @Override

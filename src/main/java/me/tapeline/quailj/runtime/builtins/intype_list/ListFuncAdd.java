@@ -5,7 +5,6 @@ import me.tapeline.quailj.types.*;
 import me.tapeline.quailj.utils.Assert;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class ListFuncAdd extends FuncType {
@@ -15,12 +14,12 @@ public class ListFuncAdd extends FuncType {
     }
 
     @Override
-    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
+    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
         Assert.size(a, 2, "list add:invalid args size");
-        Assert.require(a.get(0) instanceof ListType, "list add:invalid arg0 type");
+        Assert.require(a.get(0).v instanceof ListType, "list add:invalid arg0 type");
         Assert.require(a.get(1) != null, "list add:invalid arg1 type");
-        ((ListType) a.get(0)).values.add(((QType) a.get(1)));
-        return new VoidType();
+        ((ListType) a.get(0).v).values.add(a.get(1));
+        return new QValue();
     }
 
     @Override

@@ -5,7 +5,6 @@ import me.tapeline.quailj.types.*;
 import me.tapeline.quailj.utils.Assert;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class ContainerFuncRemove extends FuncType {
@@ -15,12 +14,12 @@ public class ContainerFuncRemove extends FuncType {
     }
 
     @Override
-    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
+    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
         Assert.size(a, 2, "container remove:invalid args size");
-        Assert.require(a.get(0) instanceof ContainerType, "container remove:invalid arg0 type");
-        Assert.require(a.get(1) instanceof StringType, "container remove:invalid arg1 type");
-        ((ContainerType) a.get(0)).table.remove(((StringType) a.get(1)).value);
-        return new VoidType();
+        Assert.require(a.get(0).v instanceof ContainerType, "container remove:invalid arg0 type");
+        Assert.require(a.get(1).v instanceof StringType, "container remove:invalid arg1 type");
+        a.get(0).v.table.remove(((StringType) a.get(1).v).value);
+        return new QValue();
     }
 
     @Override

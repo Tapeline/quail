@@ -5,6 +5,7 @@ import me.tapeline.quailj.lexer.Token;
 public class VariableNode extends Node {
 
     public final Token token;
+    public boolean isConsumer = false;
 
     public VariableNode(Token token) {
         this.token = token;
@@ -13,6 +14,6 @@ public class VariableNode extends Node {
 
     @Override
     public String toString() {
-        return "" + token.c + "";
+        return "" + token.c + (isConsumer? "..." : "");
     }
 }

@@ -1,23 +1,26 @@
 package me.tapeline.quailj.types;
 
+import me.tapeline.quailj.lexer.Token;
+import me.tapeline.quailj.lexer.TokenType;
 import me.tapeline.quailj.parser.nodes.BlockNode;
+import me.tapeline.quailj.parser.nodes.VariableNode;
 import me.tapeline.quailj.runtime.Memory;
 import me.tapeline.quailj.runtime.Runtime;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class FuncType extends QType {
 
     public String name;
-    public List<String> args;
+    public List<VariableNode> args = new ArrayList<>();
     public BlockNode code;
     public boolean restrictMetacalls = false;
-    public boolean isProcedure = false;
 
-    public static HashMap<String, QType> tableToClone = new HashMap<>();
+    public static HashMap<String, QValue> tableToClone = new HashMap<>();
 
-    public FuncType(String name, List<String> args, BlockNode code) {
+    public FuncType(String name, List<VariableNode> args, BlockNode code, Object marker) {
         this.code = code;
         this.args = args;
         this.name = name;
@@ -25,7 +28,7 @@ public class FuncType extends QType {
         table.putAll(tableToClone);
     }
 
-    public FuncType(String name, List<String> args, BlockNode code, boolean r) {
+    public FuncType(String name, List<VariableNode> args, BlockNode code, boolean r, Object marker) {
         this.code = code;
         this.args = args;
         this.name = name;
@@ -34,10 +37,31 @@ public class FuncType extends QType {
         table.putAll(tableToClone);
     }
 
-    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
+    public FuncType(String name, List<String> args, BlockNode code) {
+        this.code = code;
+        args.forEach((v) -> this.args.add(new VariableNode(new Token(
+                TokenType.ID, v, code != null? code.codePos : 0))));
+        this.name = name;
+        this.table = new HashMap<>();
+        table.putAll(tableToClone);
+    }
+
+    public FuncType(String name, List<String> args, BlockNode code, boolean r) {
+        this.code = code;
+        args.forEach((v) -> this.args.add(new VariableNode(new Token(TokenType.ID, v, code.codePos))));
+        this.name = name;
+        this.restrictMetacalls = r;
+        this.table = new HashMap<>();
+        table.putAll(tableToClone);
+    }
+
+    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
         Memory mem = new Memory(runtime.scope);
         for (int i = 0; i < Math.min(args.size(), a.size()); i++) {
-            mem.set(args.get(i), a.get(i));
+            if (args.get(i).isConsumer) {
+                ListType l = new ListType(a.subList(i, a.size()));
+                mem.set(args.get(i).token.c, new QValue(l));
+            } else mem.set(args.get(i).token.c, a.get(i));
         }
         try {
             runtime.run(this.code, mem);
@@ -48,7 +72,7 @@ public class FuncType extends QType {
                 throw striker;
             }
         }
-        return new VoidType();
+        return new QValue();
     }
 
     @Override

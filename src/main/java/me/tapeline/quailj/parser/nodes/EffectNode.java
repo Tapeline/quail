@@ -12,7 +12,7 @@ public class EffectNode extends Node {
         this.operator = op;
         this.operand = opnd;
         this.codePos = op.p;
-        this.other = "_defalutname";
+        this.other = "_defaultname";
     }
 
     public EffectNode(Token op, Node opnd, String other) {

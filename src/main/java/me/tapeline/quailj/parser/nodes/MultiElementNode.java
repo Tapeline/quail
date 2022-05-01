@@ -24,6 +24,7 @@ public class MultiElementNode extends Node {
 
     @Override
     public String toString() {
-        return "Multi" + nodes.toString();
+        String n = nodes.toString();
+        return "(" + n.substring(1, n.length() - 1) + ")";
     }
 }

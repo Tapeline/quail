@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class VoidType extends QType {
 
-    public static HashMap<String, QType> tableToClone = new HashMap<>();
+    public static HashMap<String, QValue> tableToClone = new HashMap<>();
 
     public VoidType() {
         this.table = new HashMap<>();

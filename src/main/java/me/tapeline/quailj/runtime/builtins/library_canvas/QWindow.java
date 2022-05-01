@@ -8,6 +8,7 @@ public class QWindow {
 
     public Frame f;
     public QCanvas canvas;
+    public MouseHandler mouse = new MouseHandler();
 
     public QWindow(String name, QCanvas c) {
         f = new Frame(name);
@@ -20,6 +21,8 @@ public class QWindow {
                 f.dispose();
             }
         });
+        f.addMouseListener(mouse);
+        canvas.addMouseListener(mouse);
         f.setVisible(true);
     }
 

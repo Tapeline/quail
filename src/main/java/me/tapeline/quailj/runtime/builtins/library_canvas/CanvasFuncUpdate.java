@@ -13,12 +13,13 @@ public class CanvasFuncUpdate extends FuncType {
     }
 
     @Override
-    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
+    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
         Assert.size(a, 1, "canvas update:invalid args size");
-        Assert.require(a.get(0) instanceof JavaType, "canvas update:invalid arg0 type");
-        Assert.require(((JavaType<?>) a.get(0)).value instanceof QWindow, "canvas update:invalid arg0 type");
-        ((QWindow) ((JavaType<?>) a.get(0)).value).canvas.repaint();
-        return new VoidType();
+        Assert.require(a.get(0).v instanceof JavaType, "canvas update:invalid arg0 type");
+        Assert.require(((JavaType<?>) a.get(0).v).value instanceof QWindow, "canvas update:invalid arg0 type");
+        QCanvas canvas = ((QWindow) ((JavaType<?>) a.get(0).v).value).canvas;
+        canvas.paint(canvas.getGraphics());
+        return new QValue();
     }
 
     @Override

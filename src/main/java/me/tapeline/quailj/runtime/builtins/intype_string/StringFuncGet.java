@@ -14,10 +14,10 @@ public class StringFuncGet extends FuncType {
     }
 
     @Override
-    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
+    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
         Assert.size(a, 2, "string get:invalid args size");
-        Assert.require(QType.isStr(a.get(0)) && QType.isNum(a.get(1)), "string get:invalid types");
-        return new StringType("" + ((StringType) a.get(0)).value.charAt((int) ((NumType) a.get(1)).value));
+        Assert.require(QType.isStr(a.get(0).v) && QType.isNum(a.get(1).v), "string get:invalid types");
+        return new QValue("" + ((StringType) a.get(0).v).value.charAt((int) ((NumType) a.get(1).v).value));
     }
 
     @Override

@@ -1,50 +1,47 @@
 package me.tapeline.quailj.types;
 
 import java.util.HashMap;
-import java.util.function.BiConsumer;
 
 public class ContainerType extends QType {
 
-    public static HashMap<String, QType> tableToClone = new HashMap<>();
+    public static HashMap<String, QValue> tableToClone = new HashMap<>();
 
-    public ContainerType(HashMap<String, QType> content) {
+    public ContainerType(HashMap<String, QValue> content) {
         this.table = new HashMap<>();
         this.table.putAll(tableToClone);
         this.table.putAll(content);
-        this.table.put("_ismeta", new BoolType(false));
-        this.table.put("_name", new StringType("_anonymous"));
-        this.table.put("_like", new StringType("container"));
+        this.table.put("_ismeta", new QValue(false));
+        this.table.put("_name", new QValue("_anonymous"));
+        this.table.put("_like", new QValue("container"));
     }
 
-    public ContainerType(String name, String like, HashMap<String, QType> content, boolean isMeta) {
+    public ContainerType(String name, String like, HashMap<String, QValue> content, boolean isMeta) {
         this.table = new HashMap<>();
         this.table.putAll(tableToClone);
         this.table.putAll(content);
-        this.table.put("_ismeta", new BoolType(isMeta));
-        this.table.put("_name", new StringType(name));
-        this.table.put("_like", new StringType(like));
+        this.table.put("_ismeta", new QValue(isMeta));
+        this.table.put("_name", new QValue(name));
+        this.table.put("_like", new QValue(like));
     }
 
     public String like() {
-        return QType.nullSafe(this.table.get("_like")).toString();
+        return QValue.nullSafe(this.table.get("_like")).toString();
     }
 
     public String name() {
-        return QType.nullSafe(this.table.get("_name")).toString();
+        return QValue.nullSafe(this.table.get("_name")).toString();
     }
 
     public boolean isMeta() {
-        QType m = QType.nullSafe(this.table.get("_ismeta"));
-        return m instanceof BoolType? ((BoolType) m).value : false;
+        QValue m = QValue.nullSafe(this.table.get("_ismeta"));
+        return m.v instanceof BoolType ? ((BoolType) m.v).value : false;
     }
 
 
     @Override
     public QType copy() {
-        HashMap<String, QType> newTable = new HashMap<>();
-        this.table.forEach((k, v) -> {
-            newTable.put(k, v.copy());
-        });
+        HashMap<String, QValue> newTable = new HashMap<>();
+        this.table.forEach((k, v) -> newTable.put(k, v.copy()));
         return new ContainerType(
                 this.name(),
                 this.like(),
@@ -55,39 +52,39 @@ public class ContainerType extends QType {
 
     @Override
     public String toString() {
-        String s = "{";
+        StringBuilder s = new StringBuilder("{");
         for (String key : table.keySet()) {
             if (!key.startsWith("_") && !ContainerType.tableToClone.containsKey(key)) {
                 String repr = table.get(key).toString();
-                if (table.get(key) instanceof StringType)
+                if (table.get(key).v instanceof StringType)
                     repr = '"' + repr + '"';
-                if (table.get(key) instanceof FuncType)
+                if (table.get(key).v instanceof FuncType)
                     repr = "\"func:" + repr + '"';
-                if (table.get(key) instanceof JavaType)
+                if (table.get(key).v instanceof JavaType)
                     repr = "\"java:" + repr + '"';
-                if (table.get(key) instanceof VoidType)
+                if (table.get(key).v instanceof VoidType)
                     repr = "null";
-                s += "\"" + key + "\" = " + repr + ", ";
+                s.append("\"").append(key).append("\" = ").append(repr).append(", ");
             }
         }
-        return s.equals("{")? "{}" : s.substring(0, s.length() - 2) + "}";
+        return s.toString().equals("{")? "{}" : s.substring(0, s.length() - 2) + "}";
     }
 
     public String allToString() {
-        String s = "{";
+        StringBuilder s = new StringBuilder("{");
         for (String key : table.keySet()) {
             String repr = table.get(key).toString();
-            if (table.get(key) instanceof StringType)
+            if (table.get(key).v instanceof StringType)
                 repr = '"' + repr + '"';
-            if (table.get(key) instanceof FuncType)
+            if (table.get(key).v instanceof FuncType)
                 repr = "\"func:" + repr + '"';
-            if (table.get(key) instanceof JavaType)
+            if (table.get(key).v instanceof JavaType)
                 repr = "\"java:" + repr + '"';
-            if (table.get(key) instanceof VoidType)
+            if (table.get(key).v instanceof VoidType)
                 repr = "null";
-            s += "\"" + key + "\" = " + repr + ", ";
+            s.append("\"").append(key).append("\" = ").append(repr).append(", ");
         }
-        return s.equals("{")? "{}" : s.substring(0, s.length() - 2) + "}";
+        return s.toString().equals("{")? "{}" : s.substring(0, s.length() - 2) + "}";
     }
 
 }

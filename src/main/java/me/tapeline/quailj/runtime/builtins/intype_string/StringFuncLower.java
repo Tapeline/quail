@@ -1,9 +1,8 @@
 package me.tapeline.quailj.runtime.builtins.intype_string;
 
 import me.tapeline.quailj.runtime.Runtime;
-import me.tapeline.quailj.types.FuncType;
+import me.tapeline.quailj.types.*;
 import me.tapeline.quailj.types.QType;
-import me.tapeline.quailj.types.RuntimeStriker;
 import me.tapeline.quailj.types.StringType;
 import me.tapeline.quailj.utils.Assert;
 
@@ -17,10 +16,10 @@ public class StringFuncLower extends FuncType {
     }
 
     @Override
-    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
+    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
         Assert.size(a, 1, "string lower:invalid args size");
-        Assert.require(a.get(0) instanceof StringType, "string lower:invalid arg0 type");
-        return new StringType(((StringType) a.get(0)).value.toLowerCase());
+        Assert.require(a.get(0).v instanceof StringType, "string lower:invalid arg0 type");
+        return new QValue(((StringType) a.get(0).v).value.toLowerCase());
     }
 
     @Override

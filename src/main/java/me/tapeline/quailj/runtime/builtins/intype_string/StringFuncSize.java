@@ -14,10 +14,10 @@ public class StringFuncSize extends FuncType {
     }
 
     @Override
-    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
+    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
         Assert.size(a, 1, "string size:invalid args size");
-        Assert.require(QType.isStr(a.get(0)), "string size:invalid types");
-        return new NumType(((StringType) a.get(0)).value.length());
+        Assert.require(QType.isStr(a.get(0).v), "string size:invalid types");
+        return new QValue(((StringType) a.get(0).v).value.length());
     }
 
     @Override

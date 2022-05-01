@@ -8,9 +8,9 @@ import java.util.List;
 public class StringUtils {
 
     public static String reverse(String s) {
-        String r = "";
-        for (int i = s.length() - 1; i >= 0; i--) r += s.charAt(i);
-        return r;
+        StringBuilder r = new StringBuilder();
+        for (int i = s.length() - 1; i >= 0; i--) r.append(s.charAt(i));
+        return r.toString();
     }
 
     public static String sub(String s, int begin) {
@@ -43,41 +43,41 @@ public class StringUtils {
 
     public static String mult(String s, double c) {
         long cc = NumUtils.round(c);
-        String ss = "";
-        for (long i = 0; i < cc; i++) ss += s;
-        return ss;
+        StringBuilder ss = new StringBuilder();
+        for (long i = 0; i < cc; i++) ss.append(s);
+        return ss.toString();
     }
 
-    public static List<QType> div(String s, double c) {
+    public static List<QValue> div(String s, double c) {
         int partLen = (int) Math.round(Math.floor(s.length() / c));
-        List<QType> parts = new ArrayList<>();
+        List<QValue> parts = new ArrayList<>();
         int i = 0;
         while (i < s.length()) {
-            parts.add(new StringType(s.substring(i, i + partLen)));
+            parts.add(new QValue(s.substring(i, i + partLen)));
             i += partLen;
         }
         if (i - partLen != s.length() - 1) {
-            parts.add(new StringType(s.substring(i)));
+            parts.add(new QValue(s.substring(i)));
         }
         return parts;
     }
 
-    public static List<QType> mod(String s, double c) {
+    public static List<QValue> mod(String s, double c) {
         int partLen = (int) Math.round(Math.floor(s.length() / c));
-        List<QType> parts = new ArrayList<>();
+        List<QValue> parts = new ArrayList<>();
         int i = 0;
         while (i < s.length()) {
-            parts.add(new StringType(s.substring(i, i + partLen)));
+            parts.add(new QValue(s.substring(i, i + partLen)));
             i += partLen;
         }
         return parts;
     }
 
-    public static List<QType> split(String s, String d) {
+    public static List<QValue> split(String s, String d) {
         String[] l = s.split(d);
-        List<QType> ll = new ArrayList<>();
+        List<QValue> ll = new ArrayList<>();
         for (String s1 : l)
-            ll.add(new StringType(s1));
+            ll.add(new QValue(s1));
         return ll;
     }
 }

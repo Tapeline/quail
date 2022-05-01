@@ -5,7 +5,6 @@ import me.tapeline.quailj.types.*;
 import me.tapeline.quailj.utils.Assert;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class ContainerFuncSet extends FuncType {
@@ -15,13 +14,13 @@ public class ContainerFuncSet extends FuncType {
     }
 
     @Override
-    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
+    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
         Assert.size(a, 3, "container set:invalid args size");
-        Assert.require(a.get(0) instanceof ContainerType, "container set:invalid arg0 type");
-        Assert.require(a.get(1) instanceof StringType, "container set:invalid arg1 type");
-        Assert.require(a.get(2) != null, "container set:invalid arg2 type");
-        ((ContainerType) a.get(0)).table.put(((StringType) a.get(1)).value, ((QType) a.get(2)));
-        return new VoidType();
+        Assert.require(a.get(0).v instanceof ContainerType, "container set:invalid arg0 type");
+        Assert.require(a.get(1).v instanceof StringType, "container set:invalid arg1 type");
+        Assert.require(a.get(2).v != null, "container set:invalid arg2 type");
+        a.get(0).v.table.put(((StringType) a.get(1).v).value, a.get(2));
+        return new QValue();
     }
 
     @Override
