@@ -34,8 +34,7 @@ public class Main {
             if (striker.type.equals(RuntimeStrikerType.EXCEPTION)) {
                 assert code != null;
                 int[] pos = Utilities.getLine(code, striker.posChar);
-                System.err.println("In file: " + path + ", line " + pos[0] + ", column " +
-                        pos[1] + ":\n");
+                System.err.println("In file: " + path + ", line " + pos[0] + ":\n");
                 System.err.println("An error occured during the execution of program! Details:");
                 String[] strings = striker.val.toString().split(":");
                 for (int i = 0; i < strings.length - 1; i++) {

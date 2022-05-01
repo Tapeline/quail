@@ -117,6 +117,7 @@ public class Runtime {
         ContainerType.tableToClone.put("set",        new ContainerFuncSet());
         ContainerType.tableToClone.put("values",     new ContainerFuncValues());
         ContainerType.tableToClone.put("size",       new ContainerFuncSize());
+        ContainerType.tableToClone.put("alltostring",new ContainerFuncAlltostring());
         scope.set("Container", new ContainerType("Container", "container", new HashMap<>(), false));
 
     }
@@ -530,15 +531,49 @@ public class Runtime {
                             Parser parser = new Parser(tokens);
                             Node node1 = parser.parse();
                             Runtime runtime = new Runtime(node1, io, path);
-                            loaded = runtime.run(node1, runtime.scope);
+                            try {
+                                loaded = runtime.run(node1, runtime.scope);
+                            } catch (RuntimeStriker striker) {
+                                loaded = striker.val;
+                                if (striker.type == RuntimeStrikerType.EXCEPTION) {
+                                    throw striker;
+                                }
+                            }
                         }
-                        if (((EffectNode) node).operator.c.equals("deploy"))
-                            for (String key : loaded.table.keySet())
-                                if (!key.startsWith("_") && !ContainerType.tableToClone.containsKey(key))
-                                    scope.set(key, loaded.table.get(key));
-                                else
-                                    scope.set(id, loaded);
-                        else scope.set(lib, loaded);
+                        if (((EffectNode) node).operator.c.equals("deploy")) {
+                            QType.forEachNotBuiltIn(loaded, (k, v) -> {
+                                if (!scope.hasParentalDefinition(k))
+                                    scope.set(k, v);
+                            });
+                        } else {
+                            if (((EffectNode) node).other.equals("_defaultname"))
+                                scope.set(lib, loaded);
+                            else scope.set(((EffectNode) node).other, loaded);
+                        }
+                        if (loaded.nullSafeGet("_events") instanceof ListType) {
+                            for (QType q : ((ListType) loaded.nullSafeGet("_events")).values) {
+                                if (q instanceof ContainerType) {
+                                    Assert.require(q.nullSafeGet("consumer") instanceof FuncType &&
+                                            q.nullSafeGet("event") instanceof StringType,
+                                            "run:use:handler migrating is defined, but handler "
+                                                    + q.toString() + " is invalid");
+                                    String event = ((StringType) q.nullSafeGet("event")).value;
+                                    int i = 0;
+                                    while (!(scope.get("_eventhandler_migrated_" + event + "_" + i)
+                                            instanceof VoidType)) i++;
+                                    ((FuncType) q.table.get("consumer")).name = "_eventhandler_migrated_" +
+                                            event + "_" + i;
+                                    scope.set(((FuncType) q.table.get("consumer")).name, q.table.get("consumer"));
+                                    if (eventHandlers.containsKey(event)) {
+                                        List<String> e = eventHandlers.get(event);
+                                        e.add(((FuncType) q.nullSafeGet("consumer")).name);
+                                        eventHandlers.put(event, e);
+                                    }
+                                    else eventHandlers.put(event, new ArrayList<>(Collections.singletonList(
+                                            ((FuncType) q.nullSafeGet("consumer")).name)));
+                                }
+                            }
+                        }
                         break;
                     }
                     case "throw": {

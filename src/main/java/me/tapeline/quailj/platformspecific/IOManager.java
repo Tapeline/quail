@@ -120,14 +120,15 @@ public class IOManager {
     /**
      * Load library contents
      */
-    public static String loadLibrary(String path) {
+    public static String loadLibrary(String path) throws RuntimeStriker {
         for (String folder : libFolders) {
             File f = new File(folder + path);
             if (f.exists()) {
                 return fileInput(folder + path);
             }
         }
-        return null;
+        throw new RuntimeStriker("load lib:library " + path + " was not found in these paths: " +
+                libFolders.toString());
     }
     public static String pathLibrary(String path) {
         for (String folder : libFolders) {

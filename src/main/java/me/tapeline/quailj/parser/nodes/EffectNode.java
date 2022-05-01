@@ -6,11 +6,20 @@ public class EffectNode extends Node {
 
     public final Token operator;
     public final Node operand;
+    public final String other;
 
     public EffectNode(Token op, Node opnd) {
         this.operator = op;
         this.operand = opnd;
         this.codePos = op.p;
+        this.other = "_defalutname";
+    }
+
+    public EffectNode(Token op, Node opnd, String other) {
+        this.operator = op;
+        this.operand = opnd;
+        this.codePos = op.p;
+        this.other = other;
     }
 
     @Override

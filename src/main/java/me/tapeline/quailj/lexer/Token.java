@@ -1,7 +1,7 @@
 package me.tapeline.quailj.lexer;
 
 public class Token {
-    public final TokenType t;
+    public TokenType t;
     public String c;
     public final int p;
 

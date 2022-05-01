@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="QuailReforged:jar">
+    <output-path>$USER_HOME$/Quail</output-path>
+    <root id="archive" name="QuailReforged.jar">
+      <element id="module-output" name="quail" />
+    </root>
+  </artifact>
+</component>

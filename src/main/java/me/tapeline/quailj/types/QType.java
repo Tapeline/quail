@@ -1,6 +1,7 @@
 package me.tapeline.quailj.types;
 
 import java.util.HashMap;
+import java.util.function.BiConsumer;
 
 public class QType {
 
@@ -73,6 +74,29 @@ public class QType {
 
     public static boolean isCont(QType a, QType b) {
         return a instanceof ContainerType && b instanceof ContainerType;
+    }
+
+    public QType nullSafeGet(String v) {
+        if (table.containsKey(v))
+            return table.get(v);
+        return new VoidType();
+    }
+
+    public static void forEachNotBuiltIn(QType q, BiConsumer<String, QType> action) {
+        HashMap<String, QType> toClone = new HashMap<>();
+        if (isNum(q)) toClone = NumType.tableToClone;
+        if (isBool(q)) toClone = BoolType.tableToClone;
+        if (isFunc(q)) toClone = FuncType.tableToClone;
+        if (isCont(q)) toClone = ContainerType.tableToClone;
+        if (isList(q)) toClone = ListType.tableToClone;
+        if (isStr(q)) toClone = StringType.tableToClone;
+        if (q instanceof VoidType) toClone = VoidType.tableToClone;
+        HashMap<String, QType> finalToClone = toClone;
+        q.table.forEach((k, v) -> {
+            if (!finalToClone.containsKey(k) && !k.startsWith("_")) {
+                action.accept(k, v);
+            }
+        });
     }
 
 }
