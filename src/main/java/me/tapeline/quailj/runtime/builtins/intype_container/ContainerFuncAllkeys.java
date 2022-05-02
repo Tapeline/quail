@@ -7,23 +7,24 @@ import me.tapeline.quailj.utils.Assert;
 import java.util.Arrays;
 import java.util.List;
 
-public class ContainerFuncKeys extends FuncType {
+public class ContainerFuncAllkeys extends FuncType {
 
-    public ContainerFuncKeys() {
-        super("keys", Arrays.asList("c"), null);
+    public ContainerFuncAllkeys() {
+        super("allkeys", Arrays.asList("c"), null);
     }
 
     @Override
     public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
-        Assert.size(a, 1, "container keys:invalid args size");
-        Assert.require(a.get(0).v instanceof ContainerType, "container keys:invalid arg0 type");
+        Assert.size(a, 1, "container allkeys:invalid args size");
+        Assert.require(a.get(0).v instanceof ContainerType, "container allkeys:invalid arg0 type");
         ListType l = new ListType();
-        QType.forEachNotBuiltIn(a.get(0).v, (k, v) -> l.values.add(new QValue(k)));
+        for (String s : a.get(0).v.table.keySet())
+            l.values.add(new QValue(s));
         return new QValue(l);
     }
 
     @Override
     public QType copy() {
-        return new ContainerFuncKeys();
+        return new ContainerFuncAllkeys();
     }
 }

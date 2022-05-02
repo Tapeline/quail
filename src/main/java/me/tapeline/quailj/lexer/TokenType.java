@@ -14,7 +14,7 @@ public enum TokenType {
     BLOCK("BLOCK", "(do|does|end|then|has|with)[\\s\\W]"),
     KEYWORD("KEYWORD", "(as|through|if|elseif|else|try|catch|while|loop|stop when|every|on|when|override)[\\s\\W]"),
     BINARYOPERATOR("BINARYOPERATOR",
-            "(\\^|\\/\\/|\\+|-|\\*|\\/|\\%|\\:|!=|<-|==|=|<=|>=|>|<|\\.|')"),
+            "(\\:\\+|\\^|\\/\\/|\\+|-|\\*|\\/|\\%|\\:|!=|<-|==|=|<=|>=|>|<|\\.|')"),
     SHORTBINARYOPERATOR("BINARYOPERATOR",
             "(\\^=|\\/\\/=|\\+=|-=|\\*=|\\/=|\\%=)"),
     WORDBINARYOPERATOR("BINARYOPERATOR",

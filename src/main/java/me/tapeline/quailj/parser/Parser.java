@@ -506,7 +506,7 @@ public class Parser {
     private Node EParseEquality() throws RuntimeStriker {
         Node expr = EParseComparison();
         while ( match(TokenType.BINARYOPERATOR, new String[] {
-                "==", "!=", "is same type as", "is", "in", ":", "is type of", "instanceof"}) != null) {
+                "==", "!=", "is same type as", "is", "in", ":", ":+", "is type of", "instanceof"}) != null) {
             Token operator = previous();
             Node right = EParseComparison();
             expr = new BinaryOperatorNode(operator, expr, right);

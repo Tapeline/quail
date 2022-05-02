@@ -111,12 +111,18 @@ public class Runtime {
         ListType.tableToClone.put("removeitem",     new QValue(new ListFuncRemoveitem()));
         ListType.tableToClone.put("reverse",        new QValue(new ListFuncReverse()));
         ListType.tableToClone.put("size",           new QValue(new ListFuncSize()));
+        ListType.tableToClone.put("clear",          new QValue(new ListFuncClear()));
+        ListType.tableToClone.put("count",          new QValue(new ListFuncCount()));
 
         ContainerType.tableToClone.put("contains",   new QValue(new ContainerFuncContains()));
         ContainerType.tableToClone.put("keys",       new QValue(new ContainerFuncKeys()));
         ContainerType.tableToClone.put("get",        new QValue(new ContainerFuncGet()));
         ContainerType.tableToClone.put("remove",     new QValue(new ContainerFuncRemove()));
         ContainerType.tableToClone.put("set",        new QValue(new ContainerFuncSet()));
+        ContainerType.tableToClone.put("allkeys",    new QValue(new ContainerFuncAllkeys()));
+        ContainerType.tableToClone.put("pairs",      new QValue(new ContainerFuncPairs()));
+        ContainerType.tableToClone.put("allpairs",   new QValue(new ContainerFuncAllpairs()));
+        ContainerType.tableToClone.put("assemble",   new QValue(new ContainerFuncAssemble()));
         ContainerType.tableToClone.put("values",     new QValue(new ContainerFuncValues()));
         ContainerType.tableToClone.put("size",       new QValue(new ContainerFuncSize()));
         ContainerType.tableToClone.put("alltostring",new QValue(new ContainerFuncAlltostring()));
@@ -368,11 +374,13 @@ public class Runtime {
                         ((RefType) a.v).object.v = b.v;
                         return Void;
                     }
-                    case ":": {
+                    case ":":
+                    case ":+": {
                         Assert.require(QValue.isNum(a, b), "run:binaryop:range:expected numbers", current.codePos);
                         ListType l = new ListType();
                         double avx = ((NumType) av).value;
-                        double bvx = ((NumType) bv).value;
+                        double bvx = ((BinaryOperatorNode) node).operator.c.equals(":+")?
+                                ((NumType) bv).value : ((NumType) bv).value - 1;
                         int step = avx < bvx ? 1 : -1;
                         double iterator = avx;
                         while (true) {
@@ -393,6 +401,8 @@ public class Runtime {
                         QValue rangeStep = run(((BinaryOperatorNode) node).rnode, scope);
                         Assert.require(QValue.isNum(rangeStart, rangeEnd, rangeStep),
                                 "run:binaryop:step:expected numbers", current.codePos);
+                        ((NumType) rangeEnd.v).value = ((BinaryOperatorNode) node).operator.c.equals(":+")?
+                                ((NumType) rangeEnd.v).value : ((NumType) rangeEnd.v).value - 1;
                         double iter = ((NumType) rangeStart.v).value;
                         boolean canRun = true;
                         ListType l = new ListType();
@@ -411,7 +421,6 @@ public class Runtime {
                     }
                     case "in": {
                         if (QValue.isStr(a, b)) {
-
                             return new QValue(new BoolType(
                                     ((StringType) av).value.contains(((StringType) bv).value)));
                         } else if (QValue.isList(b)) {
@@ -769,6 +778,8 @@ public class Runtime {
                     baseV = run(range.lnode, scope).v;
                     ceilV = run(range.rnode, scope).v;
                 }
+                ((NumType) ceilV).value = range.operator.c.equals(":+")?
+                        ((NumType) ceilV).value : ((NumType) ceilV).value - 1;
                 if (!QType.isNum(baseV, ceilV))
                     throw new RuntimeStriker("run:through:There are some non-num values", current.codePos);
                 if (!(stepV instanceof NumType) && stepV != null)
