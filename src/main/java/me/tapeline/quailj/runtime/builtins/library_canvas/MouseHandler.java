@@ -6,6 +6,7 @@ import java.awt.event.MouseListener;
 public class MouseHandler implements MouseListener {
 
     public volatile boolean mouseDown = false;
+    public volatile int mouseBtn = -1;
 
     @Override
     public void mouseClicked(MouseEvent e) {
@@ -14,15 +15,15 @@ public class MouseHandler implements MouseListener {
 
     @Override
     public void mousePressed(MouseEvent e) {
-        if (e.getButton() == MouseEvent.BUTTON1) {
-            mouseDown = true;
-        }
+        mouseDown = true;
+        mouseBtn = e.getButton();
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
         if (e.getButton() == MouseEvent.BUTTON1) {
             mouseDown = false;
+            mouseBtn = -1;
         }
     }
 

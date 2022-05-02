@@ -6,10 +6,17 @@ public class RuntimeStriker extends Exception {
     public QValue val;
     public int posLine;
     public int posChar;
+    public int health = 1;
 
     public RuntimeStriker(RuntimeStrikerType typ) {
         super(typ.name());
         type = typ;
+    }
+
+    public RuntimeStriker(RuntimeStrikerType typ, double hp) {
+        super(typ.name());
+        type = typ;
+        health = (int) hp;
     }
 
     public RuntimeStriker(String message) {

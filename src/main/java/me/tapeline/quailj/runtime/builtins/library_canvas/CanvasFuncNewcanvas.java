@@ -19,15 +19,16 @@ public class CanvasFuncNewcanvas extends FuncType {
         Assert.require(a.get(1).v instanceof NumType, "canvas newcanvas:invalid arg1 type");
         Assert.require(a.get(2).v instanceof NumType, "canvas newcanvas:invalid arg2 type");
         QCanvas canvas = new QCanvas((int) ((NumType) a.get(1).v).value, (int) ((NumType) a.get(2).v).value);
-        QWindow window = new QWindow(((StringType) a.get(0).v).value, canvas);
+        QWindow window = new QWindow(runtime, ((StringType) a.get(0).v).value, canvas);
         JavaType<QWindow> val = new JavaType<>(window);
-        val.table.put("clear", new QValue(new CanvasFuncClear()));
-        val.table.put("pixel", new QValue(new CanvasFuncPixel()));
-        val.table.put("line", new QValue(new CanvasFuncLine()));
-        val.table.put("update", new QValue(new CanvasFuncUpdate()));
-        val.table.put("text", new QValue(new CanvasFuncText()));
-        val.table.put("poly", new QValue(new CanvasFuncPoly()));
-        val.table.put("mouse", new QValue(new CanvasFuncMouse()));
+        val.table.put("clear",      new QValue(new CanvasFuncClear()));
+        val.table.put("pixel",      new QValue(new CanvasFuncPixel()));
+        val.table.put("line",       new QValue(new CanvasFuncLine()));
+        val.table.put("update",     new QValue(new CanvasFuncUpdate()));
+        val.table.put("text",       new QValue(new CanvasFuncText()));
+        val.table.put("poly",       new QValue(new CanvasFuncPoly()));
+        val.table.put("mouse",      new QValue(new CanvasFuncMouse()));
+        val.table.put("keyboard",   new QValue(new CanvasFuncKeyboard()));
         return new QValue(val);
     }
 

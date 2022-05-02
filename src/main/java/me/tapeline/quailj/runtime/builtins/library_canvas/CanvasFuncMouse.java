@@ -27,6 +27,7 @@ public class CanvasFuncMouse extends FuncType {
         data.put("x", new QValue(point.x - win.f.getX()));
         data.put("y", new QValue(point.y - win.f.getY()));
         data.put("pressed", new QValue(win.mouse.mouseDown));
+        data.put("button", new QValue(win.mouse.mouseBtn));
         return new QValue(new ContainerType(data));
     }
 

@@ -1,5 +1,6 @@
 package me.tapeline.quailj.runtime;
 
+import com.sun.istack.internal.Nullable;
 import me.tapeline.quailj.debugging.*;
 import me.tapeline.quailj.lexer.*;
 import me.tapeline.quailj.libmanagement.*;
@@ -33,11 +34,13 @@ public class Runtime {
     public IOManager io;
     public EmbedIntegrator embedIntegrator;
     public static CallTraceRecord mainRecord = new CallTraceRecord();
+    public String path;
 
     public Runtime(Node rootNode, IOManager io, String path) {
         this.rootNode = rootNode;
         this.scope = new Memory();
         this.io = io;
+        this.path = path;
         scope.set("scripthome", new QValue((new File(path).getParent())));
         this.embedIntegrator = new EmbedIntegrator(this);
         defineBuiltIns();
@@ -55,6 +58,11 @@ public class Runtime {
         scope.set("put",        new QValue(new FuncPut()));
         scope.set("input",      new QValue(new FuncInput()));
         scope.set("newevent",   new QValue(new FuncNewevent()));
+        scope.set("char",       new QValue(new FuncChar()));
+        scope.set("ord",        new QValue(new FuncOrd()));
+        scope.set("exec",       new QValue(new FuncExec()));
+        scope.set("table",      new QValue(new FuncTable()));
+        scope.set("thread",     new QValue(new FuncThread()));
 
         scope.set("clock",  new QValue(new FuncClock()));
         scope.set("millis", new QValue(new FuncMillis()));
@@ -87,16 +95,24 @@ public class Runtime {
 
         scope.set("String", new QValue(new ContainerType("String", "container",
                 new HashMap<>(), false)));
-        StringType.tableToClone.put("get",          new QValue(new StringFuncGet()));
-        StringType.tableToClone.put("replace",      new QValue(new StringFuncReplace()));
-        StringType.tableToClone.put("size",         new QValue(new StringFuncSize()));
-        StringType.tableToClone.put("sub",          new QValue(new StringFuncSub()));
-        StringType.tableToClone.put("upper",        new QValue(new StringFuncUpper()));
-        StringType.tableToClone.put("lower",        new QValue(new StringFuncLower()));
-        StringType.tableToClone.put("capitalize",   new QValue(new StringFuncCapitalize()));
-        StringType.tableToClone.put("split",        new QValue(new StringFuncSplit()));
-        StringType.tableToClone.put("find",         new QValue(new StringFuncFind()));
-        StringType.tableToClone.put("reverse",      new QValue(new StringFuncReverse()));
+        StringType.tableToClone.put("get",              new QValue(new StringFuncGet()));
+        StringType.tableToClone.put("replace",          new QValue(new StringFuncReplace()));
+        StringType.tableToClone.put("size",             new QValue(new StringFuncSize()));
+        StringType.tableToClone.put("sub",              new QValue(new StringFuncSub()));
+        StringType.tableToClone.put("upper",            new QValue(new StringFuncUpper()));
+        StringType.tableToClone.put("lower",            new QValue(new StringFuncLower()));
+        StringType.tableToClone.put("capitalize",       new QValue(new StringFuncCapitalize()));
+        StringType.tableToClone.put("split",            new QValue(new StringFuncSplit()));
+        StringType.tableToClone.put("find",             new QValue(new StringFuncFind()));
+        StringType.tableToClone.put("reverse",          new QValue(new StringFuncReverse()));
+        StringType.tableToClone.put("count",            new QValue(new StringFuncCount()));
+        StringType.tableToClone.put("endswith",         new QValue(new StringFuncEndswith()));
+        StringType.tableToClone.put("isalpha",          new QValue(new StringFuncIsalpha()));
+        StringType.tableToClone.put("isalphanumeric",   new QValue(new StringFuncIsalphanumeric()));
+        StringType.tableToClone.put("isnum",            new QValue(new StringFuncIsnum()));
+        StringType.tableToClone.put("isuppercase",      new QValue(new StringFuncIsuppercase()));
+        StringType.tableToClone.put("islowercase",      new QValue(new StringFuncIslowercase()));
+        StringType.tableToClone.put("startswith",       new QValue(new StringFuncStartswith()));
 
         scope.set("Bool", new QValue(new ContainerType("Bool", "container",
                 new HashMap<>(), false)));
@@ -447,17 +463,22 @@ public class Runtime {
                 else if (range.v instanceof ListType) iterable = ((ListType) range.v).values;
                 else throw new RuntimeStriker("run:every loop:invalid range " + range +
                             ". Only list and string are supported");
+                int doRethrow = 0;
                 String var = ((EveryBlockNode) node).variable.token.c;
                 for (QValue q : iterable) {
                     scope.set(var, q);
                     try {
                         run(((EveryBlockNode) node).nodes, scope);
                     } catch (RuntimeStriker striker) {
-                        if (striker.type.equals(RuntimeStrikerType.BREAK)) break;
+                        if (striker.type.equals(RuntimeStrikerType.BREAK)) {
+                            if (--striker.health > 0) doRethrow = striker.health;
+                            break;
+                        }
                         else if (striker.type.equals(RuntimeStrikerType.CONTINUE)) continue;
                         else throw striker;
                     }
                 }
+                if (doRethrow > 0) throw new RuntimeStriker(RuntimeStrikerType.BREAK, doRethrow);
 
             } else if (node instanceof FieldReferenceNode) {
                 if (!(((FieldReferenceNode) node).rnode instanceof VariableNode))
@@ -589,6 +610,11 @@ public class Runtime {
                     }
                     case "return": {
                         throw new RuntimeStriker(run(((EffectNode) node).operand, scope));
+                    }
+                    case "strike": {
+                        QValue v = run(((EffectNode) node).operand, scope);
+                        Assert.require(QValue.isNum(v), "run:effect:strike:specify a num value");
+                        throw new RuntimeStriker(RuntimeStrikerType.BREAK, ((NumType) v.v).value);
                     }
                 }
 
@@ -747,17 +773,22 @@ public class Runtime {
                 return new QValue(((LiteralStringNode) node).token.c);
 
             } else if (node instanceof LoopStopBlockNode) {
+                int doRethrow = 0;
                 while (true) {
                     try {
                         run(((LoopStopBlockNode) node).nodes, scope);
                         QType condition = run(((LoopStopBlockNode) node).condition, scope).v;
                         if (condition instanceof BoolType && ((BoolType) condition).value) break;
                     } catch (RuntimeStriker striker) {
-                        if (striker.type.equals(RuntimeStrikerType.BREAK)) break;
+                        if (striker.type.equals(RuntimeStrikerType.BREAK)) {
+                            if (--striker.health > 0) doRethrow = striker.health;
+                            break;
+                        }
                         else if (striker.type.equals(RuntimeStrikerType.CONTINUE)) continue;
                         else throw striker;
                     }
                 }
+                if (doRethrow > 0) throw new RuntimeStriker(RuntimeStrikerType.BREAK, doRethrow);
 
             } else if (node instanceof MultiElementNode) {
                 ListType list = new ListType();
@@ -789,6 +820,7 @@ public class Runtime {
                 double step = stepV == null ? (iterator > till ? -1 : 1) : ((NumType) stepV).value;
                 Node toRun = ((ThroughBlockNode) node).nodes;
                 String var = ((ThroughBlockNode) node).variable.token.c;
+                int doRethrow = 0;
                 while (true) {
                     if (((NumType) baseV).value < till && (iterator > till)) break;
                     if (((NumType) baseV).value > till && (iterator < till)) break;
@@ -796,7 +828,10 @@ public class Runtime {
                     try {
                         run(toRun, scope);
                     } catch (RuntimeStriker striker) {
-                        if (striker.type.equals(RuntimeStrikerType.BREAK)) break;
+                        if (striker.type.equals(RuntimeStrikerType.BREAK)) {
+                            if (--striker.health > 0) doRethrow = striker.health;
+                            break;
+                        }
                         else if (striker.type.equals(RuntimeStrikerType.CONTINUE)) {
                             iterator += step;
                             continue;
@@ -804,6 +839,7 @@ public class Runtime {
                     }
                     iterator += step;
                 }
+                if (doRethrow > 0) throw new RuntimeStriker(RuntimeStrikerType.BREAK, doRethrow);
 
             } else if (node instanceof TryCatchBlockNode) {
                 try {
@@ -849,6 +885,7 @@ public class Runtime {
                 return scope.get(((VariableNode) node).token.c);
 
             } else if (node instanceof WhileBlockNode) {
+                int doRethrow = 0;
                 while (true) {
                     try {
                         QType condition = run(((WhileBlockNode) node).condition, scope).v;
@@ -856,8 +893,10 @@ public class Runtime {
                             break;
                         run(((WhileBlockNode) node).nodes, scope);
                     } catch (RuntimeStriker striker) {
-                        if (striker.type.equals(RuntimeStrikerType.BREAK))
+                        if (striker.type.equals(RuntimeStrikerType.BREAK)) {
+                            if (--striker.health > 0) doRethrow = striker.health;
                             break;
+                        }
                         else if (striker.type.equals(RuntimeStrikerType.CONTINUE))
                             continue;
                         else if (striker.type.equals(RuntimeStrikerType.RETURN))
@@ -866,6 +905,7 @@ public class Runtime {
                             throw striker;
                     }
                 }
+                if (doRethrow > 0) throw new RuntimeStriker(RuntimeStrikerType.BREAK, doRethrow);
             }
         } catch (RuntimeStriker striker) {
             if (striker.type.equals(RuntimeStrikerType.EXCEPTION)) {

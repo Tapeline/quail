@@ -24,7 +24,7 @@ public enum TokenType {
                     "should be set|'s)[\\s\\W]"),
     UNARYOPERATOR("UNARYOPERATOR", "(!|\\&|\\*)"),
     WORDUNARYOPERATOR("UNARYOPERATOR", "(not|negate|notnull|exists)[\\s]"),
-    EFFECT("EFFECT", "(assert|use|throw|using|deploy|return)[\\s]"),
+    EFFECT("EFFECT", "(assert|use|throw|using|deploy|strike|return)[\\s]"),
     INSTRUCTION("INSTRUCTION", "(breakpoint|break|continue|memory)[\\s\\W]"),
     CONSUME("CONSUME", "\\.\\.\\."),
     LAMBDAARROW("LAMBDAARROW", "->"),
