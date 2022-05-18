@@ -14,15 +14,15 @@ public class FuncTostring extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
-        if (a.get(0).v instanceof ContainerType &&
-                a.get(0).v.table.containsKey("_tostring") &&
-                a.get(0).v.table.get("_tostring").v instanceof FuncType) {
-            List<QValue> metaArgs = new ArrayList<>(Collections.singletonList(a.get(0)));
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
+        if (a.get(0) instanceof ContainerType &&
+                a.get(0).table.containsKey("_tostring") &&
+                a.get(0).table.get("_tostring") instanceof FuncType) {
+            List<QType> metaArgs = new ArrayList<>(Collections.singletonList(a.get(0)));
             metaArgs.addAll(a);
-            return ((FuncType) a.get(0).v.table.get("_tostring").v).
+            return ((FuncType) a.get(0).table.get("_tostring")).
                     run(runtime, metaArgs);
-        } else return new QValue(a.get(0).v.toString());
+        } else return QType.V(a.get(0).toString());
     }
 
     @Override

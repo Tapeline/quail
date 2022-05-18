@@ -14,11 +14,11 @@ public class ListFuncClear extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         Assert.size(a, 1, "list clear:invalid args size");
-        Assert.require(a.get(0).v instanceof ListType, "list clear:invalid arg0 type");
-        ((ListType) a.get(0).v).values.clear();
-        return new QValue();
+        Assert.require(a.get(0) instanceof ListType, "list clear:invalid arg0 type");
+        ((ListType) a.get(0)).values.clear();
+        return QType.V();
     }
 
     @Override

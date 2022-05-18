@@ -14,11 +14,11 @@ public class StringFuncFind extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         Assert.size(a, 2, "string find:invalid args size");
-        Assert.require(a.get(0).v instanceof StringType, "string find:invalid arg0 type");
-        Assert.require(a.get(1).v instanceof StringType, "string find:invalid arg1 type");
-        return new QValue(((StringType) a.get(0).v).value.indexOf(((StringType) a.get(1).v).value));
+        Assert.require(a.get(0) instanceof StringType, "string find:invalid arg0 type");
+        Assert.require(a.get(1) instanceof StringType, "string find:invalid arg1 type");
+        return QType.V(((StringType) a.get(0)).value.indexOf(((StringType) a.get(1)).value));
     }
 
     @Override

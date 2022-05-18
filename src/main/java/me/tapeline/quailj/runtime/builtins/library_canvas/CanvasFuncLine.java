@@ -13,32 +13,32 @@ public class CanvasFuncLine extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         Assert.size(a, 6, "canvas pixel:invalid args size");
-        Assert.require(a.get(0).v instanceof JavaType, "canvas pixel:invalid arg0 type");
-        Assert.require(a.get(1).v instanceof NumType, "canvas pixel:invalid arg1 type");
-        Assert.require(a.get(2).v instanceof NumType, "canvas pixel:invalid arg2 type");
-        Assert.require(a.get(3).v instanceof NumType, "canvas pixel:invalid arg3 type");
-        Assert.require(a.get(4).v instanceof NumType, "canvas pixel:invalid arg4 type");
-        Assert.require(a.get(5).v instanceof NumType, "canvas pixel:invalid arg5 type");
-        Assert.require(a.get(6).v instanceof NumType, "canvas pixel:invalid arg6 type");
-        Assert.require(a.get(7).v instanceof NumType, "canvas pixel:invalid arg7 type");
-        Assert.require(((JavaType<?>) a.get(0).v).value instanceof QWindow, "canvas clear: invalid arg0 type");
-        ((QWindow) ((JavaType<?>) a.get(0).v).value).canvas.drawings.add(new short[] {
+        Assert.require(a.get(0) instanceof JavaType, "canvas pixel:invalid arg0 type");
+        Assert.require(a.get(1) instanceof NumType, "canvas pixel:invalid arg1 type");
+        Assert.require(a.get(2) instanceof NumType, "canvas pixel:invalid arg2 type");
+        Assert.require(a.get(3) instanceof NumType, "canvas pixel:invalid arg3 type");
+        Assert.require(a.get(4) instanceof NumType, "canvas pixel:invalid arg4 type");
+        Assert.require(a.get(5) instanceof NumType, "canvas pixel:invalid arg5 type");
+        Assert.require(a.get(6) instanceof NumType, "canvas pixel:invalid arg6 type");
+        Assert.require(a.get(7) instanceof NumType, "canvas pixel:invalid arg7 type");
+        Assert.require(((JavaType<?>) a.get(0)).value instanceof QWindow, "canvas clear: invalid arg0 type");
+        ((QWindow) ((JavaType<?>) a.get(0)).value).canvas.drawings.add(new short[] {
                 QCanvas.DR_LINE,
-                (short) ((NumType) a.get(5).v).value,
-                (short) ((NumType) a.get(6).v).value,
-                (short) ((NumType) a.get(7).v).value,
-                (short) ((NumType) a.get(1).v).value,
-                (short) ((NumType) a.get(2).v).value,
-                (short) ((NumType) a.get(3).v).value,
-                (short) ((NumType) a.get(4).v).value,
+                (short) ((NumType) a.get(5)).value,
+                (short) ((NumType) a.get(6)).value,
+                (short) ((NumType) a.get(7)).value,
+                (short) ((NumType) a.get(1)).value,
+                (short) ((NumType) a.get(2)).value,
+                (short) ((NumType) a.get(3)).value,
+                (short) ((NumType) a.get(4)).value,
         });
-        QWindow win = (QWindow) ((JavaType<?>) a.get(0).v).value;
-        QType flag = QValue.nullSafe(a.get(0).v.table.get("autodraw")).v;
+        QWindow win = (QWindow) ((JavaType<?>) a.get(0)).value;
+        QType flag = QType.nullSafe(a.get(0).table.get("autodraw"));
         if (flag instanceof BoolType && ((BoolType) flag).value)
             win.canvas.paint(win.canvas.getGraphics());
-        return new QValue();
+        return QType.V();
     }
 
     @Override

@@ -14,10 +14,10 @@ public class ContainerFuncAlltostring extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         Assert.size(a, 1, "container values:invalid args size");
-        Assert.require(a.get(0).v instanceof ContainerType, "container values:invalid arg0 type");
-        return new QValue(((ContainerType) a.get(0).v).allToString());
+        Assert.require(a.get(0) instanceof ContainerType, "container values:invalid arg0 type");
+        return QType.V(((ContainerType) a.get(0)).allToString());
     }
 
     @Override

@@ -61,19 +61,21 @@ public class Utilities {
         return new int[] {1, pos};
     }
 
-    public static BoolType compare(QValue a, QValue b) {
-        if (QValue.isBool(a, b))
-            return new BoolType( ((BoolType) a.v).value == ((BoolType) b.v).value);
-        else if (QValue.isNum(a, b))
-            return new BoolType( ((NumType) a.v).value == ((NumType) b.v).value);
-        else if (QValue.isStr(a, b))
-            return new BoolType( ((StringType) a.v).value.equals(((StringType) b.v).value));
-        else if (QValue.isList(a, b))
-            return ListUtils.compare(((ListType) a.v).values, ((ListType) b.v).values);
-        else if (QValue.isCont(a, b)) {
-            if (a.v.table.size() != b.v.table.size()) return new BoolType(false);
-            for (String key : a.v.table.keySet())
-                if (!compare(a.v.table.get(key), b.v.table.get(key)).value)
+    public static BoolType compare(QType a, QType b) {
+        if (QType.isBool(a, b))
+            return new BoolType( ((BoolType) a).value == ((BoolType) b).value);
+        else if (a instanceof BinType && b instanceof BinType)
+            return new BoolType(((BinType) a).value == ((BinType) b).value);
+        else if (QType.isNum(a, b))
+            return new BoolType( ((NumType) a).value == ((NumType) b).value);
+        else if (QType.isStr(a, b))
+            return new BoolType( ((StringType) a).value.equals(((StringType) b).value));
+        else if (QType.isList(a, b))
+            return ListUtils.compare(((ListType) a).values, ((ListType) b).values);
+        else if (QType.isCont(a, b)) {
+            if (a.table.size() != b.table.size()) return new BoolType(false);
+            for (String key : a.table.keySet())
+                if (!compare(a.table.get(key), b.table.get(key)).value)
                     return new BoolType(false);
             return new BoolType(true);
         }

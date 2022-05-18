@@ -13,8 +13,8 @@ public class FuncClock extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
-        return new QValue(((float)System.currentTimeMillis()) / 1000F);
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
+        return QType.V(((float)System.currentTimeMillis()) / 1000F);
     }
 
     @Override

@@ -13,9 +13,9 @@ public class FuncPut extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
-        if (a.size() > 0) runtime.io.consolePut(QValue.nullSafe(a.get(0)).toString());
-        return new QValue();
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
+        if (a.size() > 0) runtime.io.consolePut(QType.nullSafe(a.get(0)).toString());
+        return QType.V();
     }
 
     @Override

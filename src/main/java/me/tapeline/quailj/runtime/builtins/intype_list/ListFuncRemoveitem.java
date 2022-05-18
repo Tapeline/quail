@@ -15,16 +15,16 @@ public class ListFuncRemoveitem extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         Assert.size(a, 2, "list removeItem:invalid args size");
-        Assert.require(a.get(0).v instanceof ListType, "list removeItem:invalid arg0 type");
+        Assert.require(a.get(0) instanceof ListType, "list removeItem:invalid arg0 type");
         Assert.require(a.get(1) != null, "list removeItem:invalid arg1 type");
         int index = -1;
-        for (int i = 0; i < ((ListType) a.get(0).v).values.size(); i++) if (Utilities.compare((
-                (ListType) a.get(0).v).values.get(i),
+        for (int i = 0; i < ((ListType) a.get(0)).values.size(); i++) if (Utilities.compare((
+                (ListType) a.get(0)).values.get(i),
                  a.get(1)).value)
             index = i;
-        ((ListType) a.get(0).v).values.remove(index);
+        ((ListType) a.get(0)).values.remove(index);
         return a.get(0);
     }
 

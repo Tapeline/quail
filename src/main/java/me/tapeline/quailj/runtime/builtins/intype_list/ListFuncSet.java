@@ -14,12 +14,12 @@ public class ListFuncSet extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         Assert.size(a, 3, "list set:invalid args size");
-        Assert.require(QValue.isList(a.get(0)) && QType.isNum(a.get(1).v), "list set:invalid types");
-        Assert.require(((ListType) a.get(0).v).values.size() > ((NumType) a.get(1).v).value,
+        Assert.require(QType.isList(a.get(0)) && QType.isNum(a.get(1)), "list set:invalid types");
+        Assert.require(((ListType) a.get(0)).values.size() > ((NumType) a.get(1)).value,
                 "list set:out of bounds");
-        return ((ListType) a.get(0).v).values.set((int) ((NumType) a.get(1).v).value, a.get(2));
+        return ((ListType) a.get(0)).values.set((int) ((NumType) a.get(1)).value, a.get(2));
     }
 
     @Override

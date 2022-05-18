@@ -14,11 +14,11 @@ import java.util.List;
 public class FuncType extends QType {
 
     public String name;
-    public List<VariableNode> args = new ArrayList<>();
-    public BlockNode code;
+    public transient List<VariableNode> args = new ArrayList<>();
+    public transient BlockNode code;
     public boolean restrictMetacalls = false;
 
-    public static HashMap<String, QValue> tableToClone = new HashMap<>();
+    public static HashMap<String, QType> tableToClone = new HashMap<>();
 
     public FuncType(String name, List<VariableNode> args, BlockNode code, Object marker) {
         this.code = code;
@@ -55,12 +55,12 @@ public class FuncType extends QType {
         table.putAll(tableToClone);
     }
 
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         Memory mem = new Memory(runtime.scope);
         for (int i = 0; i < Math.min(args.size(), a.size()); i++) {
             if (args.get(i).isConsumer) {
                 ListType l = new ListType(a.subList(i, a.size()));
-                mem.set(args.get(i).token.c, new QValue(l));
+                mem.set(args.get(i).token.c, l);
             } else mem.set(args.get(i).token.c, a.get(i));
         }
         try {
@@ -72,7 +72,7 @@ public class FuncType extends QType {
                 throw striker;
             }
         }
-        return new QValue();
+        return new QType();
     }
 
     @Override

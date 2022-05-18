@@ -22,7 +22,7 @@ public enum TokenType {
                     "in power of|plus|minus|divided by|multiplied by|is greater than|is less than|is greater or equal to|" +
                     "is less or equal to|is|step|should have|should be|should now be|should now be set|"+
                     "should be set|'s)[\\s\\W]"),
-    UNARYOPERATOR("UNARYOPERATOR", "(!|\\&|\\*)"),
+    UNARYOPERATOR("UNARYOPERATOR", "(!|\\&|\\*|##)"),
     WORDUNARYOPERATOR("UNARYOPERATOR", "(not|negate|notnull|exists)[\\s]"),
     EFFECT("EFFECT", "(assert|use|throw|using|deploy|strike|return)[\\s]"),
     INSTRUCTION("INSTRUCTION", "(breakpoint|break|continue|memory)[\\s\\W]"),

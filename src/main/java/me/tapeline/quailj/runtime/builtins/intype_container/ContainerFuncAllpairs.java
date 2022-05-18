@@ -14,14 +14,12 @@ public class ContainerFuncAllpairs extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         Assert.size(a, 1, "container pairs:invalid args size");
-        Assert.require(a.get(0).v instanceof ContainerType, "container pairs:invalid arg0 type");
+        Assert.require(a.get(0) instanceof ContainerType, "container pairs:invalid arg0 type");
         ListType l = new ListType();
-        QType.forEachNotBuiltIn(a.get(0).v, (k, v) -> new QValue(
-                new ListType(Arrays.asList(new QValue(k), v))
-        ));
-        return new QValue(l);
+        a.get(0).table.forEach((k, v) -> l.values.add(new ListType(Arrays.asList(QType.V(k), v))));
+        return l;
     }
 
     @Override

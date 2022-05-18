@@ -14,8 +14,8 @@ public class RandomFuncToss extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
-        return new QValue(new Random().nextBoolean());
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
+        return QType.V(new Random().nextBoolean());
     }
 
     @Override

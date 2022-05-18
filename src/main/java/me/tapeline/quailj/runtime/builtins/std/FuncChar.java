@@ -13,10 +13,10 @@ public class FuncChar extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
-        if (a.size() < 1 || !(a.get(0).v instanceof NumType))
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
+        if (a.size() < 1 || !(a.get(0) instanceof NumType))
             throw new RuntimeStriker("func char:specify a numeric value!");
-        return new QValue(((char) ((Double) ((NumType) a.get(0).v).value).intValue()) + "");
+        return QType.V(((char) ((Double) ((NumType) a.get(0)).value).intValue()) + "");
     }
 
     @Override

@@ -14,11 +14,11 @@ public class StringFuncEndswith extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         Assert.size(a, 2, "string endswith:invalid args size");
-        Assert.require(a.get(0).v instanceof StringType, "string endswith:invalid arg0 type");
-        Assert.require(a.get(1).v instanceof StringType, "string endswith:invalid arg1 type");
-        return new QValue(((StringType) a.get(0).v).value.endsWith(a.get(0).toString()));
+        Assert.require(a.get(0) instanceof StringType, "string endswith:invalid arg0 type");
+        Assert.require(a.get(1) instanceof StringType, "string endswith:invalid arg1 type");
+        return QType.V(((StringType) a.get(0)).value.endsWith(a.get(0).toString()));
     }
 
     @Override

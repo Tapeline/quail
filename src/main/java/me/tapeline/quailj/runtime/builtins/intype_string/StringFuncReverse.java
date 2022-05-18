@@ -16,12 +16,12 @@ public class StringFuncReverse extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         Assert.size(a, 1, "string reverse:invalid args size");
-        Assert.require(a.get(0).v instanceof StringType, "string reverse:invalid arg0 type");
-        StringBuilder sb = new StringBuilder(((StringType) a.get(0).v).value);
+        Assert.require(a.get(0) instanceof StringType, "string reverse:invalid arg0 type");
+        StringBuilder sb = new StringBuilder(((StringType) a.get(0)).value);
         sb.reverse();
-        return new QValue(sb.toString());
+        return QType.V(sb.toString());
     }
 
     @Override

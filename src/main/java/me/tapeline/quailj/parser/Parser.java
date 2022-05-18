@@ -564,7 +564,8 @@ public class Parser {
                 "!",
                 "-",
                 "&",
-                "*"}) != null) {
+                "*",
+                "##"}) != null) {
             Token operator = previous();
             Node right = EParseUnary();
             return new UnaryOperatorNode(operator, right);

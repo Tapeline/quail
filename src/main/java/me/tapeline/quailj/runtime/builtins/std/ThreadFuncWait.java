@@ -14,12 +14,12 @@ public class ThreadFuncWait extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         Assert.require(a.size() == 1, "thread wait:invalid args size");
-        Assert.require(a.get(0).v instanceof JavaType
-                && ((JavaType<?>) a.get(0).v).value instanceof QThread,
+        Assert.require(a.get(0) instanceof JavaType
+                && ((JavaType<?>) a.get(0)).value instanceof QThread,
                 "thread wait:not a thread");
-        QThread thread = ((QThread) ((JavaType<?>) a.get(0).v).value);
+        QThread thread = ((QThread) ((JavaType<?>) a.get(0)).value);
         while (thread.isAlive()) {}
         return thread.ret;
     }

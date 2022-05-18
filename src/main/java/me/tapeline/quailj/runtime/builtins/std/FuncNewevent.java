@@ -14,17 +14,17 @@ public class FuncNewevent extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         if (a.size() < 1)
             throw new RuntimeStriker("newevent:invalid args length");
         ContainerType metadata = new ContainerType("_anonymous", "container", new HashMap<>(), false);
         if (a.size() > 1)
-            if (a.get(1).v instanceof ContainerType)
-                metadata = (ContainerType) a.get(1).v;
+            if (a.get(1) instanceof ContainerType)
+                metadata = (ContainerType) a.get(1);
             else throw new RuntimeStriker("newevent:event metadata can only be a container");
-        String event = a.get(0).v.toString();
+        String event = a.get(0).toString();
         Runtime.callEvent(runtime, event, metadata);
-        return new QValue();
+        return QType.V();
     }
 
     @Override

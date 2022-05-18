@@ -14,9 +14,9 @@ public class NumFuncFloor extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
-        Assert.require(QType.isNum(a.get(0).v), "floor:NaN");
-        return new QValue(Math.floor(((NumType) a.get(0).v).value));
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
+        Assert.require(QType.isNum(a.get(0)), "floor:NaN");
+        return QType.V(Math.floor(((NumType) a.get(0)).value));
     }
 
     @Override

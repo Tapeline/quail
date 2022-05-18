@@ -1,14 +1,14 @@
 package me.tapeline.quailj.runtime;
 
 import me.tapeline.quailj.types.QType;
-import me.tapeline.quailj.types.QValue;
+import me.tapeline.quailj.types.QType;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class Memory {
 
-    public Map<String, QValue> mem = new HashMap<>();
+    public Map<String, QType> mem = new HashMap<>();
     public Memory enclosing;
 
     public Memory() {
@@ -24,7 +24,7 @@ public class Memory {
         else return mem.containsKey(key);
     }
 
-    public void set(String a, QValue val) {
+    public void set(String a, QType val) {
         if (enclosing != null) {
             if (hasParentalDefinition(a)) enclosing.set(a, val);
             else mem.put(a, val);
@@ -38,12 +38,12 @@ public class Memory {
         } else mem.remove(a);
     }
 
-    public QValue get(String a) {
-        QValue v = null;
-        if (hasParentalDefinition(a) && enclosing != null) v = enclosing.get(a);
+    public QType get(String a) {
+        QType v = null;
+        if (enclosing != null && hasParentalDefinition(a)) v = enclosing.get(a);
         else v = mem.get(a);
         if (v == null) {
-            QValue q = new QValue();
+            QType q = new QType();
             mem.put(a, q);
             return q;
         } else return v;

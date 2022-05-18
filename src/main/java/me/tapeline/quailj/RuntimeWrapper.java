@@ -7,9 +7,11 @@ import me.tapeline.quailj.parser.nodes.Node;
 import me.tapeline.quailj.platformspecific.IOManager;
 import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.runtime.builtins.library_canvas.LibraryCanvas;
+import me.tapeline.quailj.runtime.builtins.library_math.LibraryMath;
+import me.tapeline.quailj.runtime.builtins.library_nest.LibraryNest;
 import me.tapeline.quailj.runtime.builtins.library_random.LibraryRandom;
 import me.tapeline.quailj.types.QType;
-import me.tapeline.quailj.types.QValue;
+import me.tapeline.quailj.types.QType;
 import me.tapeline.quailj.types.RuntimeStriker;
 import me.tapeline.quailj.utils.Pair;
 import me.tapeline.quailj.utils.Utilities;
@@ -30,7 +32,7 @@ public class RuntimeWrapper {
         this.path = path;
     }
 
-    public Pair<QValue, Runtime> run() throws RuntimeStriker {
+    public Pair<QType, Runtime> run() throws RuntimeStriker {
         Runtime runtime = null;
         try {
             Utilities.init();
@@ -44,8 +46,10 @@ public class RuntimeWrapper {
             runtime = new Runtime(root, io, path);
             Runtime.registerLibrary(new LibraryRandom());
             Runtime.registerLibrary(new LibraryCanvas());
+            Runtime.registerLibrary(new LibraryNest());
+            Runtime.registerLibrary(new LibraryMath());
 
-            QValue r = runtime.run(root, runtime.scope);
+            QType r = runtime.run(root, runtime.scope);
             return new Pair<>(r, runtime);
         } catch (RuntimeStriker striker) {
             if (striker.isNotException()) {

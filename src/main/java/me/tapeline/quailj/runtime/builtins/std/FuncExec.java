@@ -17,7 +17,7 @@ public class FuncExec extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         Assert.require(a.size() > 0, "func exec:invalid args size");
         Lexer lexer = new Lexer(a.get(0).toString());
         Parser parser = new Parser(lexer.lexAndFix());
@@ -28,7 +28,7 @@ public class FuncExec extends FuncType {
             if (striker.type.equals(RuntimeStrikerType.RETURN)) return striker.val;
             if (striker.type.equals(RuntimeStrikerType.EXCEPTION)) throw striker;
         }
-        return new QValue();
+        return QType.V();
     }
 
     @Override

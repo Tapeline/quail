@@ -2,7 +2,7 @@ package me.tapeline.quailj.debugging;
 
 import me.tapeline.quailj.parser.nodes.FunctionCallNode;
 import me.tapeline.quailj.types.QType;
-import me.tapeline.quailj.types.QValue;
+import me.tapeline.quailj.types.QType;
 import me.tapeline.quailj.utils.StringUtils;
 
 import java.util.ArrayList;
@@ -14,7 +14,7 @@ public class CallTraceRecord extends TracedAction {
     public List<String> args = new ArrayList<>();
     public List<TracedAction> innerActions = new ArrayList<>();
 
-    public CallTraceRecord(FunctionCallNode node, List<QValue> casted) {
+    public CallTraceRecord(FunctionCallNode node, List<QType> casted) {
         casted.forEach((v) -> args.add(v.toString()));
         code = node.toString();
     }

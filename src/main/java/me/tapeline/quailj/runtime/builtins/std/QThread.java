@@ -11,14 +11,24 @@ public class QThread extends Thread {
     public FuncType runnable;
     public Runtime outer;
     public Runtime inner;
-    public List<QValue> args;
-    public QValue ret = new QValue();
+    public List<QType> args;
+    public QType ret = QType.V();
 
-    public QThread(Runtime r, FuncType f, List<QValue> casted) {
+    public QThread(Runtime r, FuncType f, List<QType> casted) {
         outer = r;
         runnable = f;
         inner = new Runtime(null, outer.io, outer.path);
         args = casted;
+    }
+
+    public void setThreadObject(QType value) {
+        args.add(0, value);
+    }
+
+    public void goodNight(long t) {
+        try {
+            sleep(t);
+        } catch (InterruptedException ignored) {}
     }
 
     @Override
@@ -26,10 +36,11 @@ public class QThread extends Thread {
         try {
             ret = runnable.run(inner, args);
         } catch (RuntimeStriker e) {
-            HashMap<String, QValue> data = new HashMap<>();
-            data.put("error", new QValue(true));
+            e.printStackTrace();
+            HashMap<String, QType> data = new HashMap<>();
+            data.put("error", QType.V(true));
             data.put("message", e.val);
-            ret = new QValue(new ContainerType(data));
+            ret = new ContainerType(data);
         }
     }
 }

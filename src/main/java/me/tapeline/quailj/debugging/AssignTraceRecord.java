@@ -2,7 +2,7 @@ package me.tapeline.quailj.debugging;
 
 import me.tapeline.quailj.parser.nodes.Node;
 import me.tapeline.quailj.types.QType;
-import me.tapeline.quailj.types.QValue;
+import me.tapeline.quailj.types.QType;
 import me.tapeline.quailj.utils.StringUtils;
 
 public class AssignTraceRecord extends TracedAction {
@@ -11,7 +11,7 @@ public class AssignTraceRecord extends TracedAction {
     public String previousState;
     public String object;
 
-    public AssignTraceRecord(Node subj, QValue old, QValue val) {
+    public AssignTraceRecord(Node subj, QType old, QType val) {
         subject = subj.toString();
         previousState = old != null? old.toString() : "java null";
         object = val != null? val.toString() : "java null";

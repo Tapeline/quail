@@ -10,7 +10,7 @@ public class QWindow {
 
     public Frame f;
     public QCanvas canvas;
-    public MouseHandler mouse = new MouseHandler();
+    public MouseHandler mouse;
     public KeyHandler keyboard;
 
     public QWindow(Runtime r, String name, QCanvas c) {
@@ -24,10 +24,12 @@ public class QWindow {
                 f.dispose();
             }
         });
+        mouse = new MouseHandler(r);
         f.addMouseListener(mouse);
         canvas.addMouseListener(mouse);
         keyboard = new KeyHandler(r);
         canvas.addKeyListener(keyboard);
+        f.addKeyListener(keyboard);
         f.setVisible(true);
     }
 

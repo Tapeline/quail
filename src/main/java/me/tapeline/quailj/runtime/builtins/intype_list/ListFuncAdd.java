@@ -14,12 +14,12 @@ public class ListFuncAdd extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         Assert.size(a, 2, "list add:invalid args size");
-        Assert.require(a.get(0).v instanceof ListType, "list add:invalid arg0 type");
+        Assert.require(a.get(0) instanceof ListType, "list add:invalid arg0 type");
         Assert.require(a.get(1) != null, "list add:invalid arg1 type");
-        ((ListType) a.get(0).v).values.add(a.get(1));
-        return new QValue();
+        ((ListType) a.get(0)).values.add(a.get(1));
+        return QType.V();
     }
 
     @Override

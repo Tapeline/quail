@@ -14,11 +14,11 @@ public class ContainerFuncContains extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         Assert.size(a, 2, "container contains:invalid args size");
-        Assert.require(a.get(0).v instanceof ContainerType, "container contains:invalid arg0 type");
-        Assert.require(a.get(1).v instanceof StringType, "container contains:invalid arg1 type");
-        return new QValue(a.get(0).v.table.containsKey(((StringType) a.get(1).v).value));
+        Assert.require(a.get(0) instanceof ContainerType, "container contains:invalid arg0 type");
+        Assert.require(a.get(1) instanceof StringType, "container contains:invalid arg1 type");
+        return QType.V(a.get(0).table.containsKey(((StringType) a.get(1)).value));
     }
 
     @Override

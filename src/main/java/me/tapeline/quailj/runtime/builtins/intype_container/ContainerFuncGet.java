@@ -14,11 +14,11 @@ public class ContainerFuncGet extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         Assert.size(a, 2, "container get:invalid args size");
-        Assert.require(a.get(0).v instanceof ContainerType, "container get:invalid arg0 type");
-        Assert.require(a.get(1).v instanceof StringType, "container get:invalid arg1 type");
-        return a.get(0).v.table.get(((StringType) a.get(1).v).value);
+        Assert.require(a.get(0) instanceof ContainerType, "container get:invalid arg0 type");
+        Assert.require(a.get(1) instanceof StringType, "container get:invalid arg1 type");
+        return a.get(0).table.get(((StringType) a.get(1)).value);
     }
 
     @Override

@@ -48,36 +48,36 @@ public class StringUtils {
         return ss.toString();
     }
 
-    public static List<QValue> div(String s, double c) {
+    public static List<QType> div(String s, double c) {
         int partLen = (int) Math.round(Math.floor(s.length() / c));
-        List<QValue> parts = new ArrayList<>();
+        List<QType> parts = new ArrayList<>();
         int i = 0;
         while (i < s.length()) {
-            parts.add(new QValue(s.substring(i, i + partLen)));
+            parts.add(new StringType(s.substring(i, i + partLen)));
             i += partLen;
         }
         if (i - partLen != s.length() - 1) {
-            parts.add(new QValue(s.substring(i)));
+            parts.add(new StringType(s.substring(i)));
         }
         return parts;
     }
 
-    public static List<QValue> mod(String s, double c) {
+    public static List<QType> mod(String s, double c) {
         int partLen = (int) Math.round(Math.floor(s.length() / c));
-        List<QValue> parts = new ArrayList<>();
+        List<QType> parts = new ArrayList<>();
         int i = 0;
         while (i < s.length()) {
-            parts.add(new QValue(s.substring(i, i + partLen)));
+            parts.add(new StringType(s.substring(i, i + partLen)));
             i += partLen;
         }
         return parts;
     }
 
-    public static List<QValue> split(String s, String d) {
+    public static List<QType> split(String s, String d) {
         String[] l = s.split(d);
-        List<QValue> ll = new ArrayList<>();
+        List<QType> ll = new ArrayList<>();
         for (String s1 : l)
-            ll.add(new QValue(s1));
+            ll.add(new StringType(s1));
         return ll;
     }
 }

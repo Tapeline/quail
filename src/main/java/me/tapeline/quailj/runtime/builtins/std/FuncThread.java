@@ -18,19 +18,22 @@ public class FuncThread extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         Assert.require(a.size() > 0, "func thread:invalid args size");
-        Assert.require(QValue.isFunc(a.get(0)), "func thread:thread should be function");
+        Assert.require(QType.isFunc(a.get(0)), "func thread:thread should be function");
         if (a.size() == 2)
-            Assert.require(QValue.isList(a.get(1)), "func thread:expected list of args");
-        QThread thread = new QThread(runtime, ((FuncType) a.get(0).v),
-                a.size() == 1? new ArrayList<>() : ((ListType) a.get(1).v).values);
+            Assert.require(QType.isList(a.get(1)), "func thread:expected list of args");
+        QThread thread = new QThread(runtime, ((FuncType) a.get(0)),
+                a.size() == 1? new ArrayList<>() : ((ListType) a.get(1)).values);
         JavaType<QThread> val = new JavaType<>(thread);
-        val.table.put("start",   new QValue(new ThreadFuncStart()));
-        val.table.put("result",  new QValue(new ThreadFuncResult()));
-        val.table.put("isended", new QValue(new ThreadFuncIsended()));
-        val.table.put("wait",    new QValue(new ThreadFuncWait()));
-        return new QValue(val);
+        val.table.put("start",   new ThreadFuncStart());
+        val.table.put("result",  new ThreadFuncResult());
+        val.table.put("isended", new ThreadFuncIsended());
+        val.table.put("wait",    new ThreadFuncWait());
+        val.table.put("sleep",   new ThreadFuncSleep());
+        val.table.put("wake",    new ThreadFuncWake());
+        thread.setThreadObject(val);
+        return val;
     }
 
     @Override

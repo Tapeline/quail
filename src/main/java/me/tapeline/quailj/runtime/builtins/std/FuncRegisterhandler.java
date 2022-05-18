@@ -15,11 +15,11 @@ public class FuncRegisterhandler extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
-        Assert.require(a.get(1).v instanceof FuncType && a.get(0).v instanceof StringType,
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
+        Assert.require(a.get(1) instanceof FuncType && a.get(0) instanceof StringType,
                 "func registerhandler:invalid args");
-        String event = ((StringType) a.get(0).v).value;
-        FuncType f = (FuncType) a.get(1).v.copy();
+        String event = ((StringType) a.get(0)).value;
+        FuncType f = (FuncType) a.get(1).copy();
         if (runtime.eventHandlers.containsKey(event)) {
             List<String> e = runtime.eventHandlers.get(event);
             e.add(f.name);
@@ -27,7 +27,7 @@ public class FuncRegisterhandler extends FuncType {
         }
         else runtime.eventHandlers.put(event, new ArrayList<>(Collections.singletonList(
                 f.name)));
-        return new QValue(f.name);
+        return QType.V(f.name);
     }
 
     @Override

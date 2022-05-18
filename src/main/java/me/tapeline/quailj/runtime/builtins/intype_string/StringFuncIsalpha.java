@@ -14,13 +14,13 @@ public class StringFuncIsalpha extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         Assert.size(a, 1, "string isalpha:invalid args size");
-        Assert.require(a.get(0).v instanceof StringType, "string isalpha:invalid arg0 type");
-        String sv = ((StringType) a.get(0).v).value;
+        Assert.require(a.get(0) instanceof StringType, "string isalpha:invalid arg0 type");
+        String sv = ((StringType) a.get(0)).value;
         for (char c : sv.toCharArray())
-            if (!Character.isLetter(c)) return new QValue(false);
-        return new QValue(true);
+            if (!Character.isLetter(c)) return QType.V(false);
+        return QType.V(true);
     }
 
     @Override

@@ -3,7 +3,7 @@ package me.tapeline.quailj.types;
 public class RuntimeStriker extends Exception {
 
     public RuntimeStrikerType type;
-    public QValue val;
+    public QType val;
     public int posLine;
     public int posChar;
     public int health = 1;
@@ -21,19 +21,19 @@ public class RuntimeStriker extends Exception {
 
     public RuntimeStriker(String message) {
         super(message);
-        val = new QValue(message);
+        val = new StringType(message);
         type = RuntimeStrikerType.EXCEPTION;
     }
 
     public RuntimeStriker(String message, int p) {
         super(message);
-        val = new QValue(message);
+        val = new StringType(message);
         type = RuntimeStrikerType.EXCEPTION;
         this.posLine = 0;
         this.posChar = p;
     }
 
-    public RuntimeStriker(QValue v, int pl, int pc) {
+    public RuntimeStriker(QType v, int pl, int pc) {
         super(v.toString());
         val = v;
         type = RuntimeStrikerType.EXCEPTION;
@@ -41,13 +41,13 @@ public class RuntimeStriker extends Exception {
         this.posChar = pc;
     }
 
-    public RuntimeStriker(QValue v) {
+    public RuntimeStriker(QType v) {
         super("return");
         val = v;
         type = RuntimeStrikerType.RETURN;
     }
 
-    public RuntimeStriker(RuntimeStrikerType typ, QValue v) {
+    public RuntimeStriker(RuntimeStrikerType typ, QType v) {
         super(typ.name());
         type = typ;
         val = v;

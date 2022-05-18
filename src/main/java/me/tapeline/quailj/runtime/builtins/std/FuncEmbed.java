@@ -17,16 +17,16 @@ public class FuncEmbed extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         if (a.size() < 3)
             throw new RuntimeStriker("embed:invalid args length");
-        Assert.require(a.get(0).v instanceof StringType, "embed:invalid arg0 type");
-        Assert.require(a.get(1).v instanceof StringType, "embed:invalid arg1 type");
-        Assert.require(a.get(2).v instanceof StringType, "embed:invalid arg2 type");
-        File file = new File(((StringType) a.get(0).v).value);
-        Embed embed = EmbedLoader.loadEmbed(file, ((StringType) a.get(1).v).value, ((StringType) a.get(2).v).value);
-        if (embed == null) return new QValue(1);
-        return new QValue(runtime.embedIntegrator.integrateEmbed(embed));
+        Assert.require(a.get(0) instanceof StringType, "embed:invalid arg0 type");
+        Assert.require(a.get(1) instanceof StringType, "embed:invalid arg1 type");
+        Assert.require(a.get(2) instanceof StringType, "embed:invalid arg2 type");
+        File file = new File(((StringType) a.get(0)).value);
+        Embed embed = EmbedLoader.loadEmbed(file, ((StringType) a.get(1)).value, ((StringType) a.get(2)).value);
+        if (embed == null) return QType.V(1);
+        return QType.V(runtime.embedIntegrator.integrateEmbed(embed));
     }
 
     @Override

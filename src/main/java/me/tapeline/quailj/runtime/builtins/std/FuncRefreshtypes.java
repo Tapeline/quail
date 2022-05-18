@@ -13,13 +13,13 @@ public class FuncRefreshtypes extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
-        NumType.tableToClone.putAll(runtime.scope.get("Number").v.table);
-        BoolType.tableToClone.putAll(runtime.scope.get("Bool").v.table);
-        VoidType.tableToClone.putAll(runtime.scope.get("Null").v.table);
-        StringType.tableToClone.putAll(runtime.scope.get("String").v.table);
-        ListType.tableToClone.putAll(runtime.scope.get("List").v.table);
-        return new QValue();
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
+        NumType.tableToClone.putAll(runtime.scope.get("Number").table);
+        BoolType.tableToClone.putAll(runtime.scope.get("Bool").table);
+        VoidType.tableToClone.putAll(runtime.scope.get("Null").table);
+        StringType.tableToClone.putAll(runtime.scope.get("String").table);
+        ListType.tableToClone.putAll(runtime.scope.get("List").table);
+        return QType.V();
     }
 
     @Override

@@ -14,10 +14,10 @@ public class FuncFileexists extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         if (a.size() < 1)
             throw new RuntimeStriker("fileexists:invalid args length");
-        return new QValue(IOManager.fileExists(a.get(0).v.toString()));
+        return QType.V(IOManager.fileExists(a.get(0).toString()));
     }
 
     @Override

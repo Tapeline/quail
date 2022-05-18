@@ -14,18 +14,19 @@ public class FuncTonum extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
-        if (a.get(0).v instanceof ContainerType &&
-                a.get(0).v.table.containsKey("_tonum") &&
-                a.get(0).v.table.get("_tonum").v instanceof FuncType) {
-            List<QValue> metaArgs = new ArrayList<>(Collections.singletonList(a.get(0)));
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
+        if (a.get(0) instanceof ContainerType &&
+                a.get(0).table.containsKey("_tonum") &&
+                a.get(0).table.get("_tonum") instanceof FuncType) {
+            List<QType> metaArgs = new ArrayList<>(Collections.singletonList(a.get(0)));
             metaArgs.addAll(a);
-            return ((FuncType) a.get(0).v.table.get("_tonum").v).
+            return ((FuncType) a.get(0).table.get("_tonum")).
                     run(runtime, metaArgs);
         } else {
             try {
-                double d = Double.parseDouble(a.get(0).v.toString());
-                return new QValue(d);
+                if (a.get(0) instanceof BoolType) return QType.V(((BoolType) a.get(0)).value? 1 : 0);
+                double d = Double.parseDouble(a.get(0).toString());
+                return QType.V(d);
             } catch (NumberFormatException nfe) {
                 throw new RuntimeStriker("run:tonum:cannot parse number");
             }

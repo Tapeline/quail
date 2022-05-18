@@ -14,11 +14,11 @@ public class FuncFilewrite extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         if (a.size() < 2)
             throw new RuntimeStriker("fileexists:invalid args length");
-        IOManager.fileSet(a.get(0).v.toString(), a.get(1).v.toString());
-        return new QValue();
+        IOManager.fileSet(a.get(0).toString(), a.get(1).toString());
+        return QType.V();
     }
 
     @Override

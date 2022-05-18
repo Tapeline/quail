@@ -14,13 +14,13 @@ public class ContainerFuncAllkeys extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         Assert.size(a, 1, "container allkeys:invalid args size");
-        Assert.require(a.get(0).v instanceof ContainerType, "container allkeys:invalid arg0 type");
+        Assert.require(a.get(0) instanceof ContainerType, "container allkeys:invalid arg0 type");
         ListType l = new ListType();
-        for (String s : a.get(0).v.table.keySet())
-            l.values.add(new QValue(s));
-        return new QValue(l);
+        for (String s : a.get(0).table.keySet())
+            l.values.add(QType.V(s));
+        return l;
     }
 
     @Override

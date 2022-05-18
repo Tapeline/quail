@@ -15,13 +15,13 @@ public class ThreadFuncStart extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         Assert.require(a.size() == 1, "thread start:invalid args size");
-        Assert.require(a.get(0).v instanceof JavaType
-                && ((JavaType<?>) a.get(0).v).value instanceof QThread,
+        Assert.require(a.get(0) instanceof JavaType
+                && ((JavaType<?>) a.get(0)).value instanceof QThread,
                 "thread start:not a thread");
-        ((QThread) ((JavaType<?>) a.get(0).v).value).start();
-        return new QValue();
+        ((QThread) ((JavaType<?>) a.get(0)).value).start();
+        return QType.V();
     }
 
     @Override

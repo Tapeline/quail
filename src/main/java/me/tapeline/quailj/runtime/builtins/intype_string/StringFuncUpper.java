@@ -14,10 +14,10 @@ public class StringFuncUpper extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         Assert.size(a, 1, "string upper:invalid args size");
-        Assert.require(a.get(0).v instanceof StringType, "string upper:invalid arg0 type");
-        return new QValue(((StringType) a.get(0).v).value.toUpperCase());
+        Assert.require(a.get(0) instanceof StringType, "string upper:invalid arg0 type");
+        return QType.V(((StringType) a.get(0)).value.toUpperCase());
     }
 
     @Override

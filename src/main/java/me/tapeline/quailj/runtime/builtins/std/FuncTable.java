@@ -14,11 +14,11 @@ public class FuncTable extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         Assert.require(a.size() > 0, "func table:specify a value!");
-        ContainerType c = new ContainerType(a.get(0).v.table);
-        c.table = a.get(0).v.table;
-        return new QValue(c);
+        ContainerType c = new ContainerType(a.get(0).table);
+        c.table = a.get(0).table;
+        return c;
     }
 
     @Override

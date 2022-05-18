@@ -1,5 +1,5 @@
 package me.tapeline.quailj;
-
+// V0.9
 import me.tapeline.quailj.platformspecific.IOManager;
 import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.types.*;
@@ -25,11 +25,11 @@ public class Main {
 
         String code = IOManager.fileInput(path);
         RuntimeWrapper wrapper = new RuntimeWrapper(code, debug, io, path);
-        Pair<QValue, Runtime> resultPair = null;
+        Pair<QType, Runtime> resultPair = null;
         try {
             resultPair = wrapper.run();
-            QValue result = resultPair.a;
-            if (result != null && !(result.v instanceof VoidType)) {
+            QType result = resultPair.a;
+            if (result != null && !(result instanceof VoidType)) {
                 io.consolePut("Runtime returned " + result + "\n");
             }
         } catch (RuntimeStriker striker) {

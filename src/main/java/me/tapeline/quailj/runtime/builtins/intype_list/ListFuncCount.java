@@ -15,13 +15,13 @@ public class ListFuncCount extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         Assert.size(a, 2, "list count:invalid args size");
-        Assert.require(QType.isList(a.get(0).v), "list count:invalid types");
+        Assert.require(QType.isList(a.get(0)), "list count:invalid types");
         int c = 0;
-        for (QValue v : ((ListType) a.get(0).v).values)
+        for (QType v : ((ListType) a.get(0)).values)
             if (Utilities.compare(v, a.get(1)).value) c++;
-        return new QValue(c);
+        return QType.V(c);
     }
 
     @Override

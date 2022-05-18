@@ -1,10 +1,13 @@
 package me.tapeline.quailj.types;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.HashMap;
 
 public class NumType extends QType {
 
-    public static HashMap<String, QValue> tableToClone = new HashMap<>();
+    public static HashMap<String, QType> tableToClone = new HashMap<>();
 
     public double value = 0D;
 
@@ -12,6 +15,18 @@ public class NumType extends QType {
         value = d;
         this.table = new HashMap<>();
         table.putAll(tableToClone);
+    }
+
+    private void writeObject(ObjectOutputStream oos) throws IOException {
+        oos.defaultWriteObject();
+        oos.writeObject(table);
+        oos.writeDouble(value);
+    }
+
+    private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
+        ois.defaultReadObject();
+        table = (HashMap<String, QType>) ois.readObject();
+        value = ois.readDouble();
     }
 
     @Override

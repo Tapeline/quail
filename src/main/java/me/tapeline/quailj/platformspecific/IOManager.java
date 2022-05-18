@@ -3,9 +3,10 @@ package me.tapeline.quailj.platformspecific;
 import me.tapeline.quailj.parser.nodes.FieldReferenceNode;
 import me.tapeline.quailj.parser.nodes.Node;
 import me.tapeline.quailj.parser.nodes.VariableNode;
-import me.tapeline.quailj.types.RuntimeStriker;
+import me.tapeline.quailj.types.*;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -61,6 +62,20 @@ public class IOManager {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static QType fileBinInput(String path) {
+        try {
+            File file = new File(path);
+            byte[] fileData = new byte[(int) file.length()];
+            DataInputStream dis = new DataInputStream(Files.newInputStream(file.toPath()));
+            dis.readFully(fileData);
+            dis.close();
+            List<QType> l = new ArrayList<>();
+            for (byte b : fileData) l.add(new BinType(b));
+            return new ListType(l);
+        } catch (IOException ignored) {}
+        return new VoidType();
     }
 
     /**

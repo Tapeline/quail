@@ -14,12 +14,12 @@ public class ThreadFuncIsended extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         Assert.require(a.size() == 1, "thread isended:invalid args size");
-        Assert.require(a.get(0).v instanceof JavaType
-                && ((JavaType<?>) a.get(0).v).value instanceof QThread,
+        Assert.require(a.get(0) instanceof JavaType
+                && ((JavaType<?>) a.get(0)).value instanceof QThread,
                 "thread isended:not a thread");
-        return new QValue(((QThread) ((JavaType<?>) a.get(0).v).value).isAlive());
+        return QType.V(((QThread) ((JavaType<?>) a.get(0)).value).isAlive());
     }
 
     @Override

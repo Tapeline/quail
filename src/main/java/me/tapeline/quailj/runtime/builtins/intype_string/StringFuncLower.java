@@ -16,10 +16,10 @@ public class StringFuncLower extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         Assert.size(a, 1, "string lower:invalid args size");
-        Assert.require(a.get(0).v instanceof StringType, "string lower:invalid arg0 type");
-        return new QValue(((StringType) a.get(0).v).value.toLowerCase());
+        Assert.require(a.get(0) instanceof StringType, "string lower:invalid arg0 type");
+        return QType.V(((StringType) a.get(0)).value.toLowerCase());
     }
 
     @Override

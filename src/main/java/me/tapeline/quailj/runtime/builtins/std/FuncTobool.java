@@ -14,18 +14,18 @@ public class FuncTobool extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
-        if (a.get(0).v instanceof ContainerType &&
-                a.get(0).v.table.containsKey("_tobool") &&
-                a.get(0).v.table.get("_tobool").v instanceof FuncType) {
-            List<QValue> metaArgs = new ArrayList<>(Collections.singletonList(a.get(0)));
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
+        if (a.get(0) instanceof ContainerType &&
+                a.get(0).table.containsKey("_tobool") &&
+                a.get(0).table.get("_tobool") instanceof FuncType) {
+            List<QType> metaArgs = new ArrayList<>(Collections.singletonList(a.get(0)));
             metaArgs.addAll(a);
-            return ((FuncType) a.get(0).v.table.get("_tobool").v).
+            return ((FuncType) a.get(0).table.get("_tobool")).
                     run(runtime, metaArgs);
         } else {
             try {
-                boolean b = Boolean.parseBoolean(a.get(0).v.toString());
-                return new QValue(b);
+                boolean b = Boolean.parseBoolean(a.get(0).toString());
+                return QType.V(b);
             } catch (Exception nfe) {
                 throw new RuntimeStriker("run:tobool:cannot parse bool");
             }

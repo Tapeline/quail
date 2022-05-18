@@ -15,10 +15,10 @@ public class ContainerFuncValues extends FuncType {
     }
 
     @Override
-    public QValue run(Runtime runtime, List<QValue> a) throws RuntimeStriker {
+    public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         Assert.size(a, 1, "container values:invalid args size");
-        Assert.require(a.get(0).v instanceof ContainerType, "container values:invalid arg0 type");
-        return new QValue(new ListType(new ArrayList<>(a.get(0).v.table.values())));
+        Assert.require(a.get(0) instanceof ContainerType, "container values:invalid arg0 type");
+        return new ListType(new ArrayList<>(a.get(0).table.values()));
     }
 
     @Override
