@@ -23,7 +23,9 @@ public class Runtime {
     public static QType Void = new VoidType();
     public static List<String> nativeLibNames = new ArrayList<>(Arrays.asList(
             "random",
-            "canvas"
+            "canvas",
+            "nest",
+            "fs"
     ));
     public static HashMap<String, ContainerType> nativeLibs = new HashMap<>();
 
@@ -70,6 +72,7 @@ public class Runtime {
 
         scope.set("byte",       new FuncByte());
         scope.set("bit",        new FuncBit());
+        scope.set("bitset",     new FuncBitset());
         scope.set("out",        new FuncOut());
         scope.set("put",        new FuncPut());
         scope.set("input",      new FuncInput());
@@ -77,6 +80,7 @@ public class Runtime {
         scope.set("char",       new FuncChar());
         scope.set("ord",        new FuncOrd());
         scope.set("exec",       new FuncExec());
+        scope.set("console",    new FuncConsole());
         scope.set("table",      new FuncTable());
         scope.set("thread",     new FuncThread());
 
@@ -94,6 +98,7 @@ public class Runtime {
         scope.set("filewrite",      new FuncFilewrite());
         scope.set("fileread",       new FuncFileread());
         scope.set("binfileread",    new FuncBinfileread());
+        scope.set("binfilewrite",   new FuncBinfilewrite());
         scope.set("fileexists",     new FuncFileexists());
 
         scope.set("nothing",        new VoidType());

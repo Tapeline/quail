@@ -7,6 +7,7 @@ import me.tapeline.quailj.parser.nodes.Node;
 import me.tapeline.quailj.platformspecific.IOManager;
 import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.runtime.builtins.library_canvas.LibraryCanvas;
+import me.tapeline.quailj.runtime.builtins.library_fs.LibraryFs;
 import me.tapeline.quailj.runtime.builtins.library_math.LibraryMath;
 import me.tapeline.quailj.runtime.builtins.library_nest.LibraryNest;
 import me.tapeline.quailj.runtime.builtins.library_random.LibraryRandom;
@@ -48,6 +49,7 @@ public class RuntimeWrapper {
             Runtime.registerLibrary(new LibraryCanvas());
             Runtime.registerLibrary(new LibraryNest());
             Runtime.registerLibrary(new LibraryMath());
+            Runtime.registerLibrary(new LibraryFs());
 
             QType r = runtime.run(root, runtime.scope);
             return new Pair<>(r, runtime);

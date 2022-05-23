@@ -78,6 +78,20 @@ public class IOManager {
         return new VoidType();
     }
 
+    public static void fileBinSet(String path, List<QType> l) throws RuntimeStriker {
+        try {
+            File file = new File(path);
+            byte[] fileData = new byte[(int) l.size()];
+            for (int i = 0; i < l.size(); i++)
+                if (l.get(i) instanceof BinType)
+                    fileData[i] = ((BinType) l.get(i)).value;
+                else throw new RuntimeStriker("not a byte value");
+            DataOutputStream dos = new DataOutputStream(Files.newOutputStream(file.toPath()));
+            dos.write(fileData);
+            dos.close();
+        } catch (IOException ignored) {}
+    }
+
     /**
      * Check if file exists
      */
