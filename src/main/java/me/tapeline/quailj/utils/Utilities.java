@@ -24,7 +24,7 @@ public class Utilities {
         opToString.put(">", "_cmpgt");
         opToString.put("<", "_cmplt");
         opToString.put("get", "_get");
-        opToString.put("tostring", "_tostring_");
+        opToString.put("tostring", "_tostring");
         opToString.put("tonumber", "_tonumber");
         opToString.put("tobool", "_tobool");
         opToString.put("not", "_not");

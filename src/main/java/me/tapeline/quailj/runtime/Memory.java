@@ -43,7 +43,7 @@ public class Memory {
         if (enclosing != null && hasParentalDefinition(a)) v = enclosing.get(a);
         else v = mem.get(a);
         if (v == null) {
-            QType q = new QType();
+            QType q = QType.V();
             mem.put(a, q);
             return q;
         } else return v;
