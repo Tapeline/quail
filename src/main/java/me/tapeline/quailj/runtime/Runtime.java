@@ -93,6 +93,7 @@ public class Runtime {
         scope.set("tobool",         new FuncTobool());
         scope.set("copy",           new FuncCopy());
         scope.set("embed",          new FuncEmbed());
+        scope.set("usejar",         new FuncUsejar());
         scope.set("registerhandler",new FuncRegisterhandler());
 
         scope.set("filewrite",      new FuncFilewrite());

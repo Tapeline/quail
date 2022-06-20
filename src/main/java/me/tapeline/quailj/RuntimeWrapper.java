@@ -12,7 +12,6 @@ import me.tapeline.quailj.runtime.builtins.library_math.LibraryMath;
 import me.tapeline.quailj.runtime.builtins.library_nest.LibraryNest;
 import me.tapeline.quailj.runtime.builtins.library_random.LibraryRandom;
 import me.tapeline.quailj.types.QType;
-import me.tapeline.quailj.types.QType;
 import me.tapeline.quailj.types.RuntimeStriker;
 import me.tapeline.quailj.utils.Pair;
 import me.tapeline.quailj.utils.Utilities;

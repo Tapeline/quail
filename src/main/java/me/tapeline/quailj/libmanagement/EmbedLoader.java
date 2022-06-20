@@ -5,10 +5,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 public class EmbedLoader {
 
@@ -53,6 +52,33 @@ public class EmbedLoader {
         } catch (IOException | ClassNotFoundException | InstantiationException | IllegalAccessException exp) {
             exp.printStackTrace();
         }
+        return null;
+    }
+
+    public static Embed loadFromJar(File file, String mainClass) throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
+        JarFile jarFile = new JarFile(file);
+        Enumeration<JarEntry> e = jarFile.entries();
+
+        URL[] urls = { new URL("jar:file:" + file + "!/") };
+        URLClassLoader cl = URLClassLoader.newInstance(urls);
+
+        while (e.hasMoreElements()) {
+            JarEntry je = e.nextElement();
+            if(je.isDirectory() || !je.getName().endsWith(".class")) {
+                continue;
+            }
+            // -6 because of .class
+            String className = je.getName().substring(0, je.getName().length() - 6);
+            className = className.replace('/', '.');
+            Class c = cl.loadClass(className);
+            if (className.equals(mainClass)) {
+                return (Embed) c.newInstance();
+            }
+            if (Embed.class.isAssignableFrom(c)) {
+                return (Embed) c.newInstance();
+            }
+        }
+
         return null;
     }
 

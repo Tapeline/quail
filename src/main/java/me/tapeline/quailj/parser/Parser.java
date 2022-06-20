@@ -591,7 +591,7 @@ public class Parser {
     }
 
     private Node EParseCall() throws RuntimeStriker {
-        Node expr = EParsePostfix();
+        Node expr = EParsePrimary();
         while (true) {
             if (match(TokenType.LPAR) != null) {
                 expr = EFinishCall(expr);
@@ -615,16 +615,12 @@ public class Parser {
                 break;
             }
         }
-        return expr;
-    }
 
-    private Node EParsePostfix() throws RuntimeStriker {
-        Node expr = EParsePrimary();
-        if (match(new String[] {"["}) != null) {
+        while (match(TokenType.LSPAR) != null) {
             Token t = previous();
             Node index = EParseOr();
-            require(TokenType.RSPAR, "Expected ] to close indexation");
-            return new IndexReferenceNode(t, expr, index);
+            require(TokenType.RSPAR, "Expected ] to close indexing");
+            expr = new IndexReferenceNode(previous(), expr, index);
         }
         return expr;
     }
