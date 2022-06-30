@@ -1,5 +1,6 @@
 package me.tapeline.quailj.utils;
 
+import me.tapeline.quailj.parser.nodes.VariableNode;
 import me.tapeline.quailj.types.*;
 
 import java.util.Arrays;
@@ -90,5 +91,28 @@ public class Utilities {
             if (ch > pos) return new int[] {i + 1, pos - ch};
         }
         return new int[] {lines.length, 0};
+    }
+
+    public static QType getDefaultValue(Class clazz) {
+        QType q = QType.V();
+        if (clazz == BoolType.class) {
+            q = QType.V(false);
+        } else if (clazz == ContainerType.class) {
+            q = new ContainerType(new HashMap<>());
+        } else if (clazz == ListType.class) {
+            q = new ListType();
+        } else if (clazz == NumType.class) {
+            q = new NumType(0);
+        } else if (clazz == StringType.class) {
+            q = new StringType("");
+        }
+        return q;
+    }
+
+    public static QType getDefaultValue(VariableNode n) {
+        for (VariableModifier vm : n.modifiers)
+            if (vm instanceof TypeModifier)
+                return getDefaultValue(((TypeModifier) vm).requiredType);
+        return QType.V();
     }
 }

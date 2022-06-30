@@ -1,5 +1,7 @@
 package me.tapeline.quailj.types;
 
+import me.tapeline.quailj.runtime.VariableTable;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -10,7 +12,7 @@ import java.util.function.BiConsumer;
 
 public class QType implements Serializable {
 
-    public HashMap<String, QType> table;
+    public VariableTable table;
 
     public static QType V(double d) {
         return new NumType(d);
@@ -65,7 +67,7 @@ public class QType implements Serializable {
 
     private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
         ois.defaultReadObject();
-        table = (HashMap<String, QType>) ois.readObject();
+        //table = (HashMap<String, QType>) ois.readObject();
     }
 
     public static QType nullSafeLegacy(QType v) {
@@ -127,7 +129,7 @@ public class QType implements Serializable {
     }
 
     public static void forEachNotBuiltIn(QType q, BiConsumer<String, QType> action) {
-        HashMap<String, QType> toClone = new HashMap<>();
+        VariableTable toClone = new VariableTable();
         if (isNum(q)) toClone = NumType.tableToClone;
         if (isBool(q)) toClone = BoolType.tableToClone;
         if (isFunc(q)) toClone = FuncType.tableToClone;
@@ -135,7 +137,7 @@ public class QType implements Serializable {
         if (isList(q)) toClone = ListType.tableToClone;
         if (isStr(q)) toClone = StringType.tableToClone;
         if (q instanceof VoidType) toClone = VoidType.tableToClone;
-        HashMap<String, QType> finalToClone = toClone;
+        VariableTable finalToClone = toClone;
         q.table.forEach((k, v) -> {
             if (!finalToClone.containsKey(k) && !k.startsWith("_")) {
                 action.accept(k, v);

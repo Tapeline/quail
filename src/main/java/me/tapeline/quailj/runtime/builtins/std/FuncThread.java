@@ -26,12 +26,12 @@ public class FuncThread extends FuncType {
         QThread thread = new QThread(runtime, ((FuncType) a.get(0)),
                 a.size() == 1? new ArrayList<>() : ((ListType) a.get(1)).values);
         JavaType<QThread> val = new JavaType<>(thread);
-        val.table.put("start",   new ThreadFuncStart());
-        val.table.put("result",  new ThreadFuncResult());
-        val.table.put("isended", new ThreadFuncIsended());
-        val.table.put("wait",    new ThreadFuncWait());
-        val.table.put("sleep",   new ThreadFuncSleep());
-        val.table.put("wake",    new ThreadFuncWake());
+        val.table.put(runtime, "start",   new ThreadFuncStart());
+        val.table.put(runtime, "result",  new ThreadFuncResult());
+        val.table.put(runtime, "isended", new ThreadFuncIsended());
+        val.table.put(runtime, "wait",    new ThreadFuncWait());
+        val.table.put(runtime, "sleep",   new ThreadFuncSleep());
+        val.table.put(runtime, "wake",    new ThreadFuncWake());
         thread.setThreadObject(val);
         return val;
     }

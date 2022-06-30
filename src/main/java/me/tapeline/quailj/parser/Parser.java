@@ -4,9 +4,10 @@ import me.tapeline.quailj.lexer.Lexer;
 import me.tapeline.quailj.lexer.Token;
 import me.tapeline.quailj.lexer.TokenType;
 import me.tapeline.quailj.parser.nodes.*;
-import me.tapeline.quailj.types.RuntimeStriker;
+import me.tapeline.quailj.types.*;
 import me.tapeline.quailj.utils.Utilities;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -400,7 +401,7 @@ public class Parser {
                 BlockNode b = blockIfNeeded(parseStatement());
                 return new LiteralFunctionNode(new Token(
                         override.t, getSystemField(override.c), override.p
-                        ), args, b, false);
+                ), args, b, false);
             }
             case "object": {
                 pos++;
@@ -424,18 +425,6 @@ public class Parser {
         EXPRESSION PARSING
     */
     private Node EParseAssignment() throws RuntimeStriker {
-        if (match(new String[] {"num", "string", "list", "bool"}) != null) {
-            Token t = previous();
-            String type = t.c;
-            t.c = "=";
-            Token name = require(TokenType.ID, "Expected ID after initializer");
-            return new BinaryOperatorNode(t, new VariableNode(name),
-                    type.equals("num")? new LiteralNumNode(new Token(TokenType.LITERALNUM, "0", t.p)) :
-                    type.equals("string")? new LiteralStringNode(new Token(TokenType.LITERALSTRING, "", t.p)) :
-                    type.equals("list")? new LiteralListNode(new Token(TokenType.LITERALNUM, "[", t.p)) :
-                    type.equals("bool")? new LiteralBoolNode(new Token(TokenType.LITERALBOOL, "false", t.p)) :
-                    new LiteralNullNode(t));
-        }
 
         Node expr = EParseOr();
 
@@ -459,16 +448,16 @@ public class Parser {
             if (expr instanceof VariableNode) {
                 return new BinaryOperatorNode(new Token(TokenType.BINARYOPERATOR,
                         "=", equals.p), expr, new BinaryOperatorNode(
-                                new Token(TokenType.BINARYOPERATOR,
-                                        equals.c.substring(0, equals.c.length() - 1),
-                                        equals.p), expr, value));
+                        new Token(TokenType.BINARYOPERATOR,
+                                equals.c.substring(0, equals.c.length() - 1),
+                                equals.p), expr, value));
             } else if (expr instanceof FieldReferenceNode) {
                 FieldReferenceNode get = (FieldReferenceNode) expr;
                 return new FieldSetNode(getCurrent(), get.lnode, get.rnode,
                         new BinaryOperatorNode(
-                        new Token(TokenType.BINARYOPERATOR,
-                                equals.c.substring(0, equals.c.length() - 1),
-                                equals.p), get, value));
+                                new Token(TokenType.BINARYOPERATOR,
+                                        equals.c.substring(0, equals.c.length() - 1),
+                                        equals.p), get, value));
             } else if (expr instanceof IndexReferenceNode) {
                 IndexReferenceNode get = (IndexReferenceNode) expr;
                 return new IndexSetNode(getCurrent(), get.lnode, get.rnode,
@@ -630,6 +619,93 @@ public class Parser {
         if (match(TokenType.LITERALNULL  ) != null) return new LiteralNullNode  (previous());
         if (match(TokenType.LITERALNUM   ) != null) return new LiteralNumNode   (previous());
         if (match(TokenType.LITERALSTRING) != null) return new LiteralStringNode(previous());
+
+        if (match(TokenType.TYPE, new String[] {
+                "num", "string", "bool", "void", "anyof",
+                "list", "container", "object", "require", "local"
+        }) != null) {
+            pos--;
+            List<VariableModifier> modifiers = new ArrayList<>();
+            while (match(TokenType.TYPE, new String[] {
+                    "num", "string", "bool", "void", "anyof", "object<",
+                    "list", "container", "object", "require", "local"
+            }) != null) {
+                Token m = previous();
+                if (m.c.equals("require")) {
+                    modifiers.add(new RequireModifier());
+                } else if (m.c.equals("local")) {
+                    modifiers.add(new LocalModifier());
+                } else if (m.c.startsWith("object")) {
+                    if (m.c.endsWith("<")) {
+                        Node objClass = EParseCall();
+                        requireString(TokenType.BINARYOPERATOR, new String[] {">"},
+                                "Expected > to close class-clarification");
+                        TypeModifier mod = new TypeModifier(ContainerType.class);
+                        mod.objectClass = objClass;
+                        modifiers.add(mod);
+                        continue;
+                    } else modifiers.add(new TypeModifier(ContainerType.class));
+                } else if (m.c.equals("anyof")) {
+                    List<TypeModifier> types = new ArrayList<>();
+                    do {
+                        Token m_ = match(TokenType.TYPE, new String[] {
+                                "num", "string", "bool", "void", "object<",
+                                "list", "container", "object", "require"
+                        });
+                        if (m_.c.startsWith("object")) {
+                            if (m_.c.endsWith("<")) {
+                                Node objClass = EParseCall();
+                                requireString(TokenType.BINARYOPERATOR, new String[] {">"},
+                                        "Expected > to close class-clarification");
+                                TypeModifier mod = new TypeModifier(ContainerType.class);
+                                mod.objectClass = objClass;
+                                types.add(mod);
+                            }
+                        } else {
+                            switch (m_.c) {
+                                case "num": types.add(new TypeModifier(NumType.class));
+                                    break;
+                                case "void": types.add(new TypeModifier(VoidType.class));
+                                    break;
+                                case "string": types.add(new TypeModifier(
+                                        StringType.class));
+                                    break;
+                                case "list": types.add(new TypeModifier(ListType.class));
+                                    break;
+                                case "container": types.add(new TypeModifier(
+                                        ContainerType.class));
+                                    break;
+                                case "bool": types.add(new TypeModifier(BoolType.class));
+                                    break;
+                            }
+                        }
+                    } while (match(TokenType.PILLAR) != null);
+                    modifiers.add(new AnyofModifier(types));
+                } else {
+                    switch (m.c) {
+                        case "num": modifiers.add(new TypeModifier(NumType.class));
+                            break;
+                        case "void": modifiers.add(new TypeModifier(VoidType.class));
+                            break;
+                        case "string": modifiers.add(new TypeModifier(
+                                StringType.class));
+                            break;
+                        case "list": modifiers.add(new TypeModifier(ListType.class));
+                            break;
+                        case "container": modifiers.add(new TypeModifier(
+                                ContainerType.class));
+                            break;
+                        case "bool": modifiers.add(new TypeModifier(BoolType.class));
+                            break;
+                    }
+                }
+            }
+            require(TokenType.ID, "Expected ID after clarification");
+            VariableNode v = new VariableNode(previous());
+            v.modifiers = modifiers;
+            if (match(TokenType.CONSUME) != null) v.isConsumer = true;
+            return v;
+        }
 
         if (match(TokenType.ID) != null) {
             VariableNode v = new VariableNode(previous());

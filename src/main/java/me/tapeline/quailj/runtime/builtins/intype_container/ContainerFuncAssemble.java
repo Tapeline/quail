@@ -21,7 +21,7 @@ public class ContainerFuncAssemble extends FuncType {
         Assert.require(a.get(2) instanceof ListType, "container assemble:invalid arg2 type");
         for (int i = 0; i < Math.min(((ListType) a.get(1)).values.size(),
                                     ((ListType) a.get(2)).values.size()); i++)
-            a.get(0).table.put(((ListType) a.get(1)).values.get(i).toString(),
+            a.get(0).table.put(runtime, ((ListType) a.get(1)).values.get(i).toString(),
                                 ((ListType) a.get(2)).values.get(i));
         return a.get(0);
     }

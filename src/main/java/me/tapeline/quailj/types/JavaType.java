@@ -1,5 +1,7 @@
 package me.tapeline.quailj.types;
 
+import me.tapeline.quailj.runtime.VariableTable;
+
 import java.util.HashMap;
 
 public class JavaType<T> extends QType {
@@ -8,7 +10,7 @@ public class JavaType<T> extends QType {
 
     public JavaType(T data) {
         value = data;
-        this.table = new HashMap<>();
+        this.table = new VariableTable();
     }
 
     @Override

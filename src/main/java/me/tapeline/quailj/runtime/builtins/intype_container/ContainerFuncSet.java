@@ -19,7 +19,7 @@ public class ContainerFuncSet extends FuncType {
         Assert.require(a.get(0) instanceof ContainerType, "container set:invalid arg0 type");
         Assert.require(a.get(1) instanceof StringType, "container set:invalid arg1 type");
         Assert.require(a.get(2) != null, "container set:invalid arg2 type");
-        a.get(0).table.put(((StringType) a.get(1)).value, a.get(2));
+        a.get(0).table.put(runtime, ((StringType) a.get(1)).value, a.get(2));
         return QType.V();
     }
 

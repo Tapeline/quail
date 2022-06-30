@@ -60,7 +60,7 @@ public class Lexer {
                 pos += result.get(0).length();
                 if (!token.t.equals(TokenType.WHITESPACE) &&
                         !token.t.equals(TokenType.COMMENT) &&
-                !token.c.equals("")) tokens.add(token);
+                !(token.c.equals("") && token.t != TokenType.LITERALSTRING)) tokens.add(token);
                 return true;
             }
         }

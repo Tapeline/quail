@@ -1,6 +1,5 @@
 package me.tapeline.quailj.runtime;
 
-import com.sun.istack.internal.Nullable;
 import me.tapeline.quailj.debugging.*;
 import me.tapeline.quailj.lexer.*;
 import me.tapeline.quailj.libmanagement.*;
@@ -38,134 +37,136 @@ public class Runtime {
     public static CallTraceRecord mainRecord = new CallTraceRecord();
     public String path;
 
-    public Runtime(Node rootNode, IOManager io, String path) {
+    public Runtime(Node rootNode, IOManager io, String path) throws RuntimeStriker {
         this.rootNode = rootNode;
         this.scope = new Memory();
         this.io = io;
         this.path = path;
-        scope.set("scripthome", new StringType(new File(path).getParent()));
+        scope.set(this, "scripthome", new StringType(new File(path).getParent()));
         this.embedIntegrator = new EmbedIntegrator(this);
         defineBuiltIns();
     }
 
     public static void registerLibrary(Library lib) {
         nativeLibNames.add(lib.getName());
+        VariableTable table = new VariableTable();
+        lib.getContents().forEach((k, v) -> table.put(k, v, new ArrayList<>()));
         ContainerType containerType = new ContainerType("lib_" + lib.getName(), "container",
-                lib.getContents(), false);
+                table, false);
         nativeLibs.put(lib.getName(), containerType);
     }
 
-    public void defineBuiltIns() {
-        scope.set("sin",        new FuncSin());
-        scope.set("cos",        new FuncCos());
-        scope.set("tan",        new FuncTan());
-        scope.set("asin",       new FuncAsin());
-        scope.set("acos",       new FuncAcos());
-        scope.set("atan",       new FuncAtan());
-        scope.set("sinh",       new FuncSinh());
-        scope.set("cosh",       new FuncCosh());
-        scope.set("tanh",       new FuncTanh());
-        scope.set("atan2",      new FuncAtan2());
-        scope.set("min",        new FuncMin());
-        scope.set("max",        new FuncMax());
-        scope.set("abs",        new FuncAbs());
+    public void defineBuiltIns() throws RuntimeStriker {
+        scope.set(this, "sin",        new FuncSin());
+        scope.set(this, "cos",        new FuncCos());
+        scope.set(this, "tan",        new FuncTan());
+        scope.set(this, "asin",       new FuncAsin());
+        scope.set(this, "acos",       new FuncAcos());
+        scope.set(this, "atan",       new FuncAtan());
+        scope.set(this, "sinh",       new FuncSinh());
+        scope.set(this, "cosh",       new FuncCosh());
+        scope.set(this, "tanh",       new FuncTanh());
+        scope.set(this, "atan2",      new FuncAtan2());
+        scope.set(this, "min",        new FuncMin());
+        scope.set(this, "max",        new FuncMax());
+        scope.set(this, "abs",        new FuncAbs());
 
-        scope.set("byte",       new FuncByte());
-        scope.set("bit",        new FuncBit());
-        scope.set("bitset",     new FuncBitset());
-        scope.set("out",        new FuncOut());
-        scope.set("put",        new FuncPut());
-        scope.set("input",      new FuncInput());
-        scope.set("newevent",   new FuncNewevent());
-        scope.set("char",       new FuncChar());
-        scope.set("ord",        new FuncOrd());
-        scope.set("exec",       new FuncExec());
-        scope.set("console",    new FuncConsole());
-        scope.set("table",      new FuncTable());
-        scope.set("thread",     new FuncThread());
+        scope.set(this, "byte",       new FuncByte());
+        scope.set(this, "bit",        new FuncBit());
+        scope.set(this, "bitset",     new FuncBitset());
+        scope.set(this, "out",        new FuncOut());
+        scope.set(this, "put",        new FuncPut());
+        scope.set(this, "input",      new FuncInput());
+        scope.set(this, "newevent",   new FuncNewevent());
+        scope.set(this, "char",       new FuncChar());
+        scope.set(this, "ord",        new FuncOrd());
+        scope.set(this, "exec",       new FuncExec());
+        scope.set(this, "console",    new FuncConsole());
+        scope.set(this, "table",      new FuncTable());
+        scope.set(this, "thread",     new FuncThread());
 
-        scope.set("clock",  new FuncClock());
-        scope.set("millis", new FuncMillis());
+        scope.set(this, "clock",  new FuncClock());
+        scope.set(this, "millis", new FuncMillis());
 
-        scope.set("refreshtypes",   new FuncRefreshtypes());
-        scope.set("tostring",       new FuncTostring());
-        scope.set("tonum",          new FuncTonum());
-        scope.set("tobool",         new FuncTobool());
-        scope.set("copy",           new FuncCopy());
-        scope.set("embed",          new FuncEmbed());
-        scope.set("usejar",         new FuncUsejar());
-        scope.set("registerhandler",new FuncRegisterhandler());
+        scope.set(this, "refreshtypes",   new FuncRefreshtypes());
+        scope.set(this, "tostring",       new FuncTostring());
+        scope.set(this, "tonum",          new FuncTonum());
+        scope.set(this, "tobool",         new FuncTobool());
+        scope.set(this, "copy",           new FuncCopy());
+        scope.set(this, "embed",          new FuncEmbed());
+        scope.set(this, "usejar",         new FuncUsejar());
+        scope.set(this, "registerhandler",new FuncRegisterhandler());
 
-        scope.set("filewrite",      new FuncFilewrite());
-        scope.set("fileread",       new FuncFileread());
-        scope.set("binfileread",    new FuncBinfileread());
-        scope.set("binfilewrite",   new FuncBinfilewrite());
-        scope.set("fileexists",     new FuncFileexists());
+        scope.set(this, "filewrite",      new FuncFilewrite());
+        scope.set(this, "fileread",       new FuncFileread());
+        scope.set(this, "binfileread",    new FuncBinfileread());
+        scope.set(this, "binfilewrite",   new FuncBinfilewrite());
+        scope.set(this, "fileexists",     new FuncFileexists());
 
-        scope.set("nothing",        new VoidType());
-        scope.set("million",        new NumType(1000000D));
-        scope.set("billion",        new NumType(1000000000D));
-        scope.set("trillion",       new NumType(1000000000000D));
+        scope.set(this, "nothing",        new VoidType());
+        scope.set(this, "million",        new NumType(1000000D));
+        scope.set(this, "billion",        new NumType(1000000000D));
+        scope.set(this, "trillion",       new NumType(1000000000000D));
 
-        scope.set("Number", new ContainerType("Number", "container",
+        scope.set(this, "Number", new ContainerType("Number", "container",
                 new HashMap<>(), false));
-        NumType.tableToClone.put("floor",   new NumFuncFloor());
-        NumType.tableToClone.put("ceil",    new NumFuncCeil());
-        NumType.tableToClone.put("round",   new NumFuncRound());
+        NumType.tableToClone.put(this, "floor",   new NumFuncFloor());
+        NumType.tableToClone.put(this, "ceil",    new NumFuncCeil());
+        NumType.tableToClone.put(this, "round",   new NumFuncRound());
 
-        scope.set("Null", new ContainerType("Null", "container",
-                new HashMap<>(), false));
-
-        scope.set("String", new ContainerType("String", "container",
-                new HashMap<>(), false));
-        StringType.tableToClone.put("get",              new StringFuncGet());
-        StringType.tableToClone.put("replace",          new StringFuncReplace());
-        StringType.tableToClone.put("size",             new StringFuncSize());
-        StringType.tableToClone.put("sub",              new StringFuncSub());
-        StringType.tableToClone.put("upper",            new StringFuncUpper());
-        StringType.tableToClone.put("lower",            new StringFuncLower());
-        StringType.tableToClone.put("capitalize",       new StringFuncCapitalize());
-        StringType.tableToClone.put("split",            new StringFuncSplit());
-        StringType.tableToClone.put("find",             new StringFuncFind());
-        StringType.tableToClone.put("reverse",          new StringFuncReverse());
-        StringType.tableToClone.put("count",            new StringFuncCount());
-        StringType.tableToClone.put("endswith",         new StringFuncEndswith());
-        StringType.tableToClone.put("isalpha",          new StringFuncIsalpha());
-        StringType.tableToClone.put("isalphanumeric",   new StringFuncIsalphanumeric());
-        StringType.tableToClone.put("isnum",            new StringFuncIsnum());
-        StringType.tableToClone.put("isuppercase",      new StringFuncIsuppercase());
-        StringType.tableToClone.put("islowercase",      new StringFuncIslowercase());
-        StringType.tableToClone.put("startswith",       new StringFuncStartswith());
-
-        scope.set("Bool", new ContainerType("Bool", "container",
+        scope.set(this, "Null", new ContainerType("Null", "container",
                 new HashMap<>(), false));
 
-        scope.set("List", new ContainerType("List", "container",
+        scope.set(this, "String", new ContainerType("String", "container",
                 new HashMap<>(), false));
-        ListType.tableToClone.put("add",            new ListFuncAdd());
-        ListType.tableToClone.put("find",           new ListFuncFind());
-        ListType.tableToClone.put("get",            new ListFuncGet());
-        ListType.tableToClone.put("set",            new ListFuncSet());
-        ListType.tableToClone.put("remove",         new ListFuncRemove());
-        ListType.tableToClone.put("removeitem",     new ListFuncRemoveitem());
-        ListType.tableToClone.put("reverse",        new ListFuncReverse());
-        ListType.tableToClone.put("size",           new ListFuncSize());
-        ListType.tableToClone.put("clear",          new ListFuncClear());
-        ListType.tableToClone.put("count",          new ListFuncCount());
+        StringType.tableToClone.put(this, "get",              new StringFuncGet());
+        StringType.tableToClone.put(this, "replace",          new StringFuncReplace());
+        StringType.tableToClone.put(this, "size",             new StringFuncSize());
+        StringType.tableToClone.put(this, "sub",              new StringFuncSub());
+        StringType.tableToClone.put(this, "upper",            new StringFuncUpper());
+        StringType.tableToClone.put(this, "lower",            new StringFuncLower());
+        StringType.tableToClone.put(this, "capitalize",       new StringFuncCapitalize());
+        StringType.tableToClone.put(this, "split",            new StringFuncSplit());
+        StringType.tableToClone.put(this, "find",             new StringFuncFind());
+        StringType.tableToClone.put(this, "reverse",          new StringFuncReverse());
+        StringType.tableToClone.put(this, "count",            new StringFuncCount());
+        StringType.tableToClone.put(this, "endswith",         new StringFuncEndswith());
+        StringType.tableToClone.put(this, "isalpha",          new StringFuncIsalpha());
+        StringType.tableToClone.put(this, "isalphanumeric",   new StringFuncIsalphanumeric());
+        StringType.tableToClone.put(this, "isnum",            new StringFuncIsnum());
+        StringType.tableToClone.put(this, "isuppercase",      new StringFuncIsuppercase());
+        StringType.tableToClone.put(this, "islowercase",      new StringFuncIslowercase());
+        StringType.tableToClone.put(this, "startswith",       new StringFuncStartswith());
 
-        ContainerType.tableToClone.put("contains",   new ContainerFuncContains());
-        ContainerType.tableToClone.put("keys",       new ContainerFuncKeys());
-        ContainerType.tableToClone.put("get",        new ContainerFuncGet());
-        ContainerType.tableToClone.put("remove",     new ContainerFuncRemove());
-        ContainerType.tableToClone.put("set",        new ContainerFuncSet());
-        ContainerType.tableToClone.put("allkeys",    new ContainerFuncAllkeys());
-        ContainerType.tableToClone.put("pairs",      new ContainerFuncPairs());
-        ContainerType.tableToClone.put("allpairs",   new ContainerFuncAllpairs());
-        ContainerType.tableToClone.put("assemble",   new ContainerFuncAssemble());
-        ContainerType.tableToClone.put("values",     new ContainerFuncValues());
-        ContainerType.tableToClone.put("size",       new ContainerFuncSize());
-        ContainerType.tableToClone.put("alltostring",new ContainerFuncAlltostring());
-        scope.set("Container", new ContainerType("Container", "container",
+        scope.set(this, "Bool", new ContainerType("Bool", "container",
+                new HashMap<>(), false));
+
+        scope.set(this, "List", new ContainerType("List", "container",
+                new HashMap<>(), false));
+        ListType.tableToClone.put(this, "add",            new ListFuncAdd());
+        ListType.tableToClone.put(this, "find",           new ListFuncFind());
+        ListType.tableToClone.put(this, "get",            new ListFuncGet());
+        ListType.tableToClone.put(this, "set",            new ListFuncSet());
+        ListType.tableToClone.put(this, "remove",         new ListFuncRemove());
+        ListType.tableToClone.put(this, "removeitem",     new ListFuncRemoveitem());
+        ListType.tableToClone.put(this, "reverse",        new ListFuncReverse());
+        ListType.tableToClone.put(this, "size",           new ListFuncSize());
+        ListType.tableToClone.put(this, "clear",          new ListFuncClear());
+        ListType.tableToClone.put(this, "count",          new ListFuncCount());
+
+        ContainerType.tableToClone.put(this, "contains",   new ContainerFuncContains());
+        ContainerType.tableToClone.put(this, "keys",       new ContainerFuncKeys());
+        ContainerType.tableToClone.put(this, "get",        new ContainerFuncGet());
+        ContainerType.tableToClone.put(this, "remove",     new ContainerFuncRemove());
+        ContainerType.tableToClone.put(this, "set",        new ContainerFuncSet());
+        ContainerType.tableToClone.put(this, "allkeys",    new ContainerFuncAllkeys());
+        ContainerType.tableToClone.put(this, "pairs",      new ContainerFuncPairs());
+        ContainerType.tableToClone.put(this, "allpairs",   new ContainerFuncAllpairs());
+        ContainerType.tableToClone.put(this, "assemble",   new ContainerFuncAssemble());
+        ContainerType.tableToClone.put(this, "values",     new ContainerFuncValues());
+        ContainerType.tableToClone.put(this, "size",       new ContainerFuncSize());
+        ContainerType.tableToClone.put(this, "alltostring",new ContainerFuncAlltostring());
+        scope.set(this, "Container", new ContainerType("Container", "container",
                 new HashMap<>(), false));
 
     }
@@ -373,6 +374,7 @@ public class Runtime {
                             if (QType.isCont(av) && (((ContainerType) av).name().equals(bvx) ||
                                     ((ContainerType) av).like().equals(bvx)))
                                 return new BoolType(true);
+                            return new BoolType(false);
                         }
                         break;
                     }
@@ -393,14 +395,10 @@ public class Runtime {
                             throw new RuntimeStriker("run:binaryop:set:cannot place value to non-variable type",
                                     current.codePos);
                         mainRecord.action(new AssignTraceRecord(lnode, run(lnode, scope), bv));
-                        scope.set(((VariableNode) lnode).token.c, bv);
-                        return Void;
-                    }
-                    case "<-": {
-                        if (!(av instanceof RefType))
-                            throw new RuntimeStriker("run:binaryop:set:cannot place value by ref. with non-ref",
-                                    current.codePos);
-                        ((RefType) av).object = bv;
+                        if (((VariableNode) lnode).modifiers.size() > 0)
+                            scope.set(((VariableNode) lnode).token.c, bv, ((VariableNode) lnode).modifiers);
+                        else
+                            scope.set(this, ((VariableNode) lnode).token.c, bv);
                         return Void;
                     }
                     case ":":
@@ -479,7 +477,7 @@ public class Runtime {
                 int doRethrow = 0;
                 String var = ((EveryBlockNode) node).variable.token.c;
                 for (QType q : iterable) {
-                    scope.set(var, q);
+                    scope.set(this, var, q);
                     try {
                         run(((EveryBlockNode) node).nodes, scope);
                     } catch (RuntimeStriker striker) {
@@ -505,7 +503,7 @@ public class Runtime {
                 if (!(((FieldSetNode) node).rnode instanceof VariableNode))
                     throw new RuntimeStriker("run:field set:cannot set value of non-variable type" + node,
                             current.codePos);
-                parent.table.put(((VariableNode) ((FieldSetNode) node).rnode).token.c,
+                parent.table.put(this, ((VariableNode) ((FieldSetNode) node).rnode).token.c,
                         run(((FieldSetNode) node).value, scope));
 
             } else if (node instanceof FunctionCallNode) {
@@ -515,9 +513,9 @@ public class Runtime {
                     args.add(run(a, scope));
                 if (callee == null) throw new RuntimeStriker("run:call:cannot call null " + node);
                 if (!(QType.isCont(callee) || QType.isFunc(callee)) &&
-                    !QType.isFunc(callee.nullSafeGet("_call"))) throw new RuntimeStriker(
-                            "run:call:cannot call " + callee + " in " + node
-                    );
+                        !QType.isFunc(callee.nullSafeGet("_call"))) throw new RuntimeStriker(
+                        "run:call:cannot call " + callee + " in " + node
+                );
                 if (QType.isCont(callee)) { // If constructor
                     QType prototype = callee.copy();
                     if (QType.isFunc(prototype.nullSafeGet("_builder"))) {
@@ -532,9 +530,9 @@ public class Runtime {
                         return ((FuncType) callee.nullSafeGet("_call")).run(this, args);
                     }
                     if (!(QType.isCont(parent) &&
-                        !((ContainerType) parent).isMeta() &&
-                        !ContainerType.tableToClone.containsKey(
-                           ((FieldReferenceNode) ((FunctionCallNode) node).id).rnode.toString()))) {
+                            !((ContainerType) parent).isMeta() &&
+                            !ContainerType.tableToClone.containsKey(
+                                    ((FieldReferenceNode) ((FunctionCallNode) node).id).rnode.toString()))) {
                         args.add(0, parent);
                     }
                     return ((FuncType) parent.nullSafeGet(
@@ -585,18 +583,18 @@ public class Runtime {
                         if (((EffectNode) node).operator.c.equals("deploy")) {
                             QType.forEachNotBuiltIn(loaded, (k, v) -> {
                                 if (!scope.hasParentalDefinition(k))
-                                    scope.set(k, v);
+                                    scope.set(k, v, new ArrayList<>());
                             });
                         } else {
                             if (((EffectNode) node).other.equals("_defaultname"))
-                                scope.set(id, loaded);
-                            else scope.set(((EffectNode) node).other, loaded);
+                                scope.set(id, loaded, new ArrayList<>());
+                            else scope.set(((EffectNode) node).other, loaded, new ArrayList<>());
                         }
                         if (loaded.nullSafeGet("_events") instanceof ListType) {
                             for (QType q : ((ListType) loaded.nullSafeGet("_events")).values) {
                                 if (q instanceof ContainerType) {
                                     Assert.require(q.nullSafeGet("consumer") instanceof FuncType &&
-                                            q.nullSafeGet("event") instanceof StringType,
+                                                    q.nullSafeGet("event") instanceof StringType,
                                             "run:use:handler migrating is defined, but handler "
                                                     + q + " is invalid");
                                     String event = ((StringType) q.nullSafeGet("event")).value;
@@ -605,7 +603,8 @@ public class Runtime {
                                             instanceof VoidType)) i++;
                                     ((FuncType) q.table.get("consumer")).name = "_eventhandler_migrated_" +
                                             event + "_" + i;
-                                    scope.set(((FuncType) q.table.get("consumer")).name, q.table.get("consumer"));
+                                    scope.set(((FuncType) q.table.get("consumer")).name, q.table.get("consumer"),
+                                            new ArrayList<>());
                                     if (eventHandlers.containsKey(event)) {
                                         List<String> e = eventHandlers.get(event);
                                         e.add(((FuncType) q.nullSafeGet("consumer")).name);
@@ -638,7 +637,7 @@ public class Runtime {
                 } else {
                     for (Node linked : ((IfBlockNode) node).linkedNodes) {
                         if (linked instanceof ElseBlockNode) {
-                            run(((IfBlockNode) node).nodes, scope);
+                            run(((ElseBlockNode) linked).nodes, scope);
                             break;
                         } else if (linked instanceof ElseIfBlockNode) {
                             QType elseIfCondition = run(((ElseIfBlockNode) linked).condition, scope);
@@ -680,7 +679,7 @@ public class Runtime {
                     return ((FuncType) parent.nullSafeGet("_setindex")).run(this,
                             Arrays.asList(parent, index, value));
                 } else if (parent instanceof ContainerType) {
-                    return parent.table.put(index.toString(), value);
+                    return parent.table.put(this, index.toString(), value);
                 } else throw new RuntimeStriker("run:index:lvalue " + node +
                         " is not indexable", current.codePos);
 
@@ -722,10 +721,11 @@ public class Runtime {
                 for (Node n : ((LiteralContainerNode) node).initialize) {
                     if (n instanceof BinaryOperatorNode && ((BinaryOperatorNode) n).lnode instanceof VariableNode) {
                         container.table.put(((VariableNode) ((BinaryOperatorNode) n).lnode).token.c,
-                                run(((BinaryOperatorNode) n).rnode, scope));
+                                run(((BinaryOperatorNode) n).rnode, scope),
+                                ((VariableNode) ((BinaryOperatorNode) n).lnode).modifiers);
                     } else if (n instanceof BinaryOperatorNode) {
                         container.table.put(run(((BinaryOperatorNode) n).lnode, scope).toString(),
-                                run(((BinaryOperatorNode) n).rnode, scope));
+                                run(((BinaryOperatorNode) n).rnode, scope), new ArrayList<>());
                     } else if (n instanceof LiteralFunctionNode) {
                         List<VariableNode> args = new ArrayList<>();
                         Parser.multiElementIfNeeded(((LiteralFunctionNode) n).args).nodes.forEach(
@@ -733,10 +733,17 @@ public class Runtime {
                         );
                         FuncType f = new FuncType(((LiteralFunctionNode) n).name.c, args,
                                 ((LiteralFunctionNode) n).code, ((LiteralFunctionNode) n).isStatic);
-                        container.table.put(((LiteralFunctionNode) n).name.c, f);
+                        if (container.nullSafeGet(f.name) instanceof FuncType)
+                            ((FuncType) container.table.get(f.name)).alternatives.add(
+                                    new AlternativeCall(f.args, f.code)
+                            );
+                        else container.table.put(((LiteralFunctionNode) n).name.c, f, new ArrayList<>());
+                    } else if (n instanceof VariableNode) {
+                        container.table.put(((VariableNode) n).token.c,
+                                Utilities.getDefaultValue((VariableNode) n), ((VariableNode) n).modifiers);
                     }
                 }
-                scope.set(((LiteralContainerNode) node).name, container);
+                scope.set(((LiteralContainerNode) node).name, container, new ArrayList<>());
                 return container;
 
             } else if (node instanceof EventNode) {
@@ -751,7 +758,7 @@ public class Runtime {
                 int id = 0;
                 while (!(scope.get(f.name + id) instanceof VoidType)) id++;
                 f.name += id;
-                scope.set(f.name, f);
+                scope.set(f.name, f, new ArrayList<>());
                 if (eventHandlers.containsKey(event)) {
                     List<String> e = eventHandlers.get(event);
                     e.add(f.name);
@@ -767,7 +774,11 @@ public class Runtime {
                 );
                 FuncType f = new FuncType(((LiteralFunctionNode) node).name.c,
                         args, ((LiteralFunctionNode) node).code, ((LiteralFunctionNode) node).isStatic);
-                scope.set(((LiteralFunctionNode) node).name.c, f);
+                if (scope.get(f.name) instanceof FuncType)
+                    ((FuncType) scope.get(f.name)).alternatives.add(
+                            new AlternativeCall(f.args, f.code)
+                    );
+                else scope.set(((LiteralFunctionNode) node).name.c, f, new ArrayList<>());
                 return f;
 
             } else if (node instanceof LiteralListNode) {
@@ -837,7 +848,7 @@ public class Runtime {
                 while (true) {
                     if (((NumType) baseV).value < till && (iterator > till)) break;
                     if (((NumType) baseV).value > till && (iterator < till)) break;
-                    scope.set(var, new NumType(iterator));
+                    scope.set(this, var, new NumType(iterator));
                     try {
                         run(toRun, scope);
                     } catch (RuntimeStriker striker) {
@@ -858,7 +869,7 @@ public class Runtime {
                 try {
                     run(((TryCatchBlockNode) node).tryNodes, scope);
                 } catch (RuntimeStriker striker) {
-                    scope.set(((TryCatchBlockNode) node).variable.token.c, striker.val);
+                    scope.set(((TryCatchBlockNode) node).variable.token.c, striker.val, new ArrayList<>());
                     run(((TryCatchBlockNode) node).catchNodes, scope);
                 }
 
@@ -883,22 +894,13 @@ public class Runtime {
                         QType v = run(((UnaryOperatorNode) node).operand, scope);
                         return new BoolType(!(v instanceof VoidType));
                     }
-                    case "&": {
-                        return new RefType(run(((UnaryOperatorNode) node).operand, scope));
-                    }
-                    case "*": {
-                        QType v = run(((UnaryOperatorNode) node).operand, scope);
-                        Assert.require(v instanceof RefType,
-                                "run:unary:*:cannot dereference non-ref. value " + v);
-                        return ((RefType) v).object;
-                    }
                     case "##": {
                         return new NumType(run(((UnaryOperatorNode) node).operand, scope).hashCode());
                     }
                 }
 
             } else if (node instanceof VariableNode) {
-                return scope.get(((VariableNode) node).token.c);
+                return scope.get(((VariableNode) node).token.c, (VariableNode) node);
 
             } else if (node instanceof WhileBlockNode) {
                 int doRethrow = 0;

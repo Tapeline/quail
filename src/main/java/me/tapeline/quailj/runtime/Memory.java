@@ -1,14 +1,17 @@
 package me.tapeline.quailj.runtime;
 
-import me.tapeline.quailj.types.QType;
+import me.tapeline.quailj.parser.nodes.VariableNode;
+import me.tapeline.quailj.types.*;
 import me.tapeline.quailj.types.QType;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Memory {
 
-    public Map<String, QType> mem = new HashMap<>();
+    public VariableTable mem = new VariableTable();
     public Memory enclosing;
 
     public Memory() {
@@ -24,11 +27,15 @@ public class Memory {
         else return mem.containsKey(key);
     }
 
-    public void set(String a, QType val) {
+    public void set(Runtime r, String a, QType val) throws RuntimeStriker {
         if (enclosing != null) {
-            if (hasParentalDefinition(a)) enclosing.set(a, val);
-            else mem.put(a, val);
-        } else mem.put(a, val);
+            if (hasParentalDefinition(a)) enclosing.set(r, a, val);
+            else mem.put(r, a, val);
+        } else mem.put(r, a, val);
+    }
+
+    public void set(String a, QType val, List<VariableModifier> m) {
+        mem.put(a, val, m);
     }
 
     public void remove(String a) {
@@ -44,7 +51,33 @@ public class Memory {
         else v = mem.get(a);
         if (v == null) {
             QType q = QType.V();
-            mem.put(a, q);
+            mem.put(a, q, new ArrayList<>());
+            return q;
+        } else return v;
+    }
+
+    public QType get(String a, VariableNode n) {
+        QType v = null;
+        if (enclosing != null && hasParentalDefinition(a)) v = enclosing.get(a);
+        else v = mem.get(a);
+        if (v == null) {
+            QType q = QType.V();
+            for (VariableModifier m : n.modifiers) {
+                if (m instanceof TypeModifier) {
+                    if (((TypeModifier) m).requiredType == BoolType.class) {
+                        q = QType.V(false);
+                    } else if (((TypeModifier) m).requiredType == ContainerType.class) {
+                        q = new ContainerType(new HashMap<>());
+                    } else if (((TypeModifier) m).requiredType == ListType.class) {
+                        q = new ListType();
+                    } else if (((TypeModifier) m).requiredType == NumType.class) {
+                        q = new NumType(0);
+                    } else if (((TypeModifier) m).requiredType == StringType.class) {
+                        q = new StringType("");
+                    }
+                }
+            }
+            mem.put(a, q, n.modifiers);
             return q;
         } else return v;
     }

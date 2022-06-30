@@ -1,5 +1,7 @@
 package me.tapeline.quailj.types;
 
+import me.tapeline.quailj.runtime.VariableTable;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -7,10 +9,10 @@ import java.util.HashMap;
 
 public class VoidType extends QType {
 
-    public static HashMap<String, QType> tableToClone = new HashMap<>();
+    public static VariableTable tableToClone = new VariableTable();
 
     public VoidType() {
-        this.table = new HashMap<>();
+        this.table = new VariableTable();
         table.putAll(tableToClone);
     }
 
@@ -28,7 +30,7 @@ public class VoidType extends QType {
 
     private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
         ois.defaultReadObject();
-        table = (HashMap<String, QType>) ois.readObject();
+        table = (VariableTable) ois.readObject();
     }
 
     @Override

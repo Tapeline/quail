@@ -1,30 +1,52 @@
 package me.tapeline.quailj.types;
 
+import me.tapeline.quailj.runtime.Runtime;
+import me.tapeline.quailj.runtime.VariableTable;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ContainerType extends QType {
 
-    public static HashMap<String, QType> tableToClone = new HashMap<>();
+    public static VariableTable tableToClone = new VariableTable();
 
-    public ContainerType(HashMap<String, QType> content) {
-        this.table = new HashMap<>();
+    public ContainerType(VariableTable content) {
+        this.table = new VariableTable();
         this.table.putAll(tableToClone);
         this.table.putAll(content);
-        this.table.put("_ismeta", new BoolType(false));
-        this.table.put("_name", new StringType("_anonymous"));
-        this.table.put("_like", new StringType("container"));
+        this.table.put("_ismeta", new BoolType(false), new ArrayList<>());
+        this.table.put("_name", new StringType("_anonymous"), new ArrayList<>());
+        this.table.put("_like", new StringType("container"), new ArrayList<>());
+    }
+
+    public ContainerType(HashMap<String, QType> content) {
+        this.table = new VariableTable();
+        this.table.putAll(tableToClone);
+        this.table.data.putAll(content);
+        this.table.put("_ismeta", new BoolType(false), new ArrayList<>());
+        this.table.put("_name", new StringType("_anonymous"), new ArrayList<>());
+        this.table.put("_like", new StringType("container"), new ArrayList<>());
+    }
+
+    public ContainerType(String name, String like, VariableTable content, boolean isMeta) {
+        this.table = new VariableTable();
+        this.table.putAll(tableToClone);
+        this.table.putAll(content);
+        this.table.put("_ismeta", new BoolType(isMeta), new ArrayList<>());
+        this.table.put("_name", new StringType(name), new ArrayList<>());
+        this.table.put("_like", new StringType(like), new ArrayList<>());
     }
 
     public ContainerType(String name, String like, HashMap<String, QType> content, boolean isMeta) {
-        this.table = new HashMap<>();
+        this.table = new VariableTable();
         this.table.putAll(tableToClone);
-        this.table.putAll(content);
-        this.table.put("_ismeta", new BoolType(isMeta));
-        this.table.put("_name", new StringType(name));
-        this.table.put("_like", new StringType(like));
+        this.table.data.putAll(content);
+        this.table.put("_ismeta", new BoolType(isMeta), new ArrayList<>());
+        this.table.put("_name", new StringType(name), new ArrayList<>());
+        this.table.put("_like", new StringType(like), new ArrayList<>());
     }
 
     private void writeObject(ObjectOutputStream oos) throws IOException {
@@ -34,7 +56,7 @@ public class ContainerType extends QType {
 
     private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
         ois.defaultReadObject();
-        table = (HashMap<String, QType>) ois.readObject();
+        table = (VariableTable) ois.readObject();
     }
 
     public String like() {
@@ -53,8 +75,8 @@ public class ContainerType extends QType {
 
     @Override
     public QType copy() {
-        HashMap<String, QType> newTable = new HashMap<>();
-        this.table.forEach((k, v) -> newTable.put(k, v.copy()));
+        VariableTable newTable = new VariableTable();
+        this.table.forEach((k, v) -> newTable.put(k, v.copy(), table.mods.get(k)));
         return new ContainerType(
                 this.name(),
                 this.like(),
@@ -102,6 +124,15 @@ public class ContainerType extends QType {
             s.append("\"").append(key).append("\" = ").append(repr).append(", ");
         }
         return s.toString().equals("{")? "{}" : s.substring(0, s.length() - 2) + "}";
+    }
+
+    public boolean isInstance(Runtime r, String s) {
+        if (name().equals(s)) return true;
+        if (like().equals(s)) return true;
+        if (r.scope.get(like()) instanceof ContainerType &&
+                ((ContainerType) r.scope.get(like())).isInstance(r, s))
+            return true;
+        return false;
     }
 
 }

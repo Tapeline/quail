@@ -1,5 +1,7 @@
 package me.tapeline.quailj.types;
 
+import me.tapeline.quailj.runtime.VariableTable;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -8,12 +10,12 @@ import java.util.HashMap;
 
 public class BoolType extends QType implements Serializable {
 
-    public static HashMap<String, QType> tableToClone = new HashMap<>();
+    public static VariableTable tableToClone = new VariableTable();
     public boolean value = false;
 
     public BoolType(boolean b) {
         value = b;
-        this.table = new HashMap<>();
+        this.table = new VariableTable();
         table.putAll(tableToClone);
     }
 
@@ -25,7 +27,7 @@ public class BoolType extends QType implements Serializable {
 
     private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
         ois.defaultReadObject();
-        table = (HashMap<String, QType>) ois.readObject();
+        table = (VariableTable) ois.readObject();
         value = ois.readBoolean();
     }
 
