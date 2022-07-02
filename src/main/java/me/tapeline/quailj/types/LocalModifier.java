@@ -10,4 +10,8 @@ public class LocalModifier extends VariableModifier {
     public boolean matches(Runtime r, QType q) {
         return true;
     }
+
+    public String toString() {
+        return "local";
+    }
 }

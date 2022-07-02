@@ -10,7 +10,8 @@ public class JavaType<T> extends QType {
 
     public JavaType(T data) {
         value = data;
-        this.table = new VariableTable();
+        this.table = new VariableTable("JavaType<" +
+                this.getClass().getTypeParameters()[0].getTypeName() + "> Table");
     }
 
     @Override

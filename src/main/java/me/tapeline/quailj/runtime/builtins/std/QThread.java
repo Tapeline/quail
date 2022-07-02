@@ -17,7 +17,7 @@ public class QThread extends Thread {
     public QThread(Runtime r, FuncType f, List<QType> casted) throws RuntimeStriker {
         outer = r;
         runnable = f;
-        inner = new Runtime(null, outer.io, outer.path);
+        inner = new Runtime(null, outer.io, outer.path, false);
         args = casted;
     }
 

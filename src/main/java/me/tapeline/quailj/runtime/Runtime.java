@@ -1,5 +1,6 @@
 package me.tapeline.quailj.runtime;
 
+import me.tapeline.quailj.Main;
 import me.tapeline.quailj.debugging.*;
 import me.tapeline.quailj.lexer.*;
 import me.tapeline.quailj.libmanagement.*;
@@ -36,20 +37,23 @@ public class Runtime {
     public EmbedIntegrator embedIntegrator;
     public static CallTraceRecord mainRecord = new CallTraceRecord();
     public String path;
+    public boolean doProfile = false;
 
-    public Runtime(Node rootNode, IOManager io, String path) throws RuntimeStriker {
+    public Runtime(Node rootNode, IOManager io, String path, boolean doProfile) throws RuntimeStriker {
         this.rootNode = rootNode;
         this.scope = new Memory();
         this.io = io;
         this.path = path;
         scope.set(this, "scripthome", new StringType(new File(path).getParent()));
         this.embedIntegrator = new EmbedIntegrator(this);
+        this.doProfile = doProfile;
         defineBuiltIns();
+        VariableTable.recordMemoryActions = Main.recordMemory;
     }
 
     public static void registerLibrary(Library lib) {
         nativeLibNames.add(lib.getName());
-        VariableTable table = new VariableTable();
+        VariableTable table = new VariableTable("Library " + lib.getName());
         lib.getContents().forEach((k, v) -> table.put(k, v, new ArrayList<>()));
         ContainerType containerType = new ContainerType("lib_" + lib.getName(), "container",
                 table, false);
@@ -211,6 +215,18 @@ public class Runtime {
     }
 
     public QType run(Node node, Memory scope) throws RuntimeStriker {
+        if (!doProfile) return innerRun(node, scope);
+
+        long execStart = System.currentTimeMillis();
+        QType r = innerRun(node, scope);
+        if (node != null) {
+            node.executionTime = System.currentTimeMillis() - execStart;
+            node.executionStart = execStart;
+        }
+        return r;
+    }
+
+    public QType innerRun(Node node, Memory scope) throws RuntimeStriker {
         if (node == null) current.codePos = 0;
         else current.codePos = node.codePos;
         try {
@@ -394,7 +410,6 @@ public class Runtime {
                         if (!(lnode instanceof VariableNode))
                             throw new RuntimeStriker("run:binaryop:set:cannot place value to non-variable type",
                                     current.codePos);
-                        mainRecord.action(new AssignTraceRecord(lnode, run(lnode, scope), bv));
                         if (((VariableNode) lnode).modifiers.size() > 0)
                             scope.set(((VariableNode) lnode).token.c, bv, ((VariableNode) lnode).modifiers);
                         else
@@ -570,7 +585,7 @@ public class Runtime {
                             List<Token> tokens = lexer.lexAndFix();
                             Parser parser = new Parser(tokens);
                             Node node1 = parser.parse();
-                            Runtime runtime = new Runtime(node1, io, path);
+                            Runtime runtime = new Runtime(node1, io, path, false);
                             try {
                                 loaded = runtime.run(node1, runtime.scope);
                             } catch (RuntimeStriker striker) {
@@ -932,6 +947,7 @@ public class Runtime {
             }
             throw striker;
         }
+
 
         return Void;
     }

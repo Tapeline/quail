@@ -9,7 +9,7 @@ import java.util.HashMap;
 
 public class StringType extends QType {
 
-    public static VariableTable tableToClone = new VariableTable();
+    public static VariableTable tableToClone = new VariableTable("Default StringType");
 
     public String value = "";
 

@@ -11,10 +11,10 @@ import java.util.HashMap;
 
 public class ContainerType extends QType {
 
-    public static VariableTable tableToClone = new VariableTable();
+    public static VariableTable tableToClone = new VariableTable("Default ContainerType");
 
     public ContainerType(VariableTable content) {
-        this.table = new VariableTable();
+        this.table = new VariableTable("Anonymous Container");
         this.table.putAll(tableToClone);
         this.table.putAll(content);
         this.table.put("_ismeta", new BoolType(false), new ArrayList<>());
@@ -23,7 +23,7 @@ public class ContainerType extends QType {
     }
 
     public ContainerType(HashMap<String, QType> content) {
-        this.table = new VariableTable();
+        this.table = new VariableTable("Anonymous Container");
         this.table.putAll(tableToClone);
         this.table.data.putAll(content);
         this.table.put("_ismeta", new BoolType(false), new ArrayList<>());
@@ -32,7 +32,7 @@ public class ContainerType extends QType {
     }
 
     public ContainerType(String name, String like, VariableTable content, boolean isMeta) {
-        this.table = new VariableTable();
+        this.table = new VariableTable("Container " + name);
         this.table.putAll(tableToClone);
         this.table.putAll(content);
         this.table.put("_ismeta", new BoolType(isMeta), new ArrayList<>());

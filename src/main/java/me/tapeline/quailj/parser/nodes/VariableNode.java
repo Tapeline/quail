@@ -35,6 +35,9 @@ public class VariableNode extends Node {
 
     @Override
     public String toString() {
-        return "" + token.c + (isConsumer? "..." : "");
+        String s = "";
+        for (VariableModifier vm : modifiers)
+            s += vm.toString() + " ";
+        return s + token.c + (isConsumer? "..." : "");
     }
 }

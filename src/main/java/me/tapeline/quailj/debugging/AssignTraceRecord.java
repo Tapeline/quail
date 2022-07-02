@@ -10,11 +10,13 @@ public class AssignTraceRecord extends TracedAction {
     public String subject;
     public String previousState;
     public String object;
+    public String scope;
 
-    public AssignTraceRecord(Node subj, QType old, QType val) {
-        subject = subj.toString();
+    public AssignTraceRecord(String subj, QType old, QType val, String scope) {
+        subject = subj;
         previousState = old != null? old.toString() : "java null";
         object = val != null? val.toString() : "java null";
+        this.scope = scope;
     }
 
     @Override

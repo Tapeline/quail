@@ -20,7 +20,7 @@ public class FuncType extends QType {
     public boolean restrictMetacalls = false;
     public List<AlternativeCall> alternatives = new ArrayList<>();
 
-    public static VariableTable tableToClone = new VariableTable();
+    public static VariableTable tableToClone = new VariableTable("Default FuncType");
 
     public FuncType(String name, List<VariableNode> args, BlockNode code, Object marker) {
         this.code = code;

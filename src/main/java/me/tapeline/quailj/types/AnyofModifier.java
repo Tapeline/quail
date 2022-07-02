@@ -24,4 +24,11 @@ public class AnyofModifier extends VariableModifier {
             if (t.matches(r, q)) return true;
         return false;
     }
+
+    public String toString() {
+        String s = "";
+        for (TypeModifier m : acceptedTypes)
+            s += m.toString() + " | ";
+        return s.length() == 0? "" : s.substring(0, s.length() - 3);
+    }
 }

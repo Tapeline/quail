@@ -9,7 +9,7 @@ import java.util.HashMap;
 
 public class NumType extends QType {
 
-    public static VariableTable tableToClone = new VariableTable();
+    public static VariableTable tableToClone = new VariableTable("Default NumType");
 
     public double value = 0D;
 

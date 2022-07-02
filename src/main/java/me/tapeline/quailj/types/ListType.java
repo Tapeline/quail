@@ -9,7 +9,7 @@ import java.util.*;
 
 public class ListType extends QType {
 
-    public static VariableTable tableToClone = new VariableTable();
+    public static VariableTable tableToClone = new VariableTable("Default ListType");
 
     public List<QType> values = new ArrayList<>();
 
@@ -48,7 +48,7 @@ public class ListType extends QType {
         ListType vv = new ListType();
         for (QType q : this.values)
             vv.values.add(q.copy());
-        VariableTable newTable = new VariableTable();
+        VariableTable newTable = new VariableTable(table.scope);
         this.table.forEach((k, v) -> newTable.put(k, v.copy(), table.mods.get(k)));
         vv.table.putAll(newTable);
         return vv;

@@ -10,7 +10,7 @@ import java.util.HashMap;
 
 public class BoolType extends QType implements Serializable {
 
-    public static VariableTable tableToClone = new VariableTable();
+    public static VariableTable tableToClone = new VariableTable("Default BoolType");
     public boolean value = false;
 
     public BoolType(boolean b) {

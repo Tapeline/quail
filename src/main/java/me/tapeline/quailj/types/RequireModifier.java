@@ -10,4 +10,8 @@ public class RequireModifier extends VariableModifier {
     public boolean matches(Runtime r, QType q) {
         return !(q instanceof VoidType) && q != null;
     }
+
+    public String toString() {
+        return "require";
+    }
 }

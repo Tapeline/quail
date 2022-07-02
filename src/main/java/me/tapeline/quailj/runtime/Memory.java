@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class Memory {
 
-    public VariableTable mem = new VariableTable();
+    public VariableTable mem = new VariableTable("global");
     public Memory enclosing;
 
     public Memory() {
@@ -20,6 +20,7 @@ public class Memory {
 
     public Memory(Memory m) {
         this.enclosing = m;
+        m.mem.scope = "enclosing of " + mem.scope;
     }
 
     public boolean hasParentalDefinition(String key) {
