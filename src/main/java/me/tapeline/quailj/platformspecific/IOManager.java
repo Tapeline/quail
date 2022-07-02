@@ -4,6 +4,8 @@ import me.tapeline.quailj.parser.nodes.FieldReferenceNode;
 import me.tapeline.quailj.parser.nodes.Node;
 import me.tapeline.quailj.parser.nodes.VariableNode;
 import me.tapeline.quailj.types.*;
+import org.apache.commons.io.Charsets;
+import org.apache.commons.io.FileUtils;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -48,7 +50,7 @@ public class IOManager {
      * Input from a file
      */
     public static String fileInput(String path) {
-        try(BufferedReader br = new BufferedReader(new FileReader(path))) {
+        /*try(BufferedReader br = new BufferedReader(new FileReader(path))) {
             StringBuilder sb = new StringBuilder();
             String line = br.readLine();
 
@@ -58,6 +60,11 @@ public class IOManager {
                 line = br.readLine();
             }
             return sb.toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
+        try {
+            return FileUtils.readFileToString(new File(path), "UTF-8");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -111,11 +118,16 @@ public class IOManager {
      * Set file contents to sth.
      */
     public static void fileSet(String path, String content) {
-        try {
+        /*try {
             FileOutputStream fos = new FileOutputStream(path);
             DataOutputStream outStream = new DataOutputStream(new BufferedOutputStream(fos));
             outStream.writeUTF(content);
             outStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
+        try {
+            FileUtils.writeStringToFile(new File(path), content, "UTF-8");
         } catch (IOException e) {
             e.printStackTrace();
         }
