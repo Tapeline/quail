@@ -33,7 +33,8 @@ public class VariableTable {
     }
 
     public QType put(String a, QType d, List<VariableModifier> m) {
-        if (recordMemoryActions) assigns.add(new AssignTraceRecord(m.toString() + " " + a, data.get(a), d, scope));
+        if (recordMemoryActions) assigns.add(new AssignTraceRecord((m == null? "null" : m).toString() +
+                " " + a, data.get(a), d, scope));
         data.put(a, d);
         mods.put(a, m == null? new ArrayList<>() : m);
         return d;
