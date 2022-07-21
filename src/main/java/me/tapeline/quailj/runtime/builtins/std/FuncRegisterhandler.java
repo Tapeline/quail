@@ -16,7 +16,7 @@ public class FuncRegisterhandler extends FuncType {
 
     @Override
     public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
-        Assert.require(a.get(1) instanceof FuncType && a.get(0) instanceof StringType,
+        Assert.require(a.get(1) instanceof AbstractFunc && a.get(0) instanceof StringType,
                 "func registerhandler:invalid args");
         String event = ((StringType) a.get(0)).value;
         FuncType f = (FuncType) a.get(1).copy();

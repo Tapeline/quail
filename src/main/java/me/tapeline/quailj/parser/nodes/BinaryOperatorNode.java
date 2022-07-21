@@ -19,4 +19,5 @@ public class BinaryOperatorNode extends Node {
     public String toString() {
         return lnode.toString() + " " + operator.toString() + " " + rnode.toString();
     }
+
 }

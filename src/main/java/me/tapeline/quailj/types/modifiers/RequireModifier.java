@@ -1,6 +1,8 @@
-package me.tapeline.quailj.types;
+package me.tapeline.quailj.types.modifiers;
 
 import me.tapeline.quailj.runtime.Runtime;
+import me.tapeline.quailj.types.QType;
+import me.tapeline.quailj.types.VoidType;
 
 public class RequireModifier extends VariableModifier {
 

@@ -4,7 +4,8 @@ import me.tapeline.quailj.debugging.AssignTraceRecord;
 import me.tapeline.quailj.parser.nodes.VariableNode;
 import me.tapeline.quailj.types.QType;
 import me.tapeline.quailj.types.RuntimeStriker;
-import me.tapeline.quailj.types.VariableModifier;
+import me.tapeline.quailj.types.modifiers.FinalModifier;
+import me.tapeline.quailj.types.modifiers.VariableModifier;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -25,6 +26,16 @@ public class VariableTable {
 
     public QType put(Runtime r, String a, QType d) throws RuntimeStriker {
         if (mods.get(a) == null || mods.get(a) != null && VariableNode.match(mods.get(a), r, d)) {
+            if (mods.get(a) != null) {
+                for (VariableModifier vm : mods.get(a))
+                    if (vm instanceof FinalModifier) {
+                        if (((FinalModifier) vm).flag)
+                            throw new RuntimeStriker("assign:attempt to assign data to final variable (" +
+                                    mods.toString() + " = " + d.getClass().getSimpleName() + ")");
+                        else
+                            ((FinalModifier) vm).flag = true;
+                    }
+            }
             if (recordMemoryActions) assigns.add(new AssignTraceRecord(a, data.get(a), d, scope));
             data.put(a, d);
         } else throw new RuntimeStriker("assign:attempt to assign data with wrong type to clarified variable (" +
@@ -37,6 +48,15 @@ public class VariableTable {
                 " " + a, data.get(a), d, scope));
         data.put(a, d);
         mods.put(a, m == null? new ArrayList<>() : m);
+        return d;
+    }
+
+    public QType put(String a, QType d) {
+        List<VariableModifier> m = new ArrayList<>();
+        if (recordMemoryActions) assigns.add(new AssignTraceRecord(m.toString() +
+                " " + a, data.get(a), d, scope));
+        data.put(a, d);
+        mods.put(a, m);
         return d;
     }
 

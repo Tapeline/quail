@@ -115,7 +115,7 @@ public class ContainerType extends QType {
             String repr = table.get(key).toString();
             if (table.get(key) instanceof StringType)
                 repr = '"' + repr + '"';
-            if (table.get(key) instanceof FuncType)
+            if (table.get(key) instanceof AbstractFunc)
                 repr = "\"func:" + repr + '"';
             if (table.get(key) instanceof JavaType)
                 repr = "\"java:" + repr + '"';

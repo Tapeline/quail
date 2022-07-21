@@ -21,6 +21,8 @@ import java.util.*;
 public class Runtime {
 
     public static QType Void = new VoidType();
+
+    public static HashMap<String, Runtime> libraryRuntimes = new HashMap<>();
     public static List<String> nativeLibNames = new ArrayList<>(Arrays.asList(
             "random",
             "canvas",
@@ -141,6 +143,9 @@ public class Runtime {
         StringType.tableToClone.put(this, "isuppercase",      new StringFuncIsuppercase());
         StringType.tableToClone.put(this, "islowercase",      new StringFuncIslowercase());
         StringType.tableToClone.put(this, "startswith",       new StringFuncStartswith());
+        StringType.tableToClone.put(this, "color",            new StringFuncColor());
+        StringType.tableToClone.put(this, "back",             new StringFuncBack());
+        StringType.tableToClone.put(this, "style",            new StringFuncStyle());
 
         scope.set(this, "Bool", new ContainerType("Bool", "container",
                 new HashMap<>(), false));
@@ -206,7 +211,7 @@ public class Runtime {
         if (runtime.eventHandlers.get(event) == null) return;
         for (String handler : runtime.eventHandlers.get(event)) {
             QType func = runtime.scope.get(handler);
-            if (!(func instanceof FuncType))
+            if (!(func instanceof AbstractFunc))
                 throw new RuntimeStriker("call event:event handler can only be a function");
             QType result = ((FuncType) func).run(runtime, Collections.singletonList(metadata));
             if (QType.isNull(result) || (QType.isBool(result) && !((BoolType) result).value))
@@ -236,7 +241,7 @@ public class Runtime {
                 // String containerImpl = Utilities.transformOp(((BinaryOperatorNode) node).operator.c);
                 String containerImpl = Utilities.opToString.get(((BinaryOperatorNode) node).operator.c);
                 if (containerImpl != null && av.table != null &&
-                        av.table.containsKey(containerImpl) && av.table.get(containerImpl) instanceof FuncType) {
+                        av.table.containsKey(containerImpl) && av.table.get(containerImpl) instanceof AbstractFunc) {
                     List<QType> metaArgs = new ArrayList<>(Arrays.asList(av, bv));
                     return ((FuncType) av.table.get(containerImpl)).run(this, metaArgs);
                 }
@@ -510,7 +515,7 @@ public class Runtime {
                 if (!(((FieldReferenceNode) node).rnode instanceof VariableNode))
                     throw new RuntimeStriker("run:field set:cannot get value of non-variable type " + node,
                             current.codePos);
-                return run(((FieldReferenceNode) node).lnode, scope).table.get(
+                return QType.nullSafe(run(((FieldReferenceNode) node).lnode, scope)).table.get(
                         ((VariableNode) ((FieldReferenceNode) node).rnode).token.c);
 
             } else if (node instanceof FieldSetNode) {
@@ -538,12 +543,14 @@ public class Runtime {
                         ((FuncType) prototype.nullSafeGet("_builder")).run(this, args);
                     }
                     return prototype;
-                } else if (((FunctionCallNode) node).id instanceof FieldReferenceNode) {
+                } else if (((FunctionCallNode) node).id instanceof FieldReferenceNode &&
+                        !((AbstractFunc) callee).restrictMetacalls) {
                     QType parent = run(((FieldReferenceNode) ((FunctionCallNode) node).id).lnode, scope);
                     if (QType.isFunc(callee.nullSafeGet("_call"))) {
                         args.add(0, parent);
                         return ((FuncType) callee.nullSafeGet("_call")).run(this, args);
                     }
+                    // Uncomment this if you want legacy method(me, args...)
                     if (!(QType.isCont(parent) &&
                             !((ContainerType) parent).isMeta() &&
                             !ContainerType.tableToClone.containsKey(
@@ -575,7 +582,9 @@ public class Runtime {
                         id = id.replaceAll(":", "_");
                         id = id.replaceAll("\\\\", "_");
                         id = id.replaceAll("\\.", "_");
+                        if (libraryRuntimes.containsKey(id)) break;
                         QType loaded;
+                        boolean newRuntime = false;
                         if (Runtime.nativeLibNames.contains(lib))
                             loaded = getNative(lib);
                         else {
@@ -587,12 +596,16 @@ public class Runtime {
                             Node node1 = parser.parse();
                             Runtime runtime = new Runtime(node1, io, path, false);
                             try {
+                                libraryRuntimes.put(((EffectNode) node).other.equals("_defaultname")? id :
+                                        ((EffectNode) node).other, runtime);
                                 loaded = runtime.run(node1, runtime.scope);
                             } catch (RuntimeStriker striker) {
                                 loaded = striker.val;
                                 if (striker.type == RuntimeStrikerType.EXCEPTION) {
                                     throw striker;
                                 }
+                                newRuntime = true;
+                                loaded.bindRuntime(runtime);
                             }
                         }
                         if (((EffectNode) node).operator.c.equals("deploy")) {
@@ -608,7 +621,7 @@ public class Runtime {
                         if (loaded.nullSafeGet("_events") instanceof ListType) {
                             for (QType q : ((ListType) loaded.nullSafeGet("_events")).values) {
                                 if (q instanceof ContainerType) {
-                                    Assert.require(q.nullSafeGet("consumer") instanceof FuncType &&
+                                    Assert.require(q.nullSafeGet("consumer") instanceof AbstractFunc &&
                                                     q.nullSafeGet("event") instanceof StringType,
                                             "run:use:handler migrating is defined, but handler "
                                                     + q + " is invalid");
@@ -672,7 +685,7 @@ public class Runtime {
                     Assert.require(((ListType) parent).values.size() >
                             (int) Math.round(((NumType) index).value), "run:index:list:out of bounds");
                     return ((ListType) parent).values.get((int) Math.round(((NumType) index).value));
-                } else if (parent.nullSafeGet("_index") instanceof FuncType) {
+                } else if (parent.nullSafeGet("_index") instanceof AbstractFunc) {
                     return ((FuncType) parent.nullSafeGet("_index")).run(this,
                             Arrays.asList(parent, index));
                 } else if (parent instanceof ContainerType) {
@@ -690,7 +703,7 @@ public class Runtime {
                             (int) Math.round(((NumType) index).value), "run:index:list:out of bounds");
                     ((ListType) parent).values.set((int) Math.round(((NumType) index).value), value);
                     return Void;
-                } else if (parent.nullSafeGet("_setindex") instanceof FuncType) {
+                } else if (parent.nullSafeGet("_setindex") instanceof AbstractFunc) {
                     return ((FuncType) parent.nullSafeGet("_setindex")).run(this,
                             Arrays.asList(parent, index, value));
                 } else if (parent instanceof ContainerType) {
@@ -747,8 +760,8 @@ public class Runtime {
                                 (v) -> args.add((VariableNode) v)
                         );
                         FuncType f = new FuncType(((LiteralFunctionNode) n).name.c, args,
-                                ((LiteralFunctionNode) n).code, ((LiteralFunctionNode) n).isStatic);
-                        if (container.nullSafeGet(f.name) instanceof FuncType)
+                                ((LiteralFunctionNode) n).code, ((LiteralFunctionNode) n).isStatic, null);
+                        if (container.nullSafeGet(f.name) instanceof AbstractFunc)
                             ((FuncType) container.table.get(f.name)).alternatives.add(
                                     new AlternativeCall(f.args, f.code)
                             );
@@ -788,8 +801,8 @@ public class Runtime {
                         (v) -> args.add((VariableNode) v)
                 );
                 FuncType f = new FuncType(((LiteralFunctionNode) node).name.c,
-                        args, ((LiteralFunctionNode) node).code, ((LiteralFunctionNode) node).isStatic);
-                if (scope.get(f.name) instanceof FuncType)
+                        args, ((LiteralFunctionNode) node).code, ((LiteralFunctionNode) node).isStatic, null);
+                if (scope.get(f.name) instanceof AbstractFunc)
                     ((FuncType) scope.get(f.name)).alternatives.add(
                             new AlternativeCall(f.args, f.code)
                     );
@@ -947,7 +960,6 @@ public class Runtime {
             }
             throw striker;
         }
-
 
         return Void;
     }

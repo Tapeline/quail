@@ -12,15 +12,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class FuncType extends QType {
+public class FuncType extends AbstractFunc {
 
     public String name;
     public transient List<VariableNode> args = new ArrayList<>();
     public transient BlockNode code;
-    public boolean restrictMetacalls = false;
+    public Runtime boundRuntime = null;
     public List<AlternativeCall> alternatives = new ArrayList<>();
-
-    public static VariableTable tableToClone = new VariableTable("Default FuncType");
 
     public FuncType(String name, List<VariableNode> args, BlockNode code, Object marker) {
         this.code = code;
@@ -57,8 +55,17 @@ public class FuncType extends QType {
         table.putAll(tableToClone);
     }
 
+    /*public QType run(Runtime runtime, QType parent, List<QType> a) throws RuntimeStriker {
+        return run(runtime, a);
+    }*/
+
     public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
+        //return run(runtime, null, a);
+        if (boundRuntime != null)
+            runtime = boundRuntime;
         Memory mem = new Memory(runtime.scope);
+        /*if (parent != null)
+            mem.set("this", parent, new ArrayList<>());*/
         List<VariableNode> args = this.args;
         for (AlternativeCall alt : alternatives) {
             boolean match = true;
@@ -120,7 +127,8 @@ public class FuncType extends QType {
                 this.name,
                 this.args,
                 this.code,
-                this.restrictMetacalls
+                this.restrictMetacalls,
+                null
         );
         v.table.putAll(this.table);
         return v;

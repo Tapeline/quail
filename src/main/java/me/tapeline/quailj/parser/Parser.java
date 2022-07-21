@@ -1,13 +1,13 @@
 package me.tapeline.quailj.parser;
 
-import me.tapeline.quailj.lexer.Lexer;
 import me.tapeline.quailj.lexer.Token;
 import me.tapeline.quailj.lexer.TokenType;
 import me.tapeline.quailj.parser.nodes.*;
 import me.tapeline.quailj.types.*;
+import me.tapeline.quailj.types.modifiers.*;
 import me.tapeline.quailj.utils.Utilities;
 
-import java.awt.*;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -378,6 +378,10 @@ public class Parser {
     }
 
     public Node parseFunction() throws RuntimeStriker {
+        return parseFunction(false);
+    }
+
+    public Node parseFunction(boolean isStatic) throws RuntimeStriker {
         Token t = match(new String[] {
                 "function", "func", "method", "staticmethod", "override", "object"
         });
@@ -391,7 +395,7 @@ public class Parser {
                 MultiElementNode args = new MultiElementNode(getCurrent());
                 if (getCurrent().c.equals("(")) args = multiElementIfNeeded(parseExpression());
                 BlockNode b = blockIfNeeded(parseStatement());
-                return new LiteralFunctionNode(name, args, b, t.c.equals("staticmethod"));
+                return new LiteralFunctionNode(name, args, b, t.c.equals("staticmethod") || isStatic);
             }
             case "override": {
                 Token override = getCurrent();
@@ -621,13 +625,15 @@ public class Parser {
         if (match(TokenType.LITERALSTRING) != null) return new LiteralStringNode(previous());
 
         if (match(TokenType.TYPE, new String[] {
-                "num", "string", "bool", "void", "anyof",
-                "list", "container", "object", "require", "local"
+                "num", "string", "bool", "void", "anyof", "final",
+                "function", "method", "static", "func",
+                "list", "container", "object", "require", "local", "object<"
         }) != null) {
             pos--;
             List<VariableModifier> modifiers = new ArrayList<>();
             while (match(TokenType.TYPE, new String[] {
-                    "num", "string", "bool", "void", "anyof", "object<",
+                    "num", "string", "bool", "void", "anyof", "object<", "final", "static",
+                    "function", "func", "method",
                     "list", "container", "object", "require", "local"
             }) != null) {
                 Token m = previous();
@@ -635,6 +641,10 @@ public class Parser {
                     modifiers.add(new RequireModifier());
                 } else if (m.c.equals("local")) {
                     modifiers.add(new LocalModifier());
+                } else if (m.c.equals("final")) {
+                    modifiers.add(new FinalModifier());
+                } else if (m.c.equals("static")) {
+                    modifiers.add(new StaticModifier());
                 } else if (m.c.startsWith("object")) {
                     if (m.c.endsWith("<")) {
                         Node objClass = EParseCall();
@@ -677,6 +687,10 @@ public class Parser {
                                     break;
                                 case "bool": types.add(new TypeModifier(BoolType.class));
                                     break;
+                                case "function":
+                                case "method":
+                                case "func": types.add(new TypeModifier(AbstractFunc.class));
+                                    break;
                             }
                         }
                     } while (match(TokenType.PILLAR) != null);
@@ -697,6 +711,22 @@ public class Parser {
                             break;
                         case "bool": modifiers.add(new TypeModifier(BoolType.class));
                             break;
+                        case "function":
+                        case "method":
+                        case "func": {
+                            if (tokens.get(pos + 1).t.equals(TokenType.LPAR)) {
+                                boolean isStatic = false;
+                                for (VariableModifier mmm : modifiers)
+                                    if (mmm instanceof StaticModifier) {
+                                        isStatic = true;
+                                        break;
+                                    }
+                                pos--;
+                                return parseFunction(isStatic);
+                            } else {
+                                modifiers.add(new TypeModifier(AbstractFunc.class));
+                            }
+                        }
                     }
                 }
             }

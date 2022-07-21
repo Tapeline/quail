@@ -17,7 +17,7 @@ public class FuncTobool extends FuncType {
     public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
         if (a.get(0) instanceof ContainerType &&
                 a.get(0).table.containsKey("_tobool") &&
-                a.get(0).table.get("_tobool") instanceof FuncType) {
+                a.get(0).table.get("_tobool") instanceof AbstractFunc) {
             List<QType> metaArgs = new ArrayList<>(Collections.singletonList(a.get(0)));
             metaArgs.addAll(a);
             return ((FuncType) a.get(0).table.get("_tobool")).

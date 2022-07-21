@@ -18,7 +18,7 @@ public class StringFuncStartswith extends FuncType {
         Assert.size(a, 2, "string startswith:invalid args size");
         Assert.require(a.get(0) instanceof StringType, "string startswith:invalid arg0 type");
         Assert.require(a.get(1) instanceof StringType, "string startswith:invalid arg1 type");
-        return QType.V(((StringType) a.get(0)).value.startsWith(a.get(0).toString()));
+        return QType.V(((StringType) a.get(0)).value.startsWith(a.get(1).toString()));
     }
 
     @Override

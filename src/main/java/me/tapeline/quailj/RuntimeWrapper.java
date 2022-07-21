@@ -14,10 +14,12 @@ import me.tapeline.quailj.runtime.builtins.library_fs.LibraryFs;
 import me.tapeline.quailj.runtime.builtins.library_math.LibraryMath;
 import me.tapeline.quailj.runtime.builtins.library_nest.LibraryNest;
 import me.tapeline.quailj.runtime.builtins.library_random.LibraryRandom;
+import me.tapeline.quailj.translator.Translator;
 import me.tapeline.quailj.types.QType;
 import me.tapeline.quailj.types.RuntimeStriker;
 import me.tapeline.quailj.utils.Pair;
 import me.tapeline.quailj.utils.Utilities;
+import org.apache.commons.io.FileUtils;
 
 import java.util.List;
 
@@ -26,15 +28,18 @@ public class RuntimeWrapper {
     private final boolean debug;
     private final IOManager io;
     private final String path;
+    private final boolean translate;
     private String code;
     private boolean timings;
 
-    public RuntimeWrapper(String code, boolean debug, IOManager ioManager, String path, boolean timings) {
+    public RuntimeWrapper(String code, boolean debug, IOManager ioManager, String path, boolean timings,
+                          boolean translate) {
         this.code = code;
         this.debug = debug;
         this.io = ioManager;
         this.path = path;
         this.timings = timings;
+        this.translate = translate;
     }
 
     public Pair<QType, Runtime> run() throws RuntimeStriker {
@@ -51,6 +56,13 @@ public class RuntimeWrapper {
             Lexer lexer = new Lexer(code);
             List<Token> tokens = lexer.lexAndFix();
             if (timings) System.out.println("[Timings] Lexer done in " + (System.currentTimeMillis() - start) + "ms");
+
+            if (translate) {
+                Translator translator = new Translator();
+                String code = translator.translate(tokens);
+                IOManager.fileSet(path + ".java", code);
+                return null;
+            }
 
             start = System.currentTimeMillis();
             Parser parser = new Parser(tokens);

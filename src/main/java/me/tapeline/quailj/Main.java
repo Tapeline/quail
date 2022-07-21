@@ -12,35 +12,38 @@ public class Main {
     public static boolean recordMemory = true;
 
     public static void main(String[] args) throws RuntimeStriker {
-        boolean debug = false, timings = true;
+        boolean debug = false, timings = false, translate = false;
         String path = null;
         long msStart = System.currentTimeMillis();
 
+        // java -jar quail.jar run|debug|profile|translate path
+
         IOManager io = new IOManager();
 
-	    if (args.length == 2) {
-            debug = args[0].equalsIgnoreCase("true");
-            path = args[1];
-        } else if (args.length == 3) {
-            debug = args[0].equalsIgnoreCase("true");
-            path = args[1];
-            timings = args[2].equalsIgnoreCase("true");
-        } else if (args.length == 4) {
-            debug = args[0].equalsIgnoreCase("true");
-            path = args[1];
-            timings = args[2].equalsIgnoreCase("true");
-            recordMemory = args[3].equalsIgnoreCase("true");
-        } else {
-            debug = false;
-            // path = "/home/tapeline/QuailProjects/Expressive/parser.q";
-            path = "/home/tapeline/test.q";
+	    if (args.length < 2) {
+            System.err.println("java -jar quail.jar run|debug|profile|translate path");
+            return;
         }
 
+        if (args[0].equalsIgnoreCase("run")) {
+        } else if (args[0].equalsIgnoreCase("debug")) {
+            debug = true;
+        } else if (args[0].equalsIgnoreCase("profile")) {
+            timings = true;
+        } else if (args[0].equalsIgnoreCase("translate")) {
+            translate = true;
+        }
+
+        path = args[1];
+
         String code = IOManager.fileInput(path);
-        RuntimeWrapper wrapper = new RuntimeWrapper(code, debug, io, path, timings);
+        RuntimeWrapper wrapper = new RuntimeWrapper(code, debug, io, path, timings, translate);
         Pair<QType, Runtime> resultPair = null;
         try {
             resultPair = wrapper.run();
+            if (translate) {
+                return;
+            }
             QType result = resultPair.a;
             if (result != null && !(result instanceof VoidType)) {
                 io.consolePut("Runtime returned " + result + "\n");

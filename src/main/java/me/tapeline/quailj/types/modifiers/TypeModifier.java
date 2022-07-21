@@ -1,7 +1,10 @@
-package me.tapeline.quailj.types;
+package me.tapeline.quailj.types.modifiers;
 
 import me.tapeline.quailj.parser.nodes.Node;
 import me.tapeline.quailj.runtime.Runtime;
+import me.tapeline.quailj.types.ContainerType;
+import me.tapeline.quailj.types.QType;
+import me.tapeline.quailj.types.RuntimeStriker;
 
 public class TypeModifier extends VariableModifier {
 

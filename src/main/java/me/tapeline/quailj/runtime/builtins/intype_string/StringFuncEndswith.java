@@ -18,7 +18,7 @@ public class StringFuncEndswith extends FuncType {
         Assert.size(a, 2, "string endswith:invalid args size");
         Assert.require(a.get(0) instanceof StringType, "string endswith:invalid arg0 type");
         Assert.require(a.get(1) instanceof StringType, "string endswith:invalid arg1 type");
-        return QType.V(((StringType) a.get(0)).value.endsWith(a.get(0).toString()));
+        return QType.V(((StringType) a.get(0)).value.endsWith(a.get(1).toString()));
     }
 
     @Override

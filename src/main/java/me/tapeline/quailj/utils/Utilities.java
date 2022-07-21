@@ -2,6 +2,8 @@ package me.tapeline.quailj.utils;
 
 import me.tapeline.quailj.parser.nodes.VariableNode;
 import me.tapeline.quailj.types.*;
+import me.tapeline.quailj.types.modifiers.TypeModifier;
+import me.tapeline.quailj.types.modifiers.VariableModifier;
 
 import java.util.Arrays;
 import java.util.HashMap;

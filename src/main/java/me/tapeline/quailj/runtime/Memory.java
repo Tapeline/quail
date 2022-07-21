@@ -3,11 +3,12 @@ package me.tapeline.quailj.runtime;
 import me.tapeline.quailj.parser.nodes.VariableNode;
 import me.tapeline.quailj.types.*;
 import me.tapeline.quailj.types.QType;
+import me.tapeline.quailj.types.modifiers.TypeModifier;
+import me.tapeline.quailj.types.modifiers.VariableModifier;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class Memory {
 

@@ -11,7 +11,7 @@ public enum TokenType {
     COMMA("COMMA", ","),
     TYPE("TYPE", "(func|string|bool|num|container|list|metacontainer|object" +
             "|function|method|staticmethod|object\\<"+
-            "|class|anonymous|require|void|anyof|local)[\\s\\W]"),
+            "|class|anonymous|require|void|anyof|local|final|static)[\\s\\W]"),
     BLOCK("BLOCK", "(do|does|end|then|has|with)[\\s\\W]"),
     KEYWORD("KEYWORD", "(as|through|if|elseif|else|try|catch|while|loop|stop when|every|on|when|override)[\\s\\W]"),
     BINARYOPERATOR("BINARYOPERATOR",

@@ -1,11 +1,13 @@
 package me.tapeline.quailj.parser.nodes;
 
 import me.tapeline.quailj.lexer.Token;
+import me.tapeline.quailj.lexer.TokenType;
 import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.types.QType;
-import me.tapeline.quailj.types.VariableModifier;
+import me.tapeline.quailj.types.modifiers.VariableModifier;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class VariableNode extends Node {
@@ -17,6 +19,17 @@ public class VariableNode extends Node {
     public VariableNode(Token token) {
         this.token = token;
         this.codePos = token.p;
+    }
+
+    public VariableNode(String c) {
+        this.token = new Token(TokenType.ID, c, 0);
+        this.codePos = token.p;
+    }
+
+    public VariableNode(String c, VariableModifier... mods) {
+        this.token = new Token(TokenType.ID, c, 0);
+        this.codePos = token.p;
+        modifiers.addAll(Arrays.asList(mods));
     }
 
     public boolean matchesRequirements(Runtime r, QType q) {

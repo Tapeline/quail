@@ -1,5 +1,6 @@
 package me.tapeline.quailj.types;
 
+import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.runtime.VariableTable;
 
 import java.io.IOException;
@@ -36,7 +37,7 @@ public class QType implements Serializable {
 
 
     public static boolean isFunc(QType... a) {
-        for (QType q : a) if (!(q instanceof FuncType)) return false;
+        for (QType q : a) if (!(q instanceof AbstractFunc)) return false;
         return true;
     }
 
@@ -68,6 +69,14 @@ public class QType implements Serializable {
     private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
         ois.defaultReadObject();
         //table = (HashMap<String, QType>) ois.readObject();
+    }
+
+    public void bindRuntime(Runtime runtime) {
+        if (this instanceof FuncType)
+            ((FuncType) this).boundRuntime = runtime;
+        forEachNotBuiltIn(this, (k, v) -> {
+            v.bindRuntime(runtime);
+        });
     }
 
     public static QType nullSafeLegacy(QType v) {
