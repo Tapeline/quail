@@ -854,12 +854,12 @@ public class Runtime {
                 QType stepV = null;
                 BinaryOperatorNode range = ((ThroughBlockNode) node).range;
                 if (range.operator.c.equals("step")) {
-                    stepV = run(range.rnode, scope);
-                    baseV = run(((BinaryOperatorNode) range.lnode).lnode, scope);
-                    ceilV = run(((BinaryOperatorNode) range.lnode).rnode, scope);
+                    stepV = run(range.rnode, scope).copy();
+                    baseV = run(((BinaryOperatorNode) range.lnode).lnode, scope).copy();
+                    ceilV = run(((BinaryOperatorNode) range.lnode).rnode, scope).copy();
                 } else {
-                    baseV = run(range.lnode, scope);
-                    ceilV = run(range.rnode, scope);
+                    baseV = run(range.lnode, scope).copy();
+                    ceilV = run(range.rnode, scope).copy();
                 }
                 ((NumType) ceilV).value = range.operator.c.equals(":+")?
                         ((NumType) ceilV).value : ((NumType) ceilV).value - 1;
