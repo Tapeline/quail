@@ -13,12 +13,12 @@ public class QWindow {
     public MouseHandler mouse;
     public KeyHandler keyboard;
 
-    public QWindow(Runtime r, String name, QCanvas c) {
+    public QWindow(Runtime r, String name, int w, int h) {
         f = new Frame(name);
-        canvas = c;
+        canvas = new QCanvas(w, h);
         f.add(canvas);
         f.setLayout(null);
-        f.setSize(canvas.getWidth(), canvas.getHeight());
+        f.setSize(w, h);
         f.addWindowListener(new WindowAdapter() {
             public void windowClosing (WindowEvent e) {
                 f.dispose();
@@ -28,12 +28,15 @@ public class QWindow {
         f.addMouseListener(mouse);
         canvas.addMouseListener(mouse);
         keyboard = new KeyHandler(r);
-        canvas.addKeyListener(keyboard);
         f.addKeyListener(keyboard);
         f.setVisible(true);
     }
 
     public void close() {
         f.dispose();
+    }
+
+    public Graphics2D graphics() {
+        return (Graphics2D) canvas.getGraphics();
     }
 }

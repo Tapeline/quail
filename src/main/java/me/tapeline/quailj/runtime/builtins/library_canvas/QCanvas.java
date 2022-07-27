@@ -40,7 +40,7 @@ public class QCanvas extends Canvas {
     }
 
     public void paint(Graphics graphics) {
-        Graphics2D g = (Graphics2D) graphics;
+        /*Graphics2D g = (Graphics2D) graphics;
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
         List<short[]> current = new ArrayList<>(drawings);
@@ -117,6 +117,6 @@ public class QCanvas extends Canvas {
                     break;
                 }
             }
-        }
+        }*/
     }
 }

@@ -4,6 +4,7 @@ import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.types.*;
 import me.tapeline.quailj.utils.Assert;
 
+import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,20 +23,16 @@ public class CanvasFuncPixel extends FuncType {
         Assert.require(a.get(4) instanceof NumType, "canvas pixel:invalid arg4 type");
         Assert.require(a.get(5) instanceof NumType, "canvas pixel:invalid arg5 type");
         Assert.require(((JavaType<?>) a.get(0)).value instanceof QWindow, "canvas clear: invalid arg0 type");
-        QWindow win = (QWindow) ((JavaType<?>) a.get(0)).value;
-        short[] drawing = new short[] {
-                QCanvas.DR_PIXEL,
-                (short) ((NumType) a.get(3)).value,
-                (short) ((NumType) a.get(4)).value,
-                (short) ((NumType) a.get(5)).value,
-                (short) ((NumType) a.get(1)).value,
-                (short) ((NumType) a.get(2)).value,
-        };
-        if (!win.canvas.containsDrawing(drawing))
-            ((QWindow) ((JavaType<?>) a.get(0)).value).canvas.drawings.add(drawing);
-        QType flag = a.get(0).table.get("autodraw");
-        if (flag instanceof BoolType && ((BoolType) flag).value)
-            win.canvas.paint(win.canvas.getGraphics());
+        int r = ((int) ((NumType) a.get(3)).value);
+        int g = ((int) ((NumType) a.get(4)).value);
+        int b = ((int) ((NumType) a.get(5)).value);
+        int c1 = ((int) ((NumType) a.get(1)).value);
+        int c2 = ((int) ((NumType) a.get(2)).value);
+
+        QWindow w = ((QWindow) ((JavaType<?>) a.get(0)).value);
+        Graphics2D graphics = w.graphics();
+        graphics.setColor(new Color(r, g, b));
+        graphics.drawRect(c1, c2, 1, 1);
         return QType.V();
     }
 

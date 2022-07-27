@@ -23,19 +23,14 @@ public class CanvasFuncImage extends FuncType {
         Assert.require(a.get(3) instanceof JavaType, "canvas image:invalid arg3 type");
         Assert.require(((JavaType<?>) a.get(0)).value instanceof QWindow, "canvas image: invalid arg0 type");
         Assert.require(((JavaType<?>) a.get(3)).value instanceof Image, "canvas image: invalid arg1 type");
-        QCanvas canvas = ((QWindow) ((JavaType<?>) a.get(0)).value).canvas;
-        canvas.images.add((Image) ((JavaType<?>) a.get(3)).value);
-        short[] drawing = new short[] {
-                QCanvas.DR_IMAGE,
-                (short) ((NumType) a.get(1)).value,
-                (short) ((NumType) a.get(2)).value,
-                (short) ((short) canvas.images.size() - 1)
-        };
-        if (!canvas.containsDrawing(drawing))
-            canvas.drawings.add(drawing);
-        QType flag = QType.nullSafe(a.get(0).table.get("autodraw"));
-        if (flag instanceof BoolType && ((BoolType) flag).value)
-            canvas.paint(canvas.getGraphics());
+        QWindow w = ((QWindow) ((JavaType<?>) a.get(0)).value);
+        w.graphics().drawImage(((Image) ((JavaType<?>) a.get(3)).value),
+                ((int) ((NumType) a.get(1)).value),
+                ((int) ((NumType) a.get(1)).value),
+                ((Image) ((JavaType<?>) a.get(3)).value).getWidth(null),
+                ((Image) ((JavaType<?>) a.get(3)).value).getHeight(null),
+                null
+        );
         return QType.V();
     }
 

@@ -15,6 +15,7 @@ public class FuncTostring extends FuncType {
 
     @Override
     public QType run(Runtime runtime, List<QType> a) throws RuntimeStriker {
+        if (a.get(0) == null) return QType.V("null");
         if (a.get(0) instanceof ContainerType &&
                 a.get(0).table.containsKey("_tostring") &&
                 a.get(0).table.get("_tostring") instanceof AbstractFunc) {

@@ -4,6 +4,7 @@ import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.types.*;
 import me.tapeline.quailj.utils.Assert;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -21,28 +22,27 @@ public class CanvasFuncPoly extends FuncType {
         Assert.require(a.get(2) instanceof NumType, "canvas poly:invalid arg2 type");
         Assert.require(a.get(3) instanceof NumType, "canvas poly:invalid arg3 type");
         Assert.require(a.get(4) instanceof NumType, "canvas poly:invalid arg4 type");
-        List<Double> d = new ArrayList<>();
-        d.add((double) QCanvas.DR_POLYGON);
-        d.add(((NumType) a.get(2)).value);
-        d.add(((NumType) a.get(3)).value);
-        d.add(((NumType) a.get(4)).value);
-        d.add((double) ((ListType) a.get(1)).values.size());
-        for (QType q : ((ListType) a.get(1)).values) {
+        int[] xP = new int[((ListType) a.get(1)).values.size()];
+        int[] yP = new int[((ListType) a.get(1)).values.size()];
+        for (int i = 0; i < ((ListType) a.get(1)).values.size(); i++) {
+            QType q = ((ListType) a.get(1)).values.get(i);
             Assert.require(q instanceof ListType, "canvas poly:invalid point");
             QType x = ((ListType) q).values.get(0);
             QType y = ((ListType) q).values.get(1);
             Assert.require(QType.isNum(x, y), "canvas poly:invalid point");
-            d.add(((NumType) x).value);
-            d.add(((NumType) y).value);
+            xP[i] = (int) ((NumType) x).value;
+            yP[i] = (int) ((NumType) y).value;
         }
-        Assert.require(((JavaType<?>) a.get(0)).value instanceof QWindow, "canvas poly: invalid arg0 type");
-        short[] arr = new short[d.size()];
-        for (int i = 0; i < d.size(); i++) arr[i] = d.get(i).shortValue();
-        ((QWindow) ((JavaType<?>) a.get(0)).value).canvas.drawings.add(arr);
-        QWindow win = (QWindow) ((JavaType<?>) a.get(0)).value;
-        QType flag = a.get(0).table.get("autodraw");
-        if (flag instanceof BoolType && ((BoolType) flag).value)
-            win.canvas.paint(win.canvas.getGraphics());
+        QWindow w = ((QWindow) ((JavaType<?>) a.get(0)).value);
+        Color c = new Color(
+                ((int) ((NumType) a.get(5)).value),
+                ((int) ((NumType) a.get(6)).value),
+                ((int) ((NumType) a.get(7)).value)
+        );
+        w.graphics().setColor(c);
+        w.graphics().drawPolygon(
+                xP, yP, ((ListType) a.get(1)).values.size()
+        );
         return QType.V();
     }
 
