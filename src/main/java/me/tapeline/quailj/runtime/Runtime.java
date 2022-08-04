@@ -27,7 +27,8 @@ public class Runtime {
             "random",
             "canvas",
             "nest",
-            "fs"
+            "fs",
+            "internals"
     ));
     public static HashMap<String, ContainerType> nativeLibs = new HashMap<>();
 
@@ -245,7 +246,8 @@ public class Runtime {
                     List<QType> metaArgs = new ArrayList<>(Arrays.asList(av, bv));
                     return ((FuncType) av.table.get(containerImpl)).run(this, metaArgs);
                 }
-                switch (((BinaryOperatorNode) node).operator.c) {
+                String op = ((BinaryOperatorNode) node).operator.c;
+                switch (op) {
                     case "+":
                     case "-":
                     case "*":
@@ -476,6 +478,26 @@ public class Runtime {
                                     return new BoolType(true);
                             return new BoolType(false);
                         } else throw new RuntimeStriker("run:binaryop:in:b should be list or string");
+                    }
+                    case ">>":
+                    case "<<": {
+                        if (!(bv instanceof NumType)) throw new RuntimeStriker(
+                                "run:binaryop:shift:invalid shift amount (should be num)");
+                        if (QType.isStr(av))
+                            return StringUtils.shift(
+                                    op.equals("<<")? -((int) ((NumType) bv).value) : ((int) ((NumType) bv).value),
+                                    ((StringType) av).value
+                            );
+                        else if (QType.isList(av))
+                            return ListUtils.shift(
+                                    op.equals("<<")? -((int) ((NumType) bv).value) : ((int) ((NumType) bv).value),
+                                    ((ListType) av).values
+                            );
+                        else if (QType.isNum(av))
+                            return QType.V((
+                                    (NumType) av).value +
+                                    (op.equals("<<")? -((int) ((NumType) bv).value) : ((int) ((NumType) bv).value))
+                            );
                     }
                 }
                 throw new RuntimeStriker("run:binaryop:no valid case for " + node + " (" +

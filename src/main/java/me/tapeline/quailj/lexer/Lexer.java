@@ -1,5 +1,6 @@
 package me.tapeline.quailj.lexer;
 
+import javafx.scene.control.SeparatorMenuItem;
 import me.tapeline.quailj.types.RuntimeStriker;
 
 import java.util.ArrayList;
@@ -58,9 +59,10 @@ public class Lexer {
                 Token token = new Token(i.equals(TokenType.WORDBINARYOPERATOR) ? TokenType.BINARYOPERATOR : i,
                         content.replaceAll("&q;", "\""), pos);
                 pos += result.get(0).length();
-                if (!token.t.equals(TokenType.WHITESPACE) &&
+                if (    !token.t.equals(TokenType.WHITESPACE) &&
                         !token.t.equals(TokenType.COMMENT) &&
-                !(token.c.equals("") && token.t != TokenType.LITERALSTRING)) tokens.add(token);
+                        !(token.c.equals("") && token.t != TokenType.LITERALSTRING)
+                        && !token.t.equals(TokenType.SEMICOLON)) tokens.add(token);
                 return true;
             }
         }

@@ -15,7 +15,7 @@ public enum TokenType {
     BLOCK("BLOCK", "(do|does|end|then|has|with)[\\s\\W]"),
     KEYWORD("KEYWORD", "(as|through|if|elseif|else|try|catch|while|loop|stop when|every|on|when|override)[\\s\\W]"),
     BINARYOPERATOR("BINARYOPERATOR",
-            "(\\:\\+|\\^|\\/\\/|\\+|-|\\*|\\/|\\%|\\:|!=|<-|==|=|<=|>=|>|<|\\.|')"),
+            "(\\:\\+|\\^|\\/\\/|\\+|-|\\*|\\/|\\%|\\:|!=|<<|>>|<-|==|=|<=|>=|>|<|\\.|')"),
     SHORTBINARYOPERATOR("BINARYOPERATOR",
             "(\\^=|\\/\\/=|\\+=|-=|\\*=|\\/=|\\%=)"),
     PILLAR("PILLAR", "\\|"),
@@ -29,6 +29,7 @@ public enum TokenType {
     EFFECT("EFFECT", "(assert|use|throw|using|deploy|strike|return)[\\s]"),
     INSTRUCTION("INSTRUCTION", "(breakpoint|break|continue|memory)[\\s\\W]"),
     CONSUME("CONSUME", "\\.\\.\\."),
+    SEMICOLON("SEMICOLON", "\\;"),
     LAMBDAARROW("LAMBDAARROW", "->"),
     ID("ID", "[a-zA-Z_\\@]+((\\d*[a-zA-Z_\\@]*)*)"),
     LPAR("LPAR", "(\\()"),
@@ -44,13 +45,13 @@ public enum TokenType {
             LITERALSTRING, LITERALNUM, LITERALNULL, LITERALBOOL, COMMA, CONSUME, PILLAR,
             LAMBDAARROW, TYPE, BLOCK, KEYWORD, SHORTBINARYOPERATOR, BINARYOPERATOR,
             WORDBINARYOPERATOR, UNARYOPERATOR, WORDUNARYOPERATOR, EFFECT, INSTRUCTION,
-            ID, LPAR, RPAR, LSPAR, RSPAR, LCPAR, RCPAR, COMMENT, WHITESPACE);
+            ID, LPAR, RPAR, LSPAR, RSPAR, LCPAR, RCPAR, SEMICOLON, COMMENT, WHITESPACE);
     private final String s;
     public final String regex;
 
-    TokenType(String s, String r) {
+    TokenType(String s, String regex) {
         this.s = s;
-        this.regex = r;
+        this.regex = regex;
     }
 
     @Override

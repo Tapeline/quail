@@ -80,4 +80,13 @@ public class StringUtils {
             ll.add(new StringType(s1));
         return ll;
     }
+
+    public static StringType shift(int amount, String s) {
+        String str = "";
+        if (amount > 0)
+            str += s.substring(s.length() - amount) + s.substring(0, amount);
+        else if (amount < 0)
+            str += s.substring(Math.abs(amount)) + s.substring(0, Math.abs(amount));
+        return (StringType) QType.V(str);
+    }
 }

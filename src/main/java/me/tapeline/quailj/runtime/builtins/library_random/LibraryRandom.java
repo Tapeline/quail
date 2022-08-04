@@ -2,7 +2,6 @@ package me.tapeline.quailj.runtime.builtins.library_random;
 
 import me.tapeline.quailj.libmanagement.Library;
 import me.tapeline.quailj.types.QType;
-import me.tapeline.quailj.types.QType;
 
 import java.util.HashMap;
 

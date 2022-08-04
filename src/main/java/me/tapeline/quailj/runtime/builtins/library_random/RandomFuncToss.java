@@ -1,7 +1,9 @@
 package me.tapeline.quailj.runtime.builtins.library_random;
 
 import me.tapeline.quailj.runtime.Runtime;
-import me.tapeline.quailj.types.*;
+import me.tapeline.quailj.types.FuncType;
+import me.tapeline.quailj.types.QType;
+import me.tapeline.quailj.types.RuntimeStriker;
 
 import java.util.Collections;
 import java.util.List;

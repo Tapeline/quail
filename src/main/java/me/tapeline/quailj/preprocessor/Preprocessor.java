@@ -1,5 +1,6 @@
 package me.tapeline.quailj.preprocessor;
 
+import me.tapeline.quailj.platformspecific.IOManager;
 import me.tapeline.quailj.utils.Pair;
 import org.apache.commons.io.FileUtils;
 import sun.reflect.misc.FieldUtil;
@@ -13,6 +14,7 @@ import java.util.List;
 public class Preprocessor {
 
     public List<String> defined = new ArrayList<>();
+    public List<String> included = new ArrayList<>();
     public HashMap<String, String> aliases = new HashMap<>();
     public Pair<List<Directive>, String> resolveDirectives(String code) {
         List<Directive> directives = new ArrayList<>();
@@ -45,8 +47,8 @@ public class Preprocessor {
                     directives.add(new Directive(Directive.Type.ALIAS, alias, aliasTo));
                 } else if (directed.startsWith("define")) {
                     directives.add(new Directive(Directive.Type.DEFINE, directed.substring(7)));
-                } else if (directed.startsWith("put")) {
-                    directed = directed.substring(4 + 1);
+                } else if (directed.startsWith("include")) {
+                    directed = directed.substring(8 + 1);
                     String path = "";
                     int pos = 0;
                     boolean escape = false;
@@ -95,6 +97,8 @@ public class Preprocessor {
                 }
             } else if (dir.t == Directive.Type.ALIAS) {
                 aliases.put(dir.a, dir.b);
+            } else if (dir.t == Directive.Type.PUT) {
+                code = "\n# Quail Preprocessor Included\n" + IOManager.fileInput(dir.a) + "\n\n" + code;
             }
         }
 
@@ -112,6 +116,7 @@ public class Preprocessor {
             c1 = dirs.b;
             code = applyDirectives(c1, dirs.a);
             if (dirs.a.size() == 0) break;
+            c1 = code;
         }
         return code;
     }

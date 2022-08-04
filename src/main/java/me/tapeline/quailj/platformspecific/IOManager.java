@@ -168,7 +168,7 @@ public class IOManager {
                 return fileInput(folder + path);
             }
         }
-        throw new RuntimeStriker("load lib:library " + path + " was not found in these paths: " +
+        throw new RuntimeStriker("load lib:library \"" + path + "\" was not found in these paths: " +
                 libFolders.toString());
     }
     public static String pathLibrary(String path) {

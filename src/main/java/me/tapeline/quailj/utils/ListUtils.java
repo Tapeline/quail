@@ -105,4 +105,16 @@ public class ListUtils {
         }
         return parts;
     }
+
+    public static ListType shift(int amount, List<QType> s) {
+        List<QType> list = new ArrayList<>();
+        if (amount > 0) {
+            list.addAll(s.subList(s.size() - amount, s.size()));
+            list.addAll(s.subList(0, amount + 1));
+        } else if (amount < 0) {
+            list.addAll(s.subList(Math.abs(amount), s.size()));
+            list.addAll(s.subList(0, Math.abs(amount)));
+        }
+        return new ListType(list);
+    }
 }

@@ -8,18 +8,17 @@ import me.tapeline.quailj.parser.nodes.Node;
 import me.tapeline.quailj.platformspecific.IOManager;
 import me.tapeline.quailj.preprocessor.Preprocessor;
 import me.tapeline.quailj.runtime.Runtime;
-import me.tapeline.quailj.runtime.VariableTable;
 import me.tapeline.quailj.runtime.builtins.library_canvas.LibraryCanvas;
 import me.tapeline.quailj.runtime.builtins.library_fs.LibraryFs;
+import me.tapeline.quailj.runtime.builtins.library_random.LibraryRandom;
 import me.tapeline.quailj.runtime.builtins.library_math.LibraryMath;
 import me.tapeline.quailj.runtime.builtins.library_nest.LibraryNest;
-import me.tapeline.quailj.runtime.builtins.library_random.LibraryRandom;
+import me.tapeline.quailj.runtime.builtins.library_internals.LibraryInternals;
 import me.tapeline.quailj.translator.Translator;
 import me.tapeline.quailj.types.QType;
 import me.tapeline.quailj.types.RuntimeStriker;
 import me.tapeline.quailj.utils.Pair;
 import me.tapeline.quailj.utils.Utilities;
-import org.apache.commons.io.FileUtils;
 
 import java.util.List;
 
@@ -71,11 +70,12 @@ public class RuntimeWrapper {
             if (timings) System.out.println("[Timings] Parser done in " + (System.currentTimeMillis() - start) + "ms\n");
 
             start = System.currentTimeMillis();
-            Runtime.registerLibrary(new LibraryRandom());
+            Runtime.registerLibrary(new LibraryInternals());
             Runtime.registerLibrary(new LibraryCanvas());
             Runtime.registerLibrary(new LibraryNest());
             Runtime.registerLibrary(new LibraryMath());
             Runtime.registerLibrary(new LibraryFs());
+            Runtime.registerLibrary(new LibraryRandom());
             runtime = new Runtime(root, io, path, timings);
 
             QType r = runtime.run(root, runtime.scope);

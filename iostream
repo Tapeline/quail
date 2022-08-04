@@ -1,0 +1,18 @@
+#:alias "\bint\b" num
+use internals
+
+class OutputStream {
+    override << (me, data) {
+        if data == "\n" out()
+        else put(data)
+    }
+}
+cout = OutputStream()
+endl = "\n"
+
+class InputStream {
+    override >> (me, data) {
+        internals.enclosingSet(data, input())
+    }
+}
+cin = InputStream()

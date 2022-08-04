@@ -35,6 +35,9 @@ public class Utilities {
         opToString.put("index", "_index");
         opToString.put("setindex", "_setindex");
         opToString.put("call", "_call");
+        opToString.put(">>", "_shr");
+        opToString.put("<<", "_shl");
+        opToString.put(":", "_range");
     }
 
     public static boolean isNumeric(String strNum) {

@@ -95,7 +95,7 @@ public class FuncType extends AbstractFunc {
         }
         boolean match = true;
         for (int i = 0; i < Math.min(args.size(), a.size()); i++) {
-            if (!args.get(0).matchesRequirements(runtime, a.get(i))) {
+            if (args.size() > 0 && !args.get(i).matchesRequirements(runtime, a.get(i))) {
                 match = false;
                 break;
             }

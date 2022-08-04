@@ -7,7 +7,6 @@ import me.tapeline.quailj.types.*;
 import me.tapeline.quailj.types.modifiers.*;
 import me.tapeline.quailj.utils.Utilities;
 
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -319,7 +318,7 @@ public class Parser {
         n = parseContainer();
         if (n != null) return n;
 
-        n = parseFunction();
+        n = parseFunction(false);
         if (n != null) return n;
 
         n = parseExpression();
@@ -377,11 +376,10 @@ public class Parser {
         return n;
     }
 
-    public Node parseFunction() throws RuntimeStriker {
-        return parseFunction(false);
-    }
-
+    /*
+    LEGACY
     public Node parseFunction(boolean isStatic) throws RuntimeStriker {
+
         Token t = match(new String[] {
                 "function", "func", "method", "staticmethod", "override", "object"
         });
@@ -414,6 +412,34 @@ public class Parser {
                 BlockNode b = blockIfNeeded(parseStatement());
                 return new LiteralFunctionNode(new Token(t.t, "_builder", t.p), args,
                         b, false);
+            }
+        }
+        return null;
+    } */
+
+    public Node parseFunction(boolean isStatic) throws RuntimeStriker {
+
+        Token t = match(new String[] {
+                "staticmethod", "override"
+        });
+        if (t == null) return null;
+        switch (t.c) {
+            case "staticmethod": {
+                Token name = require(TokenType.ID, "Expected id");
+                MultiElementNode args = new MultiElementNode(getCurrent());
+                if (getCurrent().c.equals("(")) args = multiElementIfNeeded(parseExpression());
+                BlockNode b = blockIfNeeded(parseStatement());
+                return new LiteralFunctionNode(name, args, b, t.c.equals("staticmethod") || isStatic);
+            }
+            case "override": {
+                Token override = getCurrent();
+                pos++;
+                MultiElementNode args = new MultiElementNode(getCurrent());
+                if (getCurrent().c.equals("(")) args = multiElementIfNeeded(parseExpression());
+                BlockNode b = blockIfNeeded(parseStatement());
+                return new LiteralFunctionNode(new Token(
+                        override.t, getSystemField(override.c), override.p
+                ), args, b, false);
             }
         }
         return null;
@@ -509,7 +535,7 @@ public class Parser {
 
     private Node EParseComparison() throws RuntimeStriker {
         Node expr = EParseTerm();
-        while ( match(TokenType.BINARYOPERATOR, new String[] {"<", ">", ">=", "<="}) != null) {
+        while ( match(TokenType.BINARYOPERATOR, new String[] {"<", ">", ">=", "<=", "<<", ">>"}) != null) {
             Token operator = previous();
             Node right = EParseTerm();
             expr = new BinaryOperatorNode(operator, expr, right);
@@ -613,9 +639,92 @@ public class Parser {
             Token t = previous();
             Node index = EParseOr();
             require(TokenType.RSPAR, "Expected ] to close indexing");
-            expr = new IndexReferenceNode(previous(), expr, index);
+            expr = new IndexReferenceNode(t, expr, index);
         }
         return expr;
+    }
+
+    private Node EParseModifier(boolean fromAnyOf) throws RuntimeStriker {
+        List<VariableModifier> modifiers = new ArrayList<>();
+        String[] acceptable = !fromAnyOf? new String[] {
+                "num", "string", "bool", "void", "anyof", "object<", "final", "static",
+                "function", "func", "method",
+                "list", "container", "object", "require", "local"
+        } : new String[] {
+                "num", "string", "bool", "void", "object<",
+                "function", "func", "method",
+                "list", "container", "object"
+        };
+        while (match(TokenType.TYPE, acceptable) != null) {
+            Token m = previous();
+            if (m.c.equals("require")) {
+                modifiers.add(new RequireModifier());
+            } else if (m.c.equals("local")) {
+                modifiers.add(new LocalModifier());
+            } else if (m.c.equals("final")) {
+                modifiers.add(new FinalModifier());
+            } else if (m.c.equals("static")) {
+                modifiers.add(new StaticModifier());
+            } else if (m.c.startsWith("object")) {
+                if (m.c.endsWith("<")) {
+                    Node objClass = EParseCall();
+                    requireString(TokenType.BINARYOPERATOR, new String[] {">"},
+                            "Expected > to close class-clarification");
+                    TypeModifier mod = new TypeModifier(ContainerType.class);
+                    mod.objectClass = objClass;
+                    modifiers.add(mod);
+                    continue;
+                } else modifiers.add(new TypeModifier(ContainerType.class));
+            } else if (m.c.equals("anyof")) {
+                List<TypeModifier> types = new ArrayList<>();
+                do {
+                    Node mod = EParseModifier(true);
+                    assert mod instanceof VariableNode;
+                    types.add((TypeModifier) ((VariableNode) mod).modifiers.get(0));
+                } while (match(TokenType.PILLAR) != null);
+                modifiers.add(new AnyofModifier(types));
+            } else {
+                switch (m.c) {
+                    case "num": modifiers.add(new TypeModifier(NumType.class));
+                        break;
+                    case "void": modifiers.add(new TypeModifier(VoidType.class));
+                        break;
+                    case "string": modifiers.add(new TypeModifier(
+                            StringType.class));
+                        break;
+                    case "list": modifiers.add(new TypeModifier(ListType.class));
+                        break;
+                    case "container": modifiers.add(new TypeModifier(
+                            ContainerType.class));
+                        break;
+                    case "bool": modifiers.add(new TypeModifier(BoolType.class));
+                        break;
+                    case "function":
+                    case "method":
+                    case "func":
+                        modifiers.add(new TypeModifier(AbstractFunc.class)); break;
+                }
+            }
+        }
+        Token id = require(TokenType.ID, "Expected ID after clarification");
+        VariableNode v = new VariableNode(id);
+        v.modifiers = modifiers;
+        if (match(TokenType.CONSUME) != null) {
+            v.isConsumer = true;
+            return v;
+        } else if (getCurrent().t.equals(TokenType.LPAR)) {
+            boolean isStatic = false;
+            for (VariableModifier mmm : modifiers)
+                if (mmm instanceof StaticModifier) {
+                    isStatic = true;
+                    break;
+                }
+            MultiElementNode args = new MultiElementNode(getCurrent());
+            if (getCurrent().c.equals("(")) args = multiElementIfNeeded(parseExpression());
+            BlockNode b = blockIfNeeded(parseStatement());
+            return new LiteralFunctionNode(id, args, b, isStatic);
+        }
+        return v;
     }
 
     private Node EParsePrimary() throws RuntimeStriker {
@@ -630,111 +739,7 @@ public class Parser {
                 "list", "container", "object", "require", "local", "object<"
         }) != null) {
             pos--;
-            List<VariableModifier> modifiers = new ArrayList<>();
-            while (match(TokenType.TYPE, new String[] {
-                    "num", "string", "bool", "void", "anyof", "object<", "final", "static",
-                    "function", "func", "method",
-                    "list", "container", "object", "require", "local"
-            }) != null) {
-                Token m = previous();
-                if (m.c.equals("require")) {
-                    modifiers.add(new RequireModifier());
-                } else if (m.c.equals("local")) {
-                    modifiers.add(new LocalModifier());
-                } else if (m.c.equals("final")) {
-                    modifiers.add(new FinalModifier());
-                } else if (m.c.equals("static")) {
-                    modifiers.add(new StaticModifier());
-                } else if (m.c.startsWith("object")) {
-                    if (m.c.endsWith("<")) {
-                        Node objClass = EParseCall();
-                        requireString(TokenType.BINARYOPERATOR, new String[] {">"},
-                                "Expected > to close class-clarification");
-                        TypeModifier mod = new TypeModifier(ContainerType.class);
-                        mod.objectClass = objClass;
-                        modifiers.add(mod);
-                        continue;
-                    } else modifiers.add(new TypeModifier(ContainerType.class));
-                } else if (m.c.equals("anyof")) {
-                    List<TypeModifier> types = new ArrayList<>();
-                    do {
-                        Token m_ = match(TokenType.TYPE, new String[] {
-                                "num", "string", "bool", "void", "object<",
-                                "list", "container", "object", "require"
-                        });
-                        if (m_.c.startsWith("object")) {
-                            if (m_.c.endsWith("<")) {
-                                Node objClass = EParseCall();
-                                requireString(TokenType.BINARYOPERATOR, new String[] {">"},
-                                        "Expected > to close class-clarification");
-                                TypeModifier mod = new TypeModifier(ContainerType.class);
-                                mod.objectClass = objClass;
-                                types.add(mod);
-                            }
-                        } else {
-                            switch (m_.c) {
-                                case "num": types.add(new TypeModifier(NumType.class));
-                                    break;
-                                case "void": types.add(new TypeModifier(VoidType.class));
-                                    break;
-                                case "string": types.add(new TypeModifier(
-                                        StringType.class));
-                                    break;
-                                case "list": types.add(new TypeModifier(ListType.class));
-                                    break;
-                                case "container": types.add(new TypeModifier(
-                                        ContainerType.class));
-                                    break;
-                                case "bool": types.add(new TypeModifier(BoolType.class));
-                                    break;
-                                case "function":
-                                case "method":
-                                case "func": types.add(new TypeModifier(AbstractFunc.class));
-                                    break;
-                            }
-                        }
-                    } while (match(TokenType.PILLAR) != null);
-                    modifiers.add(new AnyofModifier(types));
-                } else {
-                    switch (m.c) {
-                        case "num": modifiers.add(new TypeModifier(NumType.class));
-                            break;
-                        case "void": modifiers.add(new TypeModifier(VoidType.class));
-                            break;
-                        case "string": modifiers.add(new TypeModifier(
-                                StringType.class));
-                            break;
-                        case "list": modifiers.add(new TypeModifier(ListType.class));
-                            break;
-                        case "container": modifiers.add(new TypeModifier(
-                                ContainerType.class));
-                            break;
-                        case "bool": modifiers.add(new TypeModifier(BoolType.class));
-                            break;
-                        case "function":
-                        case "method":
-                        case "func": {
-                            if (tokens.get(pos + 1).t.equals(TokenType.LPAR)) {
-                                boolean isStatic = false;
-                                for (VariableModifier mmm : modifiers)
-                                    if (mmm instanceof StaticModifier) {
-                                        isStatic = true;
-                                        break;
-                                    }
-                                pos--;
-                                return parseFunction(isStatic);
-                            } else {
-                                modifiers.add(new TypeModifier(AbstractFunc.class));
-                            }
-                        }
-                    }
-                }
-            }
-            require(TokenType.ID, "Expected ID after clarification");
-            VariableNode v = new VariableNode(previous());
-            v.modifiers = modifiers;
-            if (match(TokenType.CONSUME) != null) v.isConsumer = true;
-            return v;
+            return EParseModifier(false);
         }
 
         if (match(TokenType.ID) != null) {
