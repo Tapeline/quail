@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    <meta charset="utf-8">
+    <title>Quail</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1" /> 
+  </head>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+  
+  <body>
+    <!-- NAV -->
+    <div class="container">
+    <header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
+      <a href="index.html" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
+        <img src="res/images/logo.png" style="width: 64px;" class="mr-3">
+        <span class="fs-4">Quail</span>
+      </a>
+
+      <ul class="nav nav-pills">
+        <li class="nav-item"><a href="index.html" class="nav-link active" aria-current="page">Home</a></li>
+        <li class="nav-item"><a href="overview.html" class="nav-link">Overview</a></li>
+        <li class="nav-item"><a href="get.html" class="nav-link">Download</a></li>
+        <li class="nav-item"><a href="docs.html" class="nav-link">Docs</a></li>
+        <li class="nav-item"><a href="https://github.com/Tapeline/quark" class="nav-link">GitHub</a></li>
+      </ul>
+    </header>
+  </div>
+    <!-- NAV -->
+
+    <!-- HERO -->
+    <div class="px-4 pt-5 my-5 text-center border-bottom">
+      <h1 class="display-4 fw-bold">Quail</h1>
+      <div class="col-lg-6 mx-auto">
+        <p class="lead mb-4">Easy-to-use scripting language with simple yet powerful syntax, embeddable in Java applications and supporting a plenty of different approaches for designing code and writing it.</p>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mb-5">
+          <button type="button" class="btn btn-primary btn-lg px-4 me-sm-3" onclick="window.location.replace('overview.html');">See main features</button>
+          <button type="button" class="btn btn-outline-secondary btn-lg px-4" onclick="window.location.replace('get.html');">Proceed to download</button>
+        </div>
+      </div>
+      <div class="overflow-hidden" style="max-height: 30vh;">
+        <div class="container px-5">
+          <img src="res/images/code.png" class="img-fluid border rounded-3 shadow-lg mb-4" alt="Example image" width="700" height="500" loading="lazy">
+        </div>
+      </div>
+    </div>
+    <!-- HERO -->
+
+    <main>
+      <div class="container px-4 py-5" id="featured-3">
+        <h2 class="pb-2 border-bottom">Why do you want use Quail?</h2>
+        <div class="row g-4 py-5 row-cols-1 row-cols-lg-3">
+          <div class="feature col">
+            <div class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-primary bg-gradient fs-2 mb-3">
+              <svg class="bi" width="1em" height="1em"><use xlink:href="#"/></svg>
+            </div>
+            <h2>Very customizable</h2>
+            <p>With basic regex preprocessor, ability to use any value as an object with its own methods and fields and possibility to override almost every operator you can create very convenient in use code.</p>
+          </div>
+          <div class="feature col">
+            <div class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-primary bg-gradient fs-2 mb-3">
+              <svg class="bi" width="1em" height="1em"><use xlink:href="#"/></svg>
+            </div>
+            <h2>Java-compatible</h2>
+            <p>Since Quail is written in Java, you can either embed Quail in Java app or embed Java source code or compiled jar into your Quail project.</p>
+          </div>
+          <div class="feature col">
+            <div class="feature-icon d-inline-flex align-items-center justify-content-center text-bg-primary bg-gradient fs-2 mb-3">
+              <svg class="bi" width="1em" height="1em"><use xlink:href="#"/></svg>
+            </div>
+            <h2>Best features</h2>
+            <p>Quail's goal is to create the most convenient in use language using the best practices, syntaxes and approaches from different languages.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-4 py-5 my-5 text-center">
+        <h1 class="display-5 fw-bold">Already interested?</h1>
+        <div class="col-lg-6 mx-auto">
+          <p class="lead mb-4">Go see the full overview, the "Getting Started" or proceed to download</p>
+          <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+            <button type="button" class="btn btn-primary btn-lg px-4 me-sm-3" onclick="window.location.replace('overview.html');">Overview</button>
+            <button type="button" class="btn btn-outline-secondary btn-lg px-4 me-sm-3" onclick="window.location.replace('docs.html');">Getting Started</button>
+            <button type="button" class="btn btn-outline-secondary btn-lg px-4 me-sm-3" onclick="window.location.replace('get.html');">Download</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- FOOTER -->
+    <div class="container">
+      <footer class="row row-cols-1 row-cols-sm-2 row-cols-md-5 py-5 my-5 border-top">
+        <div class="col mb-3">
+          <a href="/" class="d-flex align-items-center mb-3 link-dark text-decoration-none">
+            <img src="res/images/logo.png" style="width: 64px;" class="mr-3">
+          </a>
+          <p class="text-muted">&copy; Tapeline 2021-2022 CC-BY-NC-SA-4.0</p>
+        </div>
+
+        <div class="col mb-3">
+
+        </div>
+
+        <div class="col mb-3">
+          <h5>Information</h5>
+          <ul class="nav flex-column">
+            <li class="nav-item mb-2"><a href="index.html" class="nav-link p-0 text-muted">Home</a></li>
+            <li class="nav-item mb-2"><a href="overview.html" class="nav-link p-0 text-muted">Overview</a></li>
+            <li class="nav-item mb-2"><a href="overview.html" class="nav-link p-0 text-muted">About</a></li>
+          </ul>
+        </div>
+
+        <div class="col mb-3">
+          <h5>Get Quail</h5>
+          <ul class="nav flex-column">
+            <li class="nav-item mb-2"><a href="get.html#windows" class="nav-link p-0 text-muted">Download for Windows</a></li>
+            <li class="nav-item mb-2"><a href="get.html#linux" class="nav-link p-0 text-muted">Download for Linux</a></li>
+            <li class="nav-item mb-2"><a href="get.html#other" class="nav-link p-0 text-muted">Download for Other systems</a></li>
+          </ul>
+        </div>
+
+        <div class="col mb-3">
+          <h5>Docs</h5>
+          <ul class="nav flex-column">
+            <li class="nav-item mb-2"><a href="docs.html" class="nav-link p-0 text-muted">Getting started</a></li>
+          </ul>
+        </div>
+      </footer>
+    </div>
+    <!-- FOOTER -->
+  </body>
+  <script>
+  $(document).ready(function () {
+      
+  });
+  </script>
+</html>

@@ -4,16 +4,7 @@
 
 # Installing and running Quail
 
-### On Windows
-
-1. Download the latest release from [Quail releases page](http://github.com/Tapeline/quark/releases)
-2. Make sure you have at least Java 8 installed. If not - [go to the Oracle Java Download Page](https://www.java.com/ru/download/manual.jsp)
-
-### On Linux
-
-1. Download the latest release from [Quail releases page](http://github.com/Tapeline/quark/releases)
-2. Make sure you have at least Java 8 installed. If not - [see in Google how you can do it](https://www.google.com/search?q=install+java+8+on+linux)
-3. **Important!** If you're using Ubuntu or any other Ubuntu-based OS - make sure you have granted .jar file permissions to run as executable.
+[Quail Download](get.html)
 
 ### Starting
 
