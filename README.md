@@ -7,9 +7,9 @@
 > Plz report all bugs (use Issues).
 >
 
-[Website](tapeline.github.io/quail)
+[Website](https://tapeline.github.io/quail)
 
-[Docs](tapeline.github.io/quail/docs)
+[Docs](https://tapeline.github.io/quail/docs)
 
 **CC BY-NC-SA 4.0**
 
