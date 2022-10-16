@@ -1,11 +1,9 @@
-#:include "iostream"
+class Test {
+    protected = 10
 
-num main() {
-    cin >> "a";
-    cout << a;
-    cout << endl;
-    cout << "Hello, World!";
-    return 0;
+    sets protected(me) {}
 }
 
-main();
+t = Test()
+t.protected = 0
+out(t.protected)

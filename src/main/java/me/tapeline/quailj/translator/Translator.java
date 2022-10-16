@@ -30,6 +30,7 @@ public class Translator {
         s += "\t\tParser parser = new Parser(tokens);\n" +
                 "\t\tNode root = parser.parse();\n";
         s += "\t\tRuntime runtime = new Runtime(root, new IOManager(), \"\", false);\n" +
+             "\t\truntime.code = \"\";\n" +
                 "\t\truntime.run(root, runtime.scope);\n";
         s += "\t}\n}\n";
         return s;

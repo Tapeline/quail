@@ -56,17 +56,6 @@ public class Utilities {
         return s.equalsIgnoreCase("true") || s.equalsIgnoreCase("false");
     }
 
-    public static int[] getLine(int pos, String code) {
-        List<String> split = Arrays.asList(code.split("\n"));
-        int sum = 0;
-        for (int i = 0; i < split.size(); i++) {
-            sum += split.get(i).length();
-            if (sum <= pos && sum + split.get(i+1).length() > pos)
-                return new int[] {i, pos - sum + 1};
-        }
-        return new int[] {1, pos};
-    }
-
     public static BoolType compare(QType a, QType b) {
         if (QType.isBool(a, b))
             return new BoolType( ((BoolType) a).value == ((BoolType) b).value);
@@ -95,7 +84,7 @@ public class Utilities {
             ch += lines[i].length();
             if (ch > pos) return new int[] {i + 1, pos - ch};
         }
-        return new int[] {lines.length, 0};
+        return new int[] {lines.length, ch};
     }
 
     public static QType getDefaultValue(Class clazz) {

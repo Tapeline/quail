@@ -91,6 +91,7 @@ public class FuncType extends AbstractFunc {
                         throw striker;
                     }
                 }
+                return QType.V();
             }
         }
         boolean match = true;
@@ -100,9 +101,18 @@ public class FuncType extends AbstractFunc {
                 break;
             }
         }
-        if (!match) throw new RuntimeStriker("func " + name + ":failed to find valid call variant for " +
-                args.toString() + "\n" +
-                "Valid are:none");
+        if (!match) {
+            String s = "";
+            for (AlternativeCall ac : alternatives)
+                s += "  " + ac.toString() + "\n";
+            s += "  " + args.toString();
+            String as = "";
+            for (QType qt : a)
+                as += qt.getClass().getSimpleName() + " ";
+            throw new RuntimeStriker("func " + name + ":failed to find valid call variant for (" +
+                as + ")\n" +
+                "Valid are:\n" + s);
+        }
         for (int i = 0; i < Math.min(args.size(), a.size()); i++) {
             if (args.get(i).isConsumer) {
                 ListType l = new ListType(a.subList(i, a.size()));
@@ -118,7 +128,7 @@ public class FuncType extends AbstractFunc {
                 throw striker;
             }
         }
-        return new QType();
+        return QType.V();
     }
 
     @Override

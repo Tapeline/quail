@@ -41,6 +41,7 @@ public class Runtime {
     public static CallTraceRecord mainRecord = new CallTraceRecord();
     public String path;
     public boolean doProfile = false;
+    public String code;
 
     public Runtime(Node rootNode, IOManager io, String path, boolean doProfile) throws RuntimeStriker {
         this.rootNode = rootNode;
@@ -91,6 +92,7 @@ public class Runtime {
         scope.set(this, "console",    new FuncConsole());
         scope.set(this, "table",      new FuncTable());
         scope.set(this, "thread",     new FuncThread());
+        scope.set(this, "map",        new FuncMap());
 
         scope.set(this, "clock",  new FuncClock());
         scope.set(this, "millis", new FuncMillis());
@@ -115,17 +117,17 @@ public class Runtime {
         scope.set(this, "billion",        new NumType(1000000000D));
         scope.set(this, "trillion",       new NumType(1000000000000D));
 
-        scope.set(this, "Number", new ContainerType("Number", "container",
-                new HashMap<>(), false));
         NumType.tableToClone.put(this, "floor",   new NumFuncFloor());
         NumType.tableToClone.put(this, "ceil",    new NumFuncCeil());
         NumType.tableToClone.put(this, "round",   new NumFuncRound());
+        NumType.tableToClone.put(this, "_name",   QType.V("Number"));
+        NumType numType = new NumType(0);
+        scope.set(this, "Number", numType);
 
-        scope.set(this, "Null", new ContainerType("Null", "container",
-                new HashMap<>(), false));
+        VoidType.tableToClone.put(this, "_name",   QType.V("VoidType"));
+        VoidType voidType = new VoidType();
+        scope.set(this, "Null", numType);
 
-        scope.set(this, "String", new ContainerType("String", "container",
-                new HashMap<>(), false));
         StringType.tableToClone.put(this, "get",              new StringFuncGet());
         StringType.tableToClone.put(this, "replace",          new StringFuncReplace());
         StringType.tableToClone.put(this, "size",             new StringFuncSize());
@@ -147,12 +149,14 @@ public class Runtime {
         StringType.tableToClone.put(this, "color",            new StringFuncColor());
         StringType.tableToClone.put(this, "back",             new StringFuncBack());
         StringType.tableToClone.put(this, "style",            new StringFuncStyle());
+        StringType.tableToClone.put(this, "_name",   QType.V("String"));
+        StringType stringType = new StringType("");
+        scope.set(this, "String", stringType);
 
-        scope.set(this, "Bool", new ContainerType("Bool", "container",
-                new HashMap<>(), false));
+        BoolType.tableToClone.put(this, "_name",   QType.V("Bool"));
+        BoolType boolType = new BoolType(false);
+        scope.set(this, "Bool", boolType);
 
-        scope.set(this, "List", new ContainerType("List", "container",
-                new HashMap<>(), false));
         ListType.tableToClone.put(this, "add",            new ListFuncAdd());
         ListType.tableToClone.put(this, "find",           new ListFuncFind());
         ListType.tableToClone.put(this, "get",            new ListFuncGet());
@@ -163,6 +167,9 @@ public class Runtime {
         ListType.tableToClone.put(this, "size",           new ListFuncSize());
         ListType.tableToClone.put(this, "clear",          new ListFuncClear());
         ListType.tableToClone.put(this, "count",          new ListFuncCount());
+        ListType.tableToClone.put(this, "_name",   QType.V("List"));
+        ListType listType = new ListType();
+        scope.set(this, "List", listType);
 
         ContainerType.tableToClone.put(this, "contains",   new ContainerFuncContains());
         ContainerType.tableToClone.put(this, "keys",       new ContainerFuncKeys());
@@ -179,6 +186,9 @@ public class Runtime {
         scope.set(this, "Container", new ContainerType("Container", "container",
                 new HashMap<>(), false));
 
+        FuncType.tableToClone.put(this, "_name",   QType.V("Func"));
+        FuncType funcType = new FuncType("Func", new ArrayList<>(), new BlockNode(0));
+        scope.set(this, "Func", funcType);
     }
 
     public ContainerType getNative(String id) throws RuntimeStriker {
@@ -398,8 +408,17 @@ public class Runtime {
                                     ((ContainerType) av).like().equals(bvx)))
                                 return new BoolType(true);
                             return new BoolType(false);
+                        } else {
+                            if (av.nullSafeGet("_name").equals(bv.nullSafeGet("_name")))
+                                return new BoolType(true);
+                            if (av.nullSafeGet("_like").equals(bv.nullSafeGet("_like")))
+                                return new BoolType(true);
+                            if (scope.get(av.nullSafeGet("_like").toString()) instanceof ContainerType &&
+                                    ((ContainerType) scope.get(av.nullSafeGet("_like").toString()))
+                                            .isInstance(this, bv.nullSafeGet("_name").toString()))
+                                return new BoolType(true);
+                            return new BoolType(false);
                         }
-                        break;
                     }
                     case "is same type as": {
                         if (QType.isNum(av, bv) ||
@@ -534,19 +553,39 @@ public class Runtime {
                 if (doRethrow > 0) throw new RuntimeStriker(RuntimeStrikerType.BREAK, doRethrow);
 
             } else if (node instanceof FieldReferenceNode) {
+                QType parent = run(((FieldReferenceNode) node).lnode, scope);
+                String field = ((FieldReferenceNode) node).rnode.toString().replaceAll("\\.", "_");
+                if (parent.table.containsKey("_get") && QType.isFunc(parent.table.get("_get")))
+                    return ((FuncType) parent.table.get("_get")).run(this, Arrays.asList(
+                            parent, new StringType(((FieldReferenceNode) node).rnode.toString())
+                    ));
+                if (parent.table.containsKey("_get_" + field) && QType.isFunc(parent.table.get("_get_" + field)))
+                    return ((FuncType) parent.table.get("_get_" + field)).run(this, Arrays.asList(
+                            parent
+                    ));
                 if (!(((FieldReferenceNode) node).rnode instanceof VariableNode))
                     throw new RuntimeStriker("run:field set:cannot get value of non-variable type " + node,
                             current.codePos);
-                return QType.nullSafe(run(((FieldReferenceNode) node).lnode, scope)).table.get(
-                        ((VariableNode) ((FieldReferenceNode) node).rnode).token.c);
+                return QType.nullSafe(parent.table.get(
+                        ((VariableNode) ((FieldReferenceNode) node).rnode).token.c));
 
             } else if (node instanceof FieldSetNode) {
                 QType parent = run(((FieldSetNode) node).lnode, scope);
+                QType value = run(((FieldSetNode) node).value, scope);
+                String field = ((FieldSetNode) node).rnode.toString().replaceAll("\\.", "_");
+                if (parent.table.containsKey("_set") && QType.isFunc(parent.table.get("_set")))
+                    return ((FuncType) parent.table.get("_set")).run(this, Arrays.asList(
+                            parent, new StringType(((FieldSetNode) node).rnode.toString()), value
+                    ));
+                if (parent.table.containsKey("_set_" + field) && QType.isFunc(parent.table.get("_set_" + field)))
+                    return ((FuncType) parent.table.get("_set_" + field)).run(this, Arrays.asList(
+                        parent, value
+                    ));
                 if (!(((FieldSetNode) node).rnode instanceof VariableNode))
                     throw new RuntimeStriker("run:field set:cannot set value of non-variable type" + node,
                             current.codePos);
                 parent.table.put(this, ((VariableNode) ((FieldSetNode) node).rnode).token.c,
-                        run(((FieldSetNode) node).value, scope));
+                        value);
 
             } else if (node instanceof FunctionCallNode) {
                 QType callee = run(((FunctionCallNode) node).id, scope);
@@ -617,6 +656,7 @@ public class Runtime {
                             Parser parser = new Parser(tokens);
                             Node node1 = parser.parse();
                             Runtime runtime = new Runtime(node1, io, path, false);
+                            runtime.code = code;
                             try {
                                 libraryRuntimes.put(((EffectNode) node).other.equals("_defaultname")? id :
                                         ((EffectNode) node).other, runtime);
@@ -741,8 +781,41 @@ public class Runtime {
                     case "continue":
                         throw new RuntimeStriker(RuntimeStrikerType.CONTINUE);
                     case "breakpoint": {
-                        io.consolePut(scope.dump() + "\n");
-                        io.consoleInput("Press ENTER to continue");
+                        System.err.println("|| Debug: Breakpoint at " + Utilities.getLine(this.code, node.codePos)[0] +
+                                " line");
+                        String cmd;
+                        Scanner sc = new Scanner(IOManager.input);
+                        do {
+                            cmd = sc.nextLine();
+                            if (cmd.startsWith("eval")) {
+                                String evalCode = cmd.substring(5);
+                                QType result = null;
+                                try {
+                                    Lexer lexer = new Lexer(evalCode);
+                                    List<Token> tokens = lexer.lexAndFix();
+                                    Parser parser = new Parser(tokens);
+                                    Node node1 = parser.parse();
+                                    result = run(node1, scope);
+                                } catch (RuntimeStriker r) {
+                                    if (r.type == RuntimeStrikerType.RETURN)
+                                        result = r.val;
+                                    else
+                                        result = QType.V("|| ERROR:" + r.val.toString());
+                                }
+                                System.err.println(result.toString());
+                            } else if (cmd.startsWith("help")) {
+                                System.err.println("|| Commands:");
+                                System.err.println("||   eval <code>    Run quail code");
+                                System.err.println("||    Example: eval obj.get(\"a\").val");
+                                System.err.println("||   w              Proceed");
+                                System.err.println("||   dump           Dump memory");
+                            } else if (cmd.startsWith("w")) {
+                                break;
+                            } else if (cmd.startsWith("dump")) {
+                                System.err.println("|| " + scope.dump());
+                            }
+                        } while (!cmd.equals("exit"));
+                        //io.consoleInput("Press ENTER to continue");
                         break;
                     }
                     case "memory": {

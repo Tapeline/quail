@@ -89,6 +89,11 @@ public class Parser {
         return null;
     }
 
+    public Token next() {
+        if (pos + 1 < tokens.size()) return tokens.get(pos + 1);
+        return null;
+    }
+
     public Token require(TokenType tokenType, String customMessage) throws RuntimeStriker {
         Token token = match(tokenType);
         if (token == null) error(customMessage);
@@ -420,8 +425,12 @@ public class Parser {
     public Node parseFunction(boolean isStatic) throws RuntimeStriker {
 
         Token t = match(new String[] {
-                "staticmethod", "override"
+                "staticmethod", "override", "gets", "sets"
         });
+        if (t == null && getCurrent().c.equals("object") && next().c.equals("builder")) {
+            t = match(new String[]{"object"});
+            pos++;
+        }
         if (t == null) return null;
         switch (t.c) {
             case "staticmethod": {
@@ -441,6 +450,34 @@ public class Parser {
                         override.t, getSystemField(override.c), override.p
                 ), args, b, false);
             }
+            case "gets": {
+                Token v = getCurrent();
+                pos++;
+                MultiElementNode args = new MultiElementNode(getCurrent());
+                if (getCurrent().c.equals("(")) args = multiElementIfNeeded(parseExpression());
+                BlockNode b = blockIfNeeded(parseStatement());
+                return new LiteralFunctionNode(new Token(
+                        v.t, "_get_" + v.c, v.p
+                ), args, b, false);
+            }
+            case "sets": {
+                Token v = getCurrent();
+                pos++;
+                MultiElementNode args = new MultiElementNode(getCurrent());
+                if (getCurrent().c.equals("(")) args = multiElementIfNeeded(parseExpression());
+                BlockNode b = blockIfNeeded(parseStatement());
+                return new LiteralFunctionNode(new Token(
+                        v.t, "_set_" + v.c, v.p
+                ), args, b, false);
+            }
+            case "object": {
+                Token tt = getCurrent();
+                MultiElementNode args = new MultiElementNode(getCurrent());
+                if (getCurrent().c.equals("(")) args = multiElementIfNeeded(parseExpression());
+                BlockNode b = blockIfNeeded(parseStatement());
+                return new LiteralFunctionNode(new Token(tt.t, "_builder", tt.p), args,
+                        b, false);
+            }
         }
         return null;
     }
@@ -458,14 +495,14 @@ public class Parser {
 
         Node expr = EParseOr();
 
-        if (match(new String[] {"=", "<-"}) != null) {
+        if (match(new String[] {"="}) != null) {
             Token equals = previous();
             Node value = EParseAssignment();
             if (expr instanceof VariableNode) {
                 return new BinaryOperatorNode(equals, expr, value);
             } else if (expr instanceof FieldReferenceNode) {
                 FieldReferenceNode get = (FieldReferenceNode) expr;
-                return new FieldSetNode(getCurrent(), get.lnode, get.rnode, value);
+                return new FieldSetNode(equals, get.lnode, get.rnode, value);
             } else if (expr instanceof IndexReferenceNode) {
                 IndexReferenceNode get = (IndexReferenceNode) expr;
                 return new IndexSetNode(getCurrent(), get.lnode, get.rnode, value);
@@ -565,7 +602,7 @@ public class Parser {
 
     private Node EParsePower() throws RuntimeStriker {
         Node expr = EParseUnary();
-        while ( match(TokenType.BINARYOPERATOR, new String[] {"^"}) != null) {
+        while (match(TokenType.BINARYOPERATOR, new String[] {"^"}) != null) {
             Token operator = previous();
             Node right = EParseUnary();
             expr = new BinaryOperatorNode(operator, expr, right);
@@ -706,7 +743,8 @@ public class Parser {
                 }
             }
         }
-        Token id = require(TokenType.ID, "Expected ID after clarification");
+        Token id = fromAnyOf? new Token(TokenType.ID, "", 0) :
+                require(TokenType.ID, "Expected ID after clarification");
         VariableNode v = new VariableNode(id);
         v.modifiers = modifiers;
         if (match(TokenType.CONSUME) != null) {

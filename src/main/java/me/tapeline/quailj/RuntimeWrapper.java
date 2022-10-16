@@ -77,6 +77,7 @@ public class RuntimeWrapper {
             Runtime.registerLibrary(new LibraryFs());
             Runtime.registerLibrary(new LibraryRandom());
             runtime = new Runtime(root, io, path, timings);
+            runtime.code = code;
 
             QType r = runtime.run(root, runtime.scope);
             if (timings) System.out.println("\n[Timings] Runtime done in " + (System.currentTimeMillis() - start) + "ms");

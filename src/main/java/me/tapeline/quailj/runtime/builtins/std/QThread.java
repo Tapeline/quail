@@ -18,6 +18,7 @@ public class QThread extends Thread {
         outer = r;
         runnable = f;
         inner = new Runtime(null, outer.io, outer.path, false);
+        inner.code = r.code;
         args = casted;
     }
 

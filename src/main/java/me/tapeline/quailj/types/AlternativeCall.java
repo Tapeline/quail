@@ -17,4 +17,8 @@ public class AlternativeCall {
         this.code = code;
     }
 
+    public String toString() {
+        return "(" + arguments.toString() + ")";
+    }
+
 }

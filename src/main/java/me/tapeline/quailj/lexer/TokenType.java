@@ -13,7 +13,8 @@ public enum TokenType {
             "|function|method|staticmethod|object\\<"+
             "|class|anonymous|require|void|anyof|local|final|static)[\\s\\W]"),
     BLOCK("BLOCK", "(do|does|end|then|has|with)[\\s\\W]"),
-    KEYWORD("KEYWORD", "(as|through|if|elseif|else|try|catch|while|loop|stop when|every|on|when|override)[\\s\\W]"),
+    KEYWORD("KEYWORD", "(as|through|if|elseif|else|try|catch|while|loop|stop when|every|on|when|override|gets|" +
+            "sets)[\\s\\W]"),
     BINARYOPERATOR("BINARYOPERATOR",
             "(\\:\\+|\\^|\\/\\/|\\+|-|\\*|\\/|\\%|\\:|!=|<<|>>|<-|==|=|<=|>=|>|<|\\.|')"),
     SHORTBINARYOPERATOR("BINARYOPERATOR",
