@@ -1,0 +1,28 @@
+package me.tapeline.quailj.utils;
+
+public class ErrorFormatter {
+
+    public static String formatError(String code, int line, int character, int length, String message) {
+        String[] lines = code.split("\n");
+        StringBuilder error = new StringBuilder();
+        error.append("Error on line ").append(line).append(" character ").append(character).append(":\n");
+        for (int i = (line >= 2? line - 2 : line); i <= line; i++) {
+            StringBuilder tabs = new StringBuilder("        ");
+            String lineNumStr = Integer.toString(i);
+            tabs.replace(tabs.length() - lineNumStr.length(), tabs.length(), lineNumStr);
+            if (i == line) tabs.replace(0, 1, ">");
+            error.append(tabs).append(" | ").append(lines[i]).append("\n");
+        }
+        StringBuilder underline = new StringBuilder("           ");
+        for (int i = 0; i < character; i++)
+            underline.append(" ");
+        for (int i = 0; i < length; i++)
+            underline.append("^");
+        error.append(underline).append("\n");
+        for (int i = 0; i < Math.max(underline.length(), message.length()); i++)
+            error.append("=");
+        error.append("\n").append(message);
+        return error.toString();
+    }
+
+}
