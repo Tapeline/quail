@@ -2,7 +2,9 @@ package me.tapeline.quailj.parsing.nodes.variable;
 
 import me.tapeline.quailj.lexing.Token;
 import me.tapeline.quailj.parsing.nodes.Node;
+import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.typing.modifiers.VariableModifier;
+import me.tapeline.quailj.typing.objects.QObject;
 
 import java.util.List;
 
@@ -24,4 +26,17 @@ public class VariableNode extends Node {
         this.modifiers = modifiers;
     }
 
+    public boolean matchesRequirements(Runtime r, QObject q) {
+        for (VariableModifier vm : modifiers)
+            if (!vm.matches(r, q))
+                return false;
+        return true;
+    }
+
+    public static boolean match(List<VariableModifier> modifiers, Runtime r, QObject q) {
+        for (VariableModifier vm : modifiers)
+            if (!vm.matches(r, q))
+                return false;
+        return true;
+    }
 }

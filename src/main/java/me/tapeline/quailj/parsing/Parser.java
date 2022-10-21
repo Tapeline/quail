@@ -15,6 +15,7 @@ import me.tapeline.quailj.parsing.nodes.branching.EventNode;
 import me.tapeline.quailj.parsing.nodes.branching.IfNode;
 import me.tapeline.quailj.parsing.nodes.branching.TryCatchNode;
 import me.tapeline.quailj.parsing.nodes.effect.EffectNode;
+import me.tapeline.quailj.parsing.nodes.effect.UseNode;
 import me.tapeline.quailj.parsing.nodes.expression.CallNode;
 import me.tapeline.quailj.parsing.nodes.generators.ContainerGeneratorNode;
 import me.tapeline.quailj.parsing.nodes.generators.ListGeneratorNode;
@@ -29,8 +30,11 @@ import me.tapeline.quailj.parsing.nodes.operators.*;
 import me.tapeline.quailj.parsing.nodes.sequence.TupleNode;
 import me.tapeline.quailj.parsing.nodes.variable.VariableNode;
 import me.tapeline.quailj.typing.modifiers.*;
+import me.tapeline.quailj.typing.objects.QObject;
+import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.utils.ContainerPreRuntimeContents;
 import me.tapeline.quailj.typing.utils.Utilities;
+import me.tapeline.quailj.typing.utils.VariableTable;
 import me.tapeline.quailj.utils.ErrorFormatter;
 import static me.tapeline.quailj.lexing.TokenType.*;
 
@@ -106,7 +110,7 @@ public class Parser {
             Token current = tokens.get(pos + increasePos);
             for (TokenType acceptable : types) {
                 if (acceptable.equals(current.getType())) {
-                    pos += increasePos;
+                    pos += increasePos + 1;
                     return current;
                 }
             }
@@ -308,6 +312,14 @@ public class Parser {
             if (getCurrent() == null || getCurrent().getType() == EOL)
                 error(token, "Expected expression after effect, but got EOL");
             return new EffectNode(token, token.getType(), parseExpression(new ExpressionParsingRule()));
+        } else if (match(EFFECT_USE) != null) {
+            Token token = getPrevious();
+            if (getCurrent() == null || getCurrent().getType() == EOL)
+                error(token, "Expected expression after effect, but got EOL");
+            Node expr = parseExpression(new ExpressionParsingRule());
+            if (match(AS) != null)
+                return new UseNode(token, expr, parseExpression(new ExpressionParsingRule()));
+            return new UseNode(token, expr, null);
         }
         return null;
     }
@@ -316,8 +328,11 @@ public class Parser {
         if (matchMultiple(CONTROL_WHEN, CONTROL_ON) != null) {
             Token token = getPrevious();
             Node event = parseExpression(new ExpressionParsingRule());
-            Token variable = require(ID, "Expected id after listener declaration");
-            return new EventNode(token, event, variable.getLexeme());
+            Token func = require(ID, "Expected function name after listener declaration");
+            require(LPAR, "Expected ( to open arguments in listener");
+            Token variable = require(ID, "Expected argument");
+            require(RPAR, "Expected ) to close arguments in listener");
+            return new EventNode(token, event, variable.getLexeme(), func.getLexeme(), parseStatement());
         }
         return null;
     }
@@ -326,23 +341,21 @@ public class Parser {
         if (match(TYPE_CLASS) != null) {
             Token classToken = getPrevious();
             Token className = require(ID, "Expected class name after class keyword");
-            Node like = new VariableNode(
-                    classToken,
-                    "Container",
-                    false,
-                    false,
-                    new ArrayList<>()
-            );
+            Node like = null;
             if (match(LIKE) != null)
                 like = parseOr(new ExpressionParsingRule());
             match(LCPAR);
-            HashMap<String, Node> contents = new HashMap<>();
+            HashMap<VariableNode, Node> contents = new HashMap<>();
             HashMap<String, LiteralFunction> methods = new HashMap<>();
             List<Node> initialize = new ArrayList<>();
             while (match(RCPAR) == null) {
                 Node expr = parseStatement();
                 if (expr instanceof AssignNode)
-                    contents.put(((AssignNode) expr).variable, ((AssignNode) expr).value);
+                    contents.put(((AssignNode) expr).variableNode, ((AssignNode) expr).value);
+                else if (expr instanceof VariableNode)
+                    contents.put(((VariableNode) expr), QObject.getDefaultNodeFor(
+                            ((VariableNode) expr).modifiers
+                    ));
                 else if (expr instanceof LiteralFunction)
                     methods.put(((LiteralFunction) expr).name, ((LiteralFunction) expr));
                 else
@@ -354,6 +367,34 @@ public class Parser {
         return null;
     }
 
+    private List<FuncArgument> convertArguments(TupleNode tuple) throws Exception {
+        List<FuncArgument> args = new ArrayList<>();
+        int tupleSize = tuple.nodes.size();
+        for (int i = 0; i < tupleSize; i++) {
+            Node arg = tuple.nodes.get(i);
+            if (arg instanceof VariableNode) {
+                VariableNode varArg = (VariableNode) arg;
+                args.add(new FuncArgument(
+                        varArg.id,
+                        FuncArgument.defaultNull,
+                        varArg.modifiers,
+                        varArg.isArgConsumer,
+                        varArg.isKwargConsumer
+                ));
+            } else if (arg instanceof AssignNode) {
+                VariableNode varArg = ((AssignNode) arg).variableNode;
+                args.add(new FuncArgument(
+                        varArg.id,
+                        ((AssignNode) arg).value,
+                        varArg.modifiers,
+                        varArg.isArgConsumer,
+                        varArg.isKwargConsumer
+                ));
+            } else error("Unexpected argument");
+        }
+        return args;
+    }
+
     private Node parseFunction() throws Exception {
 
         Token token = matchMultiple(OVERRIDE, TYPE_FUNCTION, TYPE_METHOD, SETS, GETS, CONSTRUCTOR);
@@ -363,7 +404,7 @@ public class Parser {
                 Token name = require(ID, "Expected id");
                 Node args = parsePrimary(new ExpressionParsingRule());
                 return new LiteralFunction(name, name.getLexeme(),
-                        tupleIfNeeded(args), parseStatement(), false);
+                        convertArguments(tupleIfNeeded(args)), parseStatement(), false);
             }
             case OVERRIDE: {
                 Token name = consume();
@@ -378,24 +419,24 @@ public class Parser {
 
                 Node args = parsePrimary(new ExpressionParsingRule());
                 return new LiteralFunction(name, functionName,
-                        tupleIfNeeded(args), parseStatement(), false);
+                        convertArguments(tupleIfNeeded(args)), parseStatement(), false);
             }
             case GETS: {
                 Token var = consume();
                 Node args = parsePrimary(new ExpressionParsingRule());
                 return new LiteralFunction(var, "_get_" + var.getLexeme(),
-                        tupleIfNeeded(args), parseStatement(), false);
+                        convertArguments(tupleIfNeeded(args)), parseStatement(), false);
             }
             case SETS: {
                 Token var = consume();
                 Node args = parsePrimary(new ExpressionParsingRule());
                 return new LiteralFunction(var, "_set_" + var.getLexeme(),
-                        tupleIfNeeded(args), parseStatement(), false);
+                        convertArguments(tupleIfNeeded(args)), parseStatement(), false);
             }
             case CONSTRUCTOR: {
                 Node args = parsePrimary(new ExpressionParsingRule());
                 return new LiteralFunction(token, "_constructor",
-                        tupleIfNeeded(args), parseStatement(), false);
+                        convertArguments(tupleIfNeeded(args)), parseStatement(), false);
             }
         }
         return null;
@@ -412,7 +453,7 @@ public class Parser {
             Token equals = getPrevious();
             Node value = parseAssignment(rule);
             if (left instanceof VariableNode) {
-                return new AssignNode(equals, ((VariableNode) left).id, value);
+                return new AssignNode(equals, (VariableNode) left, ((VariableNode) left).id, value);
             } else if (left instanceof FieldReferenceNode) {
                 return new FieldSetNode(
                         equals,
@@ -754,7 +795,7 @@ public class Parser {
                 }
             Node args = parsePrimary(new ExpressionParsingRule());
             return new LiteralFunction(name, name.getLexeme(),
-                    tupleIfNeeded(args), parseStatement(), isStatic);
+                    convertArguments(tupleIfNeeded(args)), parseStatement(), isStatic);
         }
         return new ModifierSequence(modifierToken, modifiers);
     }
@@ -803,7 +844,7 @@ public class Parser {
                 if (match(LAMBDA_ARROW) != null) {
                     Token arrow = getPrevious();
                     return new LiteralFunction(arrow, arrow.getLexeme(),
-                            new TupleNode(leftParent, tupleNodes), parseStatement(), false);
+                            convertArguments(new TupleNode(leftParent, tupleNodes)), parseStatement(), false);
                 }
                 return new TupleNode(leftParent, tupleNodes);
             }
@@ -811,7 +852,7 @@ public class Parser {
             if (match(LAMBDA_ARROW) != null) {
                 Token arrow = getPrevious();
                 return new LiteralFunction(arrow, arrow.getLexeme(),
-                        new TupleNode(leftParent, Arrays.asList(value)),
+                        convertArguments(new TupleNode(leftParent, Arrays.asList(value))),
                         parseStatement(), false);
             }
             return value;
@@ -848,7 +889,7 @@ public class Parser {
             listContents.add(expr);
             while (match(COMMA) != null)
                 listContents.add(parseExpression(rule));
-
+            require(RSPAR, "Expected ] to close list");
             return new LiteralList(leftBracket, listContents);
         }
 
@@ -893,7 +934,7 @@ public class Parser {
                 keys.add(k);
                 values.put(keys.size() - 1, v);
             }
-
+            require(RSPAR, "Expected } to close container");
             return new LiteralContainer(leftBracket, new ContainerPreRuntimeContents(keys, values));
         }
 
@@ -906,7 +947,7 @@ public class Parser {
             } while (match(COMMA) != null);
             require(RPAR, "Expected ) to close arguments");
             return new LiteralFunction(declaration, "->",
-                    new TupleNode(leftParent, arguments), parseStatement(), false);
+                    convertArguments(new TupleNode(leftParent, arguments)), parseStatement(), false);
         }
 
         error(getCurrent(), "Invalid expression");

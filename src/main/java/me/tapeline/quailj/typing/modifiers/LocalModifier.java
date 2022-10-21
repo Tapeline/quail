@@ -1,5 +1,7 @@
 package me.tapeline.quailj.typing.modifiers;
 
+import me.tapeline.quailj.runtime.Runtime;
+
 public class LocalModifier extends VariableModifier {
 
     public Type type = Type.MOD_LOCAL;

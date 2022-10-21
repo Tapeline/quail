@@ -8,7 +8,7 @@ import me.tapeline.quailj.typing.utils.Utilities;
 public class Main {
     public static void main(String[] args) throws Exception {
         Utilities.init();
-        String code = "a = 10;((a...) -> {print(a)})(a)\nclass A{}";
+        String code = "a = {k=v for k, v in transform.rotate([0:10, 0:+100:10]) if i % 3 else null}\nout(a[2:])";
         Lexer l = new Lexer(code);
         try {
             System.out.println();

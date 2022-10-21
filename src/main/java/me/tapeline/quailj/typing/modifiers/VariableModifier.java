@@ -1,5 +1,7 @@
 package me.tapeline.quailj.typing.modifiers;
 
+import me.tapeline.quailj.runtime.Runtime;
+
 public abstract class VariableModifier {
 
     public Type type;
