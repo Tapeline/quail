@@ -3,6 +3,10 @@ package me.tapeline.quailj.typing.objects;
 import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.typing.utils.VariableTable;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+
 public class QBool extends QObject {
 
     public static VariableTable defaults = new VariableTable();
@@ -11,6 +15,7 @@ public class QBool extends QObject {
 
     public QBool(boolean value) {
         table.putAll(defaults);
+        this.value = value;
     }
 
     public QObject not(Runtime runtime) {

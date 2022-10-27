@@ -4,5 +4,6 @@ public class ExpressionParsingRule {
 
     public boolean excludeComparison = false;
     public boolean excludeRange = false;
+    public boolean excludeAll = false;
 
 }

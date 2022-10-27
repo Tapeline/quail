@@ -10,12 +10,23 @@ public class Token {
     private int character;
     private int length;
 
+    private TokenType mod = TokenType.SINGULAR_MOD;
+
     public Token(TokenType type, String lexeme, int line, int character, int length) {
         this.type = type;
         this.lexeme = lexeme;
         this.line = line;
         this.character = character;
         this.length = length;
+    }
+
+    public Token(TokenType mod, TokenType type, String lexeme, int line, int character, int length) {
+        this.type = type;
+        this.lexeme = lexeme;
+        this.line = line;
+        this.character = character;
+        this.length = length;
+        this.mod = mod;
     }
 
     public TokenType getType() {
@@ -40,5 +51,9 @@ public class Token {
 
     public String toString() {
         return type + " " + lexeme;
+    }
+
+    public TokenType getMod() {
+        return mod;
     }
 }

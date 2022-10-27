@@ -7,7 +7,6 @@ public class RuntimeStriker extends Exception {
         BREAK,
         CONTINUE,
         EXCEPTION,
-        STRIKE,
         STOP_ITERATION
     }
 
@@ -40,7 +39,7 @@ public class RuntimeStriker extends Exception {
     }
 
     public RuntimeStriker(long hp) {
-        type = Type.STRIKE;
+        type = Type.BREAK;
         strikeHP = hp;
     }
 

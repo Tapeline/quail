@@ -18,12 +18,12 @@ public class Utilities {
         opToString.put(MULTIPLY, "_mul");
         opToString.put(POWER, "_pow");
         opToString.put(MODULO, "_mod");
-        opToString.put(EQUALS, "_cmpeq");
-        opToString.put(NOT_EQUALS, "_cmpuneq");
-        opToString.put(LESS_EQUAL, "_cmplet");
-        opToString.put(GREATER_EQUAL, "_cmpget");
-        opToString.put(GREATER, "_cmpgt");
-        opToString.put(LESS, "_cmplt");
+        opToString.put(EQUALS, "_eq");
+        opToString.put(NOT_EQUALS, "_neq");
+        opToString.put(LESS_EQUAL, "_cmple");
+        opToString.put(GREATER_EQUAL, "_cmpge");
+        opToString.put(GREATER, "_cmpg");
+        opToString.put(LESS, "_cmpl");
         opToString.put(TYPE_STRING, "_tostring");
         opToString.put(TYPE_NUM, "_tonumber");
         opToString.put(TYPE_BOOL, "_tobool");

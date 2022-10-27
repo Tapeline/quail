@@ -122,6 +122,10 @@ public enum TokenType {
     INSTANCEOF,
     LIKE,
     EOF,
+    SINGULAR_MOD,
+    MATRIX_MOD,
+    ARRAY_MOD,
+    TAB,
     EOL;
 
     public static final HashMap<String, TokenType> keywords = Dict.make(
@@ -212,5 +216,51 @@ public enum TokenType {
             new Pair<>(SHORT_SHIFT_LEFT, SHIFT_LEFT),
             new Pair<>(SHORT_SHIFT_RIGHT, SHIFT_RIGHT)
     );
+
+    public static final HashMap<String, TokenType> stringToOps = Dict.make(
+            new Pair<>("+", PLUS),
+            new Pair<>("-", MINUS),
+            new Pair<>("/", DIVIDE),
+            new Pair<>("//", INTDIV),
+            new Pair<>("*", MULTIPLY),
+            new Pair<>("^", POWER),
+            new Pair<>("&&", AND),
+            new Pair<>("and", AND),
+            new Pair<>("||", OR),
+            new Pair<>("or", OR),
+            new Pair<>("!", NOT),
+            new Pair<>("==", EQUALS),
+            new Pair<>("!=", NOT_EQUALS),
+            new Pair<>(">", GREATER),
+            new Pair<>(">=", GREATER_EQUAL),
+            new Pair<>("<", LESS),
+            new Pair<>("<=", LESS_EQUAL),
+            new Pair<>("#", HASH),
+            new Pair<>(">>", SHIFT_RIGHT),
+            new Pair<>("<<", SHIFT_LEFT)
+    );
+
+    public static final String[] ops = {
+            "+",
+            "-",
+            "/",
+            "//",
+            "*",
+            "^",
+            "&&",
+            "and",
+            "||",
+            "or",
+            "!",
+            "==",
+            "!=",
+            ">",
+            ">=",
+            "<",
+            "<=",
+            "#",
+            ">>",
+            "<<"
+    };
 
 }

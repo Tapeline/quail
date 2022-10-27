@@ -6,6 +6,13 @@ public class QNull extends QObject {
 
     public static VariableTable defaults = new VariableTable();
 
-    public QNull() { }
+    public QNull() {
+        table.putAll(defaults);
+        setObjectMetadata("Null");
+    }
+
+    public String toString() {
+        return "null";
+    }
 
 }

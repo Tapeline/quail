@@ -46,6 +46,18 @@ public class Lexer {
         tokens.add(new Token(type, text, line, start - startOfCurrentLine, current - start));
     }
 
+    private void addMatrixToken(TokenType type) {
+        String text = sourceCode.substring(start, current);
+        tokens.add(new Token(MATRIX_MOD,
+                type, text, line, start - startOfCurrentLine, current - start));
+    }
+
+    private void addArrayToken(TokenType type) {
+        String text = sourceCode.substring(start, current);
+        tokens.add(new Token(ARRAY_MOD,
+                type, text, line, start - startOfCurrentLine, current - start));
+    }
+
     private boolean match(char expected) {
         if (reachedEnd()) return false;
         if (sourceCode.charAt(current) != expected) return false;
@@ -121,6 +133,7 @@ public class Lexer {
     }
 
     private void scanToken() throws Exception {
+        // TODO: [op] and {op} operators
         char c = next();
         switch (c) {
             case '(': addToken(LPAR); break;
@@ -129,10 +142,10 @@ public class Lexer {
                 if (match("...}"))
                     addToken(KWARG_CONSUMER);
                 else
-                    addToken(LCPAR);
+                    scanCurlyBrace(); //addToken(LCPAR);
                 break;
             case '}': addToken(RCPAR); break;
-            case '[': addToken(LSPAR); break;
+            case '[': scanBracket(); break; //addToken(LSPAR); break;
             case ']': addToken(RSPAR); break;
 
             case ',': addToken(COMMA); break;
@@ -224,8 +237,13 @@ public class Lexer {
                 break;
             case '"': scanString(); break;
             case ' ':
+                if (match("   "))
+                    addToken(TAB);
+                break;
             case '\r':
+                break;
             case '\t':
+                addToken(TAB);
                 break;
             default:
                 if (isDigit(c))
@@ -237,6 +255,37 @@ public class Lexer {
                 break;
         }
     }
+
+    private void scanBracket() {
+        String currentOp = null;
+        for (String op : ops)
+            if (sourceCode.substring(current).startsWith(op + "]")) {
+                currentOp = op;
+                break;
+            }
+        if (currentOp == null)
+            addToken(LSPAR);
+        else {
+            match(currentOp + "]");
+            addArrayToken(stringToOps.get(currentOp));
+        }
+    }
+
+    private void scanCurlyBrace() {
+        String currentOp = null;
+        for (String op : ops)
+            if (sourceCode.substring(current).startsWith(op + "}")) {
+                currentOp = op;
+                break;
+            }
+        if (currentOp == null)
+            addToken(LCPAR);
+        else {
+            match(currentOp + "}");
+            addMatrixToken(stringToOps.get(currentOp));
+        }
+    }
+
 
     private void scanComment() {
         while (peek() != '\n' && !reachedEnd())

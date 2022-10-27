@@ -6,6 +6,7 @@ import me.tapeline.quailj.typing.modifiers.TypeModifier;
 import me.tapeline.quailj.typing.modifiers.VariableModifier;
 import me.tapeline.quailj.typing.objects.QObject;
 import me.tapeline.quailj.typing.objects.RuntimeStriker;
+import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 import me.tapeline.quailj.typing.utils.VariableTable;
 
 import java.util.ArrayList;

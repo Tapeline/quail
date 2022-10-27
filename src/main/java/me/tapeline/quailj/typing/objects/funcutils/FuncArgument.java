@@ -34,6 +34,17 @@ public class FuncArgument {
         this.isKwargsConsumer = isKwargsConsumer;
     }
 
+    public FuncArgument(String name,
+                        List<VariableModifier> modifiers,
+                        boolean isArgsConsumer,
+                        boolean isKwargsConsumer) {
+        this.name = name;
+        this.defaultValue = defaultNull;
+        this.modifiers = modifiers;
+        this.isArgsConsumer = isArgsConsumer;
+        this.isKwargsConsumer = isKwargsConsumer;
+    }
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (VariableModifier modifier : modifiers)

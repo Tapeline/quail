@@ -9,11 +9,13 @@ public class Node {
     public int length;
     public long executionTime = -1;
     public long executionStart = -1;
+    public Token token;
 
     public Node(Token token) {
         this.line = token.getLine();
         this.character = token.getCharacter();
         this.length = token.getLength();
+        this.token = token;
     }
 
 }

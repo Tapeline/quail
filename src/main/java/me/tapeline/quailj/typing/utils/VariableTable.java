@@ -83,4 +83,8 @@ public class VariableTable {
         return values.values();
     }
 
+    public HashMap<String, QObject> getValues() {
+        return values;
+    }
+
 }
