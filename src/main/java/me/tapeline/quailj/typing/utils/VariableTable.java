@@ -5,7 +5,7 @@ import me.tapeline.quailj.parsing.nodes.variable.VariableNode;
 import me.tapeline.quailj.typing.modifiers.FinalModifier;
 import me.tapeline.quailj.typing.modifiers.VariableModifier;
 import me.tapeline.quailj.typing.objects.QObject;
-import me.tapeline.quailj.typing.objects.RuntimeStriker;
+import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -16,14 +16,17 @@ public class VariableTable {
     private Map<String, List<VariableModifier>> modifiers = new HashMap<>();
 
     public QObject put(Runtime runtime, String id, QObject value) throws RuntimeStriker {
-        if (modifiers.get(id) != null && VariableNode.match(modifiers.get(id), runtime, value)) {
-            for (VariableModifier vm : modifiers.get(id))
-                if (vm instanceof FinalModifier) {
-                    if (((FinalModifier) vm).hadAssignment)
-                        runtime.error("Attempt to assign data to final variable");
-                    else
-                        ((FinalModifier) vm).hadAssignment = true;
-                }
+        // TODO: optimization
+        if (modifiers.get(id) == null ||
+                modifiers.get(id) != null && VariableNode.match(modifiers.get(id), runtime, value)) {
+            if (modifiers.get(id) != null)
+                for (VariableModifier vm : modifiers.get(id))
+                    if (vm instanceof FinalModifier) {
+                        if (((FinalModifier) vm).hadAssignment)
+                            runtime.error("Attempt to assign data to final variable");
+                        else
+                            ((FinalModifier) vm).hadAssignment = true;
+                    }
             values.put(id, value);
         } else
             runtime.error("Attempt to assign data with wrong type to clarified variable (" +

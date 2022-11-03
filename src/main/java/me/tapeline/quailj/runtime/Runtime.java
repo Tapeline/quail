@@ -1,8 +1,11 @@
 package me.tapeline.quailj.runtime;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
+import me.tapeline.quailj.lexing.Lexer;
+import me.tapeline.quailj.lexing.Token;
 import me.tapeline.quailj.lexing.TokenType;
 import me.tapeline.quailj.libmanagement.EmbedIntegrator;
+import me.tapeline.quailj.parsing.Parser;
+import me.tapeline.quailj.parsing.ParserException;
 import me.tapeline.quailj.parsing.nodes.Node;
 import me.tapeline.quailj.parsing.nodes.block.BlockNode;
 import me.tapeline.quailj.parsing.nodes.branching.CatchClause;
@@ -10,6 +13,7 @@ import me.tapeline.quailj.parsing.nodes.branching.EventNode;
 import me.tapeline.quailj.parsing.nodes.branching.IfNode;
 import me.tapeline.quailj.parsing.nodes.branching.TryCatchNode;
 import me.tapeline.quailj.parsing.nodes.effect.EffectNode;
+import me.tapeline.quailj.parsing.nodes.effect.InstructionNode;
 import me.tapeline.quailj.parsing.nodes.effect.UseNode;
 import me.tapeline.quailj.parsing.nodes.expression.CallNode;
 import me.tapeline.quailj.parsing.nodes.generators.ContainerGeneratorNode;
@@ -19,7 +23,6 @@ import me.tapeline.quailj.parsing.nodes.loops.ForNode;
 import me.tapeline.quailj.parsing.nodes.loops.LoopNode;
 import me.tapeline.quailj.parsing.nodes.loops.ThroughNode;
 import me.tapeline.quailj.parsing.nodes.loops.WhileNode;
-import me.tapeline.quailj.parsing.nodes.modifiers.AsyncFlagNode;
 import me.tapeline.quailj.parsing.nodes.modifiers.TypeCastNode;
 import me.tapeline.quailj.parsing.nodes.operators.*;
 import me.tapeline.quailj.parsing.nodes.sequence.TupleNode;
@@ -27,14 +30,18 @@ import me.tapeline.quailj.parsing.nodes.variable.VariableNode;
 import me.tapeline.quailj.platforms.IOManager;
 import me.tapeline.quailj.typing.modifiers.FinalModifier;
 import me.tapeline.quailj.typing.modifiers.TypeModifier;
-import me.tapeline.quailj.typing.modifiers.VariableModifier;
 import me.tapeline.quailj.typing.objects.*;
+import me.tapeline.quailj.typing.objects.errors.Error;
+import me.tapeline.quailj.typing.objects.errors.ErrorMessage;
+import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.AlternativeCall;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 import me.tapeline.quailj.typing.utils.VariableTable;
+import me.tapeline.quailj.utils.Dict;
 import me.tapeline.quailj.utils.ErrorFormatter;
 import me.tapeline.quailj.utils.Pair;
+import me.tapeline.quailj.utils.Utilities;
 
 import static me.tapeline.quailj.typing.objects.QObject.Val;
 
@@ -80,15 +87,42 @@ public class Runtime {
                 return QObject.Val();
             }
         }, new ArrayList<>());
+
+        memory.set("millis", new QBuiltinFunc(
+                "millis",
+                new ArrayList<>(),
+                this,
+                true
+        ) {
+            @Override
+            public QObject action(Runtime runtime, HashMap<String, QObject> args) throws RuntimeStriker {
+                return QObject.Val(System.currentTimeMillis());
+            }
+        }, new ArrayList<>());
+
+        memory.set("sqrt", new QBuiltinFunc(
+                "sqrt",
+                Arrays.asList(
+                        new FuncArgument(
+                                "n",
+                                Arrays.asList(new TypeModifier(TokenType.TYPE_NUM)),
+                                false, false
+                        )
+                ),
+                this,
+                true
+        ) {
+            @Override
+            public QObject action(Runtime runtime, HashMap<String, QObject> args) throws RuntimeStriker {
+                return QObject.Val(Math.sqrt(((QNumber) args.get("n")).value));
+            }
+        }, new ArrayList<>());
     }
 
     public void error(Node node, String message) throws RuntimeStriker {
         throw new RuntimeStriker(
-                ErrorFormatter.formatError(
-                        sourceCode,
-                        node.line - 1,
-                        node.character,
-                        node.length,
+                new ErrorMessage(
+                        Error.ERROR,
                         message
                 )
         );
@@ -98,7 +132,10 @@ public class Runtime {
     // Although, this cannot be possible in some cases, so error(String) can be still used
     @Deprecated
     public void error(String message) throws RuntimeStriker {
-        error(runNodeStack.get(runNodeStack.size() - 1), message);
+        if (runNodeStack.size() == 0)
+            error(new Node(Token.UNDEFINED), "<!> At possibly undefined location:\n" + message);
+        else
+            error(runNodeStack.get(runNodeStack.size() - 1), message);
     }
 
     private void begin(Node node) {
@@ -137,14 +174,14 @@ public class Runtime {
     }
 
     public QObject run(Node node, Memory scope) throws RuntimeStriker {
-        begin(node);
+        if (doProfile) begin(node);
         try {
         if (node instanceof BlockNode) {
             BlockNode thisNode = (BlockNode) node;
             int blockSize = thisNode.nodes.size();
             for (int i = 0; i < blockSize; i++)
                 run(thisNode.nodes.get(i), scope);
-            end(node);
+            if (doProfile) end(node);
             return Val();
         } else if (node instanceof EventNode) {
             EventNode thisNode = (EventNode) node;
@@ -168,7 +205,7 @@ public class Runtime {
                         Arrays.asList(new Pair<>(func, true)));
             else
                 eventsHandlerMap.get(eventName).add(new Pair<>(func, true));
-            end(node);
+            if (doProfile) end(node);
             return Val();
         } else if (node instanceof IfNode) {
             IfNode thisNode = (IfNode) node;
@@ -177,13 +214,13 @@ public class Runtime {
                 QObject condition = run(thisNode.conditions.get(i), scope);
                 if (condition.isTrue()) {
                     run(thisNode.branches.get(i), scope);
-                    end(node);
+                    if (doProfile) end(node);
                     return Val();
                 }
             }
             if (thisNode.elseBranch != null)
                 run(thisNode.elseBranch, scope);
-            end(node);
+            if (doProfile) end(node);
             return Val();
         } else if (node instanceof TryCatchNode) {
             TryCatchNode thisNode = (TryCatchNode) node;
@@ -193,58 +230,116 @@ public class Runtime {
                 if (striker.type == RuntimeStriker.Type.EXCEPTION) {
                     for (CatchClause clause : thisNode.catchClauses) {
                         QObject expectedException = run(clause.exceptionClass, scope);
-                        if (striker.exception.instanceOf(expectedException)) {
+                        if (striker.error.errorType.equals(expectedException.toString())) {
                             Memory enclosing = new Memory(scope);
-                            enclosing.set(clause.variable, striker.exception, new ArrayList<>());
+                            enclosing.set(
+                                    clause.variable,
+                                    QObject.Val(Dict.make(
+                                            new Pair<>(
+                                                    "type",
+                                                    QObject.Val(striker.error.errorType)
+                                            ),
+                                            new Pair<>(
+                                                    "message",
+                                                    QObject.Val(striker.error.message)
+                                            )
+                                    )),
+                                    new ArrayList<>()
+                            );
                             run(clause.code, enclosing);
-                            enclosing = null;
                         }
                     }
                 } else {
-                    end(node);
+                    if (doProfile) end(node);
                     throw striker;
                 }
             }
-            end(node);
+            if (doProfile) end(node);
             return Val();
         } else if (node instanceof EffectNode) {
             EffectNode thisNode = (EffectNode) node;
             switch (thisNode.effect) {
                 case EFFECT_ASSERT: {
-                    end(node);
+                    if (doProfile) end(node);
                     if (!run(thisNode.value, scope).isTrue()) error(thisNode.value,
                             "Assertion failed");
                     break;
                 }
                 case EFFECT_RETURN: {
-                    end(node);
+                    if (doProfile) end(node);
                     throw new RuntimeStriker(run(thisNode.value, scope));
                 }
                 case EFFECT_THROW: {
-                    end(node);
+                    if (doProfile) end(node);
                     QObject exception = run(thisNode.value, scope);
-                    String representation = exception.typeString(this).toString();
-                    throw new RuntimeStriker(exception, representation);
+                    throw new RuntimeStriker(new Error(), exception);
                 }
                 case EFFECT_STRIKE: {
-                    end(node);
+                    if (doProfile) end(node);
                     QObject count = run(thisNode.value, scope);
                     if (!count.isNum()) error(thisNode.value, "Cannot strike. Not a number");
                     throw new RuntimeStriker((long) ((QNumber) count).value);
                 }
                 case EFFECT_IMPORT: {
-                    end(node);
-                    // TODO: do import effect action
-                    System.out.println(run(thisNode.value, scope));
+                    if (doProfile) end(node);
+                    // TODO: import effect action
                     break;
                 }
             }
-            end(node);
+            if (doProfile) end(node);
+            return Val();
+        } else if (node instanceof InstructionNode) {
+            InstructionNode thisNode = (InstructionNode) node;
+            switch (thisNode.instruction) {
+                case INSTRUCTION_BREAK:
+                    throw new RuntimeStriker(RuntimeStriker.Type.BREAK);
+                case INSTRUCTION_CONTINUE:
+                    throw new RuntimeStriker(RuntimeStriker.Type.CONTINUE);
+                case INSTRUCTION_BREAKPOINT: {
+                    System.err.println(
+                            "|| Debug: Breakpoint at " + node.line + " line");
+                    String cmd;
+                    Scanner sc = new Scanner(IOManager.input);
+                    do {
+                        cmd = sc.nextLine();
+                        if (cmd.startsWith("eval")) {
+                            String evalCode = cmd.substring(4 + 1);
+                            QObject result = Val();
+                            try {
+                                Lexer lexer = new Lexer(evalCode);
+                                List<Token> tokens = lexer.scan();
+                                Parser parser = new Parser(evalCode, tokens);
+                                Node evalNode = parser.parse();
+                                result = run(evalNode, scope);
+                            } catch (ParserException e) {
+                                System.err.println("PE: " + e.toString());
+                            } catch (RuntimeStriker r) {
+                                if (r.type == RuntimeStriker.Type.RETURN)
+                                    result = r.returnValue;
+                                else
+                                    result = Val("|| ERROR: \n" + r.error.toString());
+                            } catch (Exception e) {
+                                System.err.println("E: " + e.toString());
+                            }
+                            System.err.println(result.toString());
+                        } else if (cmd.startsWith("help")) {
+                            System.err.println("|| Commands:");
+                            System.err.println("||   eval <code>    Run quail code");
+                            System.err.println("||    Example: eval obj.get(\"a\").val");
+                            System.err.println("||   w              Proceed");
+                        } else if (cmd.startsWith("w")) {
+                            break;
+                        }
+                    } while (!cmd.equals("exit"));
+                    break;
+                }
+            }
+            if (doProfile) end(node);
             return Val();
         } else if (node instanceof UseNode) {
             UseNode thisNode = (UseNode) node;
             // TODO: do use effect action
-            end(node);
+            if (doProfile) end(node);
             return Val();
         } else if (node instanceof CallNode) {
             CallNode thisNode = (CallNode) node;
@@ -256,35 +351,34 @@ public class Runtime {
                 args.add(run(thisNode.arguments.get(i), scope));
             for (Map.Entry<String, Node> entry : thisNode.keywordArguments.entrySet())
                 kwargs.put(entry.getKey(), run(entry.getValue(), scope));
-            if (!(callee instanceof QFunc) && callee.isPrototype()) {
-                // TODO: construct new object
-            } else
-                // TODO: METACALLS
-                return callee.call(this, args, kwargs);
-            // TODO: do call action
-            end(node);
-            return Val();
+            if (thisNode.isFieldCall) {
+                QObject parent = run(thisNode.parentField, scope);
+                if (!parent.isPrototype())
+                    parent.callFromThis(this, callee, args, kwargs);
+            }
+            if (doProfile) end(node);
+            return callee.call(this, args, kwargs);
         } else if (node instanceof ContainerGeneratorNode) {
             ContainerGeneratorNode thisNode = (ContainerGeneratorNode) node;
             // TODO: do container generator
-            end(node);
+            if (doProfile) end(node);
             return Val();
         } else if (node instanceof ListGeneratorNode) {
             ListGeneratorNode thisNode = (ListGeneratorNode) node;
             // TODO: do list generator
-            end(node);
+            if (doProfile) end(node);
             return Val();
         } else if (node instanceof LiteralBool) {
-            end(node);
+            if (doProfile) end(node);
             return Val(((LiteralBool) node).value);
         } else if (node instanceof LiteralNum) {
-            end(node);
+            if (doProfile) end(node);
             return Val(((LiteralNum) node).value);
         } else if (node instanceof LiteralNull) {
-            end(node);
+            if (doProfile) end(node);
             return Val();
         } else if (node instanceof LiteralString) {
-            end(node);
+            if (doProfile) end(node);
             return Val(((LiteralString) node).value);
         } else if (node instanceof LiteralList) {
             LiteralList thisNode = (LiteralList) node;
@@ -292,7 +386,7 @@ public class Runtime {
             int objectCount = thisNode.value.size();
             for (int i = 0; i < objectCount; i++)
                 values.add(run(thisNode.value.get(i), scope));
-            end(node);
+            if (doProfile) end(node);
             return Val(values);
         } else if (node instanceof LiteralContainer) {
             LiteralContainer thisNode = (LiteralContainer) node;
@@ -303,7 +397,7 @@ public class Runtime {
                 QObject value = run(thisNode.contents.getValueMap().get(i), scope);
                 container.set(key, value);
             }
-            end(node);
+            if (doProfile) end(node);
             return container;
         } else if (node instanceof LiteralFunction) {
             LiteralFunction thisNode = (LiteralFunction) node;
@@ -325,7 +419,7 @@ public class Runtime {
                 scope.set(func.name, func, new ArrayList<>());
                 return func;
             }
-            end(node);
+            if (doProfile) end(node);
             return Val();
         } else if (node instanceof LiteralClass) {
             LiteralClass thisNode = (LiteralClass) node;
@@ -365,7 +459,7 @@ public class Runtime {
                 run(thisNode.initialize.get(i), scope);
             QObject qClass = new QObject(thisNode.name, superObject, contents);
             qClass.setPrototypeFlag(true);
-            end(node);
+            if (doProfile) end(node);
             return qClass;
         } else if (node instanceof ForNode) {
             ForNode thisNode = (ForNode) node;
@@ -407,7 +501,7 @@ public class Runtime {
                     else throw striker;
                 }
             }
-            end(node);
+            if (doProfile) end(node);
             if (rethrow > 0) throw new RuntimeStriker(rethrow);
             return Val();
         } else if (node instanceof LoopNode) {
@@ -428,7 +522,7 @@ public class Runtime {
                     else throw striker;
                 }
             }
-            end(node);
+            if (doProfile) end(node);
             if (rethrow > 0) throw new RuntimeStriker(rethrow);
             return Val();
         } else if (node instanceof WhileNode) {
@@ -449,7 +543,7 @@ public class Runtime {
                     else throw striker;
                 }
             }
-            end(node);
+            if (doProfile) end(node);
             if (rethrow > 0) throw new RuntimeStriker(rethrow);
             return Val();
         } else if (node instanceof ThroughNode) {
@@ -479,9 +573,10 @@ public class Runtime {
             boolean isIncluding = thisNode.doesInclude;
             long rethrow = 0;
             QNumber numIterator = (QNumber) QObject.Val(start);
+            scope.set(iterator, numIterator, Arrays.asList(new FinalModifier()));
             while (true) {
                 try {
-                    boolean exit = isIncluding && (
+                    if (isIncluding && (
                             (isIncreasing && numIterator.value > end)
                                     ||
                                     (!isIncreasing && numIterator.value < end)
@@ -489,9 +584,7 @@ public class Runtime {
                             (isIncreasing && numIterator.value >= end)
                                     ||
                                     (!isIncreasing && numIterator.value <= end)
-                    );
-                    if (exit) break;
-                    scope.set(iterator, numIterator, new ArrayList<>());
+                    )) break;
                     run(thisNode.code, scope);
                 } catch (RuntimeStriker striker) {
                     if (striker.type == RuntimeStriker.Type.BREAK) {
@@ -504,7 +597,7 @@ public class Runtime {
                 }
                 numIterator.value += step;
             }
-            end(node);
+            if (doProfile) end(node);
             if (rethrow > 0) throw new RuntimeStriker(rethrow);
             return Val();
         } else if (node instanceof TypeCastNode) {
@@ -517,7 +610,7 @@ public class Runtime {
             else if (thisNode.castedType == TokenType.TYPE_NUM)
                 return casting.typeNumber(this);
             else error(thisNode, "Unsupported typecast");
-            end(node);
+            if (doProfile) end(node);
             return Val();
         } else if (node instanceof AssignNode) {
             AssignNode thisNode = (AssignNode) node;
@@ -526,7 +619,7 @@ public class Runtime {
                 scope.set(this, thisNode.variable, value);
             else
                 scope.set(thisNode.variable, value, thisNode.variableNode.modifiers);
-            end(node);
+            if (doProfile) end(node);
             return value;
         } else if (node instanceof BinaryOperatorNode) {
             BinaryOperatorNode thisNode = (BinaryOperatorNode) node;
@@ -590,35 +683,35 @@ public class Runtime {
             QObject ret = performBinaryOperation(operandA, thisNode.operation, operandB);
             if (ret == null)
                 error(node, "Unknown binary operation");
-            end(node);
+            if (doProfile) end(node);
             return ret;
         } else if (node instanceof FieldReferenceNode) {
             QObject object = run(((FieldReferenceNode) node).object, scope);
-            end(node);
+            if (doProfile) end(node);
             return object.getOverridable(this, ((FieldReferenceNode) node).field);
         } else if (node instanceof FieldSetNode) {
             FieldSetNode thisNode = (FieldSetNode) node;
             QObject object = run(thisNode.object, scope);
             QObject value = run(thisNode.value, scope);
             String field = thisNode.field;
-            end(node);
+            if (doProfile) end(node);
             object.setOverridable(this, field, value);
             return value;
         } else if (node instanceof IndexingNode) {
             IndexingNode thisNode = (IndexingNode) node;
             QObject object = run(thisNode.object, scope);
             QObject index = run(thisNode.index, scope);
-            end(node);
+            if (doProfile) end(node);
             return object.index(this, index);
         } else if (node instanceof IndexSetNode) {
             IndexSetNode thisNode = (IndexSetNode) node;
             QObject object = run(thisNode.object, scope);
             QObject index = run(thisNode.index, scope);
             QObject value = run(thisNode.value, scope);
-            end(node);
+            if (doProfile) end(node);
             return object.indexSet(this, index, value);
         } else if (node instanceof RangeNode) {
-            // TODO: range action
+
         } else if (node instanceof SubscriptNode) {
             SubscriptNode thisNode = (SubscriptNode) node;
             QObject object = run(thisNode.object, scope);
@@ -634,7 +727,7 @@ public class Runtime {
                 ret = object.subscriptStartEnd(this, start, end);
             else
                 ret = object.subscriptStartEndStep(this, start, end, step);
-            end(node);
+            if (doProfile) end(node);
             return ret;
         } else if (node instanceof UnaryOperatorNode) {
             UnaryOperatorNode thisNode = (UnaryOperatorNode) node;
@@ -653,7 +746,7 @@ public class Runtime {
             }
             if (ret == null)
                 error(node, "Unknown unary operation");
-            end(node);
+            if (doProfile) end(node);
             return ret;
         } else if (node instanceof TupleNode) {
             TupleNode thisNode = (TupleNode) node;
@@ -661,16 +754,105 @@ public class Runtime {
             int objectCount = thisNode.nodes.size();
             for (int i = 0; i < objectCount; i++)
                 values.add(run(thisNode.nodes.get(i), scope));
-            end(node);
+            if (doProfile) end(node);
             return Val(values);
         } else if (node instanceof VariableNode) {
             return scope.get(((VariableNode) node).id, ((VariableNode) node));
         }
         } catch (RuntimeStriker s) {
-            end(node);
+            if (doProfile) end(node);
+            if (s.error != null && !s.error.positionResolved)
+                s.error.setPosition(node.line, node.character, node.length);
             throw s;
         }
         return Val();
+    }
+
+    public void translated() throws RuntimeStriker {
+        //n = 1
+        memory.set(this,"n", Val(1));
+
+        //start = millis()
+        memory.set(this, "start", memory.get("millis").call(
+                this, new ArrayList<>(), new HashMap<>()));
+
+        //through 1:+1000000 as x
+        String iterator = "x";
+        QObject startObject = Val(1);
+        QObject endObject = Val(1000000);
+        QObject stepObject = null;
+        if (!startObject.isNum())
+            error("Attempt to make through-loop with non-number start");
+        if (!endObject.isNum())
+            error("Attempt to make through-loop with non-number end");
+        if (stepObject != null && !stepObject.isNum())
+            error("Attempt to make through-loop with non-number step");
+        double start = ((QNumber) startObject).value;
+        double end = ((QNumber) endObject).value;
+        double step;
+        if (stepObject != null)
+            step = ((QNumber) stepObject).value;
+        else
+            step = start <= end ? 1 : -1;
+        boolean isIncreasing = start <= end;
+        boolean isIncluding = true;
+        long rethrow = 0;
+        QNumber numIterator = (QNumber) QObject.Val(start);
+        memory.set(iterator, numIterator, Arrays.asList(new FinalModifier()));
+        while (true) {
+            try {
+                if (isIncluding && (
+                        (isIncreasing && numIterator.value > end)
+                                ||
+                                (!isIncreasing && numIterator.value < end)
+                ) || !isIncluding && (
+                        (isIncreasing && numIterator.value >= end)
+                                ||
+                                (!isIncreasing && numIterator.value <= end)
+                )) break;
+                //n = n * x
+                memory.set(
+                        this,
+                        "n",
+                        memory.get("n").multiply(this, memory.get("x"))
+                );
+            } catch (RuntimeStriker striker) {
+                if (striker.type == RuntimeStriker.Type.BREAK) {
+                    if (--striker.strikeHP > 0) rethrow = striker.strikeHP;
+                    break;
+                } else if (striker.type == RuntimeStriker.Type.CONTINUE) {
+                    numIterator.value += step;
+                    continue;
+                } else throw striker;
+            }
+            numIterator.value += step;
+        }
+        if (rethrow > 0) throw new RuntimeStriker(rethrow);
+
+        //print(millis() - start)
+        memory.get("print").call(
+                this,
+                Arrays.asList(
+                        memory.get("millis")
+                                .call(this, new ArrayList<>(), new HashMap<>())
+                                .subtract(this, memory.get("start"))
+                ),
+                new HashMap<>()
+        );
+    }
+
+    public static void main(String[] args) throws RuntimeStriker {
+        // INTERPRETED: 404-469 ~= 430
+        // TRANSLATED : 106-125 ~= 110
+        // C++ Debug  : 8-9     ~= 9
+        // C++ Release:            <1
+        // Java       : 4-8     ~= 6
+        // x4 performance
+
+        /*Runtime r = new Runtime("", new BlockNode(Token.UNDEFINED, new ArrayList<>()),
+                new IOManager(), false);
+        r.translated();*/
+
     }
 
 }

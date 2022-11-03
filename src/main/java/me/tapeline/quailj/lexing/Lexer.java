@@ -28,6 +28,7 @@ public class Lexer {
                         line - 1,
                         start,
                         current - start,
+                        "LexerError",
                         message
                 )
         );
@@ -133,7 +134,6 @@ public class Lexer {
     }
 
     private void scanToken() throws Exception {
-        // TODO: [op] and {op} operators
         char c = next();
         switch (c) {
             case '(': addToken(LPAR); break;

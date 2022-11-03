@@ -7,6 +7,7 @@ import me.tapeline.quailj.parsing.nodes.literals.*;
 import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.typing.modifiers.TypeModifier;
 import me.tapeline.quailj.typing.modifiers.VariableModifier;
+import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.utils.ContainerPreRuntimeContents;
 import me.tapeline.quailj.typing.utils.VariableTable;
 
@@ -238,6 +239,14 @@ public class QObject {
         if (!isPrototype())
             args.add(0, this);
         return get(funcId).call(runtime, args, kwargs);
+    }
+
+    public QObject callFromThis(Runtime runtime, QObject func,
+                                List<QObject> args, HashMap<String, QObject> kwargs)
+            throws RuntimeStriker {
+        if (!isPrototype())
+            args.add(0, this);
+        return func.call(runtime, args, kwargs);
     }
 
     public QObject sum(Runtime runtime, QObject other) throws RuntimeStriker {

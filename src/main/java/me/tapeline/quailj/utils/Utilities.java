@@ -1,6 +1,7 @@
-package me.tapeline.quailj.typing.utils;
+package me.tapeline.quailj.utils;
 
 import me.tapeline.quailj.lexing.TokenType;
+import me.tapeline.quailj.parsing.nodes.Node;
 
 import java.util.HashMap;
 
@@ -30,5 +31,10 @@ public class Utilities {
         opToString.put(NOT, "_not");
         opToString.put(SHIFT_LEFT, "_shr");
         opToString.put(SHIFT_RIGHT, "_shl");
+    }
+
+    public String dotNotationToPath(Node node) {
+        // TODO: path.path to path/path
+        return "";
     }
 }

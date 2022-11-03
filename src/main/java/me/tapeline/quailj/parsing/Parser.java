@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.jar.JarEntry;
 
 import me.tapeline.quailj.lexing.Token;
 import me.tapeline.quailj.lexing.TokenType;
@@ -15,6 +14,7 @@ import me.tapeline.quailj.parsing.nodes.branching.EventNode;
 import me.tapeline.quailj.parsing.nodes.branching.IfNode;
 import me.tapeline.quailj.parsing.nodes.branching.TryCatchNode;
 import me.tapeline.quailj.parsing.nodes.effect.EffectNode;
+import me.tapeline.quailj.parsing.nodes.effect.InstructionNode;
 import me.tapeline.quailj.parsing.nodes.effect.UseNode;
 import me.tapeline.quailj.parsing.nodes.expression.CallNode;
 import me.tapeline.quailj.parsing.nodes.generators.ContainerGeneratorNode;
@@ -34,8 +34,7 @@ import me.tapeline.quailj.typing.modifiers.*;
 import me.tapeline.quailj.typing.objects.QObject;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.utils.ContainerPreRuntimeContents;
-import me.tapeline.quailj.typing.utils.Utilities;
-import me.tapeline.quailj.typing.utils.VariableTable;
+import me.tapeline.quailj.utils.Utilities;
 import me.tapeline.quailj.utils.ErrorFormatter;
 import static me.tapeline.quailj.lexing.TokenType.*;
 
@@ -57,6 +56,7 @@ public class Parser {
                         tokens.get(pos).getLine() - 1,
                         tokens.get(pos).getCharacter(),
                         tokens.get(pos).getLength(),
+                        "ParserError",
                         message
                 )
         );
@@ -68,8 +68,9 @@ public class Parser {
                     ErrorFormatter.formatError(
                             sourceCode,
                             1,
-                           0,
+                            0,
                             1,
+                            "ParserError",
                             message
                     )
             );
@@ -80,6 +81,7 @@ public class Parser {
                             token.getLine() - 1,
                             token.getCharacter(),
                             token.getLength(),
+                            "ParserError",
                             message
                     )
             );
@@ -379,6 +381,10 @@ public class Parser {
             return new ForNode(token, iterable, iterators, parseStatement());
         }
 
+        if (match(INSTRUCTION_BREAK) != null) return new InstructionNode(getPrevious());
+        if (match(INSTRUCTION_BREAKPOINT) != null) return new InstructionNode(getPrevious());
+        if (match(INSTRUCTION_CONTINUE) != null) return new InstructionNode(getPrevious());
+
         Node n = parseEffect();
         if (n != null) return n;
 
@@ -590,7 +596,7 @@ public class Parser {
                 return new AssignNode(shortOp, ((VariableNode) left).id,
                          new BinaryOperatorNode(
                                  getPrevious(),
-                                 shortToNormal.get(getPrevious().getType()),
+                                 shortToNormal.get(shortOp.getType()),
                                  left,
                                  value
                          ));
@@ -790,7 +796,7 @@ public class Parser {
         Token leftBracket = getPrevious();
         List<Node> arguments = new ArrayList<>();
         HashMap<String, Node> keywordArguments = new HashMap<>();
-        if (match(RPAR) == null) {
+        if (getNextSignificantToken() != null && getNextSignificantToken().getType() != RPAR) {
             do {
                 Node argument = parseExpression(new ExpressionParsingRule());
                 if (argument instanceof AssignNode)

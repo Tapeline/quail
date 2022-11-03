@@ -1,4 +1,6 @@
-package me.tapeline.quailj.typing.objects;
+package me.tapeline.quailj.typing.objects.errors;
+
+import me.tapeline.quailj.typing.objects.QObject;
 
 public class RuntimeStriker extends Exception {
 
@@ -10,22 +12,20 @@ public class RuntimeStriker extends Exception {
         STOP_ITERATION
     }
 
-    public String stringRepresentation;
-    public QObject exception;
+    public ErrorMessage error;
+
     public Type type;
     public long strikeHP = 0;
     public QObject returnValue;
 
-    public RuntimeStriker(String message) {
-        super(message);
-        exception = QObject.Val(message);
-        stringRepresentation = message;
+    public RuntimeStriker(ErrorMessage message) {
+        super(message.toString());
+        error = message;
         type = Type.EXCEPTION;
     }
 
-    public RuntimeStriker(QObject exception, String stringRepresentation) {
-        this.exception = exception;
-        this.stringRepresentation = stringRepresentation;
+    public RuntimeStriker(Error flag, QObject exception) {
+        error = new ErrorMessage(exception.get("type").toString(), exception.get("message").toString());
         type = Type.EXCEPTION;
     }
 

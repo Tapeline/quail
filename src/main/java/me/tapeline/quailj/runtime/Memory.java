@@ -5,12 +5,10 @@ import me.tapeline.quailj.parsing.nodes.variable.VariableNode;
 import me.tapeline.quailj.typing.modifiers.TypeModifier;
 import me.tapeline.quailj.typing.modifiers.VariableModifier;
 import me.tapeline.quailj.typing.objects.QObject;
-import me.tapeline.quailj.typing.objects.RuntimeStriker;
-import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
+import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.utils.VariableTable;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class Memory {

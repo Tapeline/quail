@@ -1,6 +1,7 @@
 package me.tapeline.quailj.typing.objects;
 
 import me.tapeline.quailj.runtime.Runtime;
+import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.utils.VariableTable;
 
 public class QNumber extends QObject {

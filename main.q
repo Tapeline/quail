@@ -1,6 +1,5 @@
-while true do
-    through 1:10 as x {
-        if x % 2 == 0:
-            print(x)
-    }
-end
+n = 1
+start = millis()
+through 1:+1000000 as x
+    n = n * x
+print(millis() - start)

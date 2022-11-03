@@ -9,6 +9,7 @@ public class QNull extends QObject {
     public QNull() {
         table.putAll(defaults);
         setObjectMetadata("Null");
+
     }
 
     public String toString() {

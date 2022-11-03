@@ -4,10 +4,10 @@ import me.tapeline.quailj.parsing.nodes.Node;
 import me.tapeline.quailj.parsing.nodes.variable.VariableNode;
 import me.tapeline.quailj.runtime.Memory;
 import me.tapeline.quailj.runtime.Runtime;
+import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.AlternativeCall;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.utils.VariableTable;
-import me.tapeline.quailj.utils.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -86,6 +86,7 @@ public class QFunc extends QObject {
 
     public void mapArguments(Runtime runtime, List<QObject> args,
                              HashMap<String, QObject> kwargs, Memory memory) throws RuntimeStriker {
+        // TODO: fix argument mapping
         int argumentCount = this.args.size();
         int passedCount = args.size();
         for (int i = 0; i < argumentCount; i++) {

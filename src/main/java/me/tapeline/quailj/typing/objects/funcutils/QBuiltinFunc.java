@@ -1,11 +1,10 @@
 package me.tapeline.quailj.typing.objects.funcutils;
 
-import me.tapeline.quailj.parsing.nodes.Node;
 import me.tapeline.quailj.runtime.Memory;
 import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.typing.objects.QFunc;
 import me.tapeline.quailj.typing.objects.QObject;
-import me.tapeline.quailj.typing.objects.RuntimeStriker;
+import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -8,8 +8,9 @@ import me.tapeline.quailj.parsing.nodes.Node;
 import me.tapeline.quailj.platforms.IOManager;
 import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.typing.objects.QObject;
-import me.tapeline.quailj.typing.objects.RuntimeStriker;
-import me.tapeline.quailj.typing.utils.Utilities;
+import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
+import me.tapeline.quailj.utils.Utilities;
+import me.tapeline.quailj.utils.ErrorFormatter;
 
 import java.util.List;
 
@@ -54,7 +55,7 @@ public class Main {
             System.err.println("- - !!! AN INTERNAL ERROR HAS OCCURED !!! - -");
             System.err.println("    This is very untypical behaviour");
             System.err.println("    since Quail should be Exception-safe");
-            System.err.println("    Although, the exception has occured,");
+            System.err.println("    Although, the exception has occured");
             System.err.println("    and we highly recommend sending info");
             System.err.println("    below this warning message and your ");
             System.err.println("    Quail code to Quail's Github Issues:");
@@ -74,7 +75,7 @@ public class Main {
             result = runtime.run(root, runtime.memory);
         } catch (RuntimeStriker striker) {
             if (striker.type == RuntimeStriker.Type.EXCEPTION) {
-                System.err.println(striker.stringRepresentation);
+                System.err.println(ErrorFormatter.formatError(code, striker.error));
                 System.exit(1);
             } else if (striker.type == RuntimeStriker.Type.RETURN) {
                 result = striker.returnValue;
