@@ -11,9 +11,9 @@ public class ErrorFormatter {
         error.append("Error on line ").append(line).append(" character ").append(character).append(":\n");
         for (int i = (line >= 2? line - 2 : line); i <= line; i++) {
             StringBuilder tabs = new StringBuilder("        ");
-            String lineNumStr = Integer.toString(i);
+            String lineNumStr = Integer.toString(i + 1);
             tabs.replace(tabs.length() - lineNumStr.length(), tabs.length(), lineNumStr);
-            if (i == line) tabs.replace(0, 1, ">");
+            if (i + 1 == line) tabs.replace(0, 1, ">");
             error.append(tabs).append(" | ").append(lines[i]).append("\n");
         }
         StringBuilder underline = new StringBuilder("           ");

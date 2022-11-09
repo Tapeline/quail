@@ -1,5 +1,6 @@
 package me.tapeline.quailj.lexing;
 
+import me.tapeline.quailj.parsing.ParserException;
 import me.tapeline.quailj.utils.ErrorFormatter;
 
 import java.util.ArrayList;
@@ -21,8 +22,8 @@ public class Lexer {
         sourceCode = code;
     }
 
-    private void error(String message) throws Exception {
-        throw new Exception(
+    private void error(String message) throws ParserException {
+        throw new ParserException(
                 ErrorFormatter.formatError(
                         sourceCode,
                         line - 1,
@@ -57,6 +58,11 @@ public class Lexer {
         String text = sourceCode.substring(start, current);
         tokens.add(new Token(ARRAY_MOD,
                 type, text, line, start - startOfCurrentLine, current - start));
+    }
+
+    private void addEmbedToken(String code) {
+        Token token = new Token(JAVA_EMBED, code, line, start - startOfCurrentLine, current - start);
+        tokens.add(token);
     }
 
     private boolean match(char expected) {
@@ -125,7 +131,7 @@ public class Lexer {
      *
      * @return List<Token>
      */
-    public List<Token> scan() throws Exception {
+    public List<Token> scan() throws ParserException {
         while (!reachedEnd()) {
             start = current;
             scanToken();
@@ -133,7 +139,7 @@ public class Lexer {
         return tokens;
     }
 
-    private void scanToken() throws Exception {
+    private void scanToken() throws ParserException {
         char c = next();
         switch (c) {
             case '(': addToken(LPAR); break;
@@ -256,6 +262,42 @@ public class Lexer {
         }
     }
 
+    private void scanJava() throws ParserException {
+        boolean isInsideString = false;
+        int curlyFolding = 0;
+        boolean blockBegan = false;
+        boolean escape = false;
+
+        error("Java instant-embeds aren't implemented yet");
+
+        StringBuilder code = new StringBuilder();
+
+        while (!reachedEnd()) {
+            char c = next();
+            if (curlyFolding == 0 && blockBegan) {
+                code.deleteCharAt(code.length() - 1);
+                break;
+            }
+            if (blockBegan)
+                code.append(c);
+            if (escape) {
+                escape = false;
+                continue;
+            }
+            if (c == '{' && !isInsideString) {
+                curlyFolding++;
+                blockBegan = true;
+            } else if (c == '}' && !isInsideString)
+                curlyFolding--;
+            else if (c == '"')
+                isInsideString = !isInsideString;
+            else if (c == '\\')
+                escape = true;
+        }
+
+        addEmbedToken(code.toString());
+    }
+
     private void scanBracket() {
         String currentOp = null;
         for (String op : ops)
@@ -292,7 +334,7 @@ public class Lexer {
             next();
     }
 
-    private void scanString() throws Exception {
+    private void scanString() throws ParserException {
         while (peek() != '"' && !reachedEnd()) {
             if (peek() == '\n') {
                 line++;
@@ -319,12 +361,16 @@ public class Lexer {
         addToken(LITERAL_NUM);
     }
 
-    private void scanId() {
+    private void scanId() throws ParserException {
         while (isAlphaNumeric(peek())) next();
         String text = sourceCode.substring(start, current);
-        TokenType type = keywords.get(text);
-        if (type == null) type = ID;
-        addToken(type);
+        if (text.equals("java")) {
+            scanJava();
+        } else {
+            TokenType type = keywords.get(text);
+            if (type == null) type = ID;
+            addToken(type);
+        }
     }
 
 }

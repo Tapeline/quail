@@ -1,6 +1,7 @@
 package me.tapeline.quailj.typing.modifiers;
 
 import me.tapeline.quailj.runtime.Runtime;
+import me.tapeline.quailj.typing.objects.QObject;
 
 public abstract class VariableModifier {
 
@@ -10,7 +11,7 @@ public abstract class VariableModifier {
         MOD_REQ, MOD_TYP, MOD_ANYOF, MOD_LOCAL, MOD_FINAL, MOD_STATIC
     }
 
-    public abstract boolean matches(Runtime runtime, Object object);
+    public abstract boolean matches(Runtime runtime, QObject object);
 
 }
 

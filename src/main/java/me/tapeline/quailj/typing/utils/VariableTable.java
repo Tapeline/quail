@@ -13,7 +13,7 @@ import java.util.function.BiConsumer;
 public class VariableTable {
 
     private HashMap<String, QObject> values = new HashMap<>();
-    private Map<String, List<VariableModifier>> modifiers = new HashMap<>();
+    public Map<String, List<VariableModifier>> modifiers = new HashMap<>();
 
     public QObject put(Runtime runtime, String id, QObject value) throws RuntimeStriker {
         // TODO: optimization
@@ -30,7 +30,7 @@ public class VariableTable {
             values.put(id, value);
         } else
             runtime.error("Attempt to assign data with wrong type to clarified variable (" +
-                modifiers.toString() + " = " + value.getClass().getSimpleName() + ")");
+                modifiers.get(id).toString() + " = " + value.getClassName() + ")");
         return value;
     }
 
@@ -88,6 +88,10 @@ public class VariableTable {
 
     public HashMap<String, QObject> getValues() {
         return values;
+    }
+
+    public List<VariableModifier> getModifiersFor(String key) {
+        return modifiers.get(key);
     }
 
 }

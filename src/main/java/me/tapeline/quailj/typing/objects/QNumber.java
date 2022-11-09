@@ -6,13 +6,13 @@ import me.tapeline.quailj.typing.utils.VariableTable;
 
 public class QNumber extends QObject {
 
-    public static VariableTable defaults = new VariableTable();
-
     public double value;
 
     public QNumber(double value) {
-        setObjectMetadata("Number");
-        table.putAll(defaults);
+        table.putAll(Runtime.superObject.table);
+        table.putAll(Runtime.numberPrototype.table);
+        Runtime.numberPrototype.derivedObjects.add(this);
+        setObjectMetadata(Runtime.numberPrototype);
         this.value = value;
     }
 

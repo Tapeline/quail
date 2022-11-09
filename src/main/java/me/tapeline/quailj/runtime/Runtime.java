@@ -8,6 +8,7 @@ import me.tapeline.quailj.parsing.Parser;
 import me.tapeline.quailj.parsing.ParserException;
 import me.tapeline.quailj.parsing.nodes.Node;
 import me.tapeline.quailj.parsing.nodes.block.BlockNode;
+import me.tapeline.quailj.parsing.nodes.block.JavaEmbedNode;
 import me.tapeline.quailj.parsing.nodes.branching.CatchClause;
 import me.tapeline.quailj.parsing.nodes.branching.EventNode;
 import me.tapeline.quailj.parsing.nodes.branching.IfNode;
@@ -23,11 +24,18 @@ import me.tapeline.quailj.parsing.nodes.loops.ForNode;
 import me.tapeline.quailj.parsing.nodes.loops.LoopNode;
 import me.tapeline.quailj.parsing.nodes.loops.ThroughNode;
 import me.tapeline.quailj.parsing.nodes.loops.WhileNode;
+import me.tapeline.quailj.parsing.nodes.modifiers.AsyncFlagNode;
 import me.tapeline.quailj.parsing.nodes.modifiers.TypeCastNode;
 import me.tapeline.quailj.parsing.nodes.operators.*;
 import me.tapeline.quailj.parsing.nodes.sequence.TupleNode;
 import me.tapeline.quailj.parsing.nodes.variable.VariableNode;
 import me.tapeline.quailj.platforms.IOManager;
+import me.tapeline.quailj.runtime.libraries.LibraryLoader;
+import me.tapeline.quailj.runtime.libraries.LibraryRegistry;
+import me.tapeline.quailj.runtime.std.*;
+import me.tapeline.quailj.runtime.std.number.*;
+import me.tapeline.quailj.runtime.std.string.*;
+import me.tapeline.quailj.runtime.utils.JavaAction;
 import me.tapeline.quailj.typing.modifiers.FinalModifier;
 import me.tapeline.quailj.typing.modifiers.TypeModifier;
 import me.tapeline.quailj.typing.objects.*;
@@ -41,7 +49,6 @@ import me.tapeline.quailj.typing.utils.VariableTable;
 import me.tapeline.quailj.utils.Dict;
 import me.tapeline.quailj.utils.ErrorFormatter;
 import me.tapeline.quailj.utils.Pair;
-import me.tapeline.quailj.utils.Utilities;
 
 import static me.tapeline.quailj.typing.objects.QObject.Val;
 
@@ -52,14 +59,25 @@ public class Runtime {
     private String sourceCode;
     private Node root;
     private boolean doProfile;
-    private IOManager io;
+    public IOManager io;
     public Memory memory;
     private EmbedIntegrator embedIntegrator;
-    public QObject superObject = new QObject("Object", null, new HashMap<>());
+    public static LibraryRegistry libraryRegistry = new LibraryRegistry();
+    public List<AsyncRuntimeWorker> asyncRuntimeWorkers = new ArrayList<>();
 
     private HashMap<String, List<Pair<QFunc, Boolean>>> eventsHandlerMap = new HashMap<>();
 
-    private List<Node> runNodeStack = new ArrayList<>();
+
+
+    public static QObject superObject = QObject.constructSuperObject();
+    public static QObject numberPrototype = new QObject("Number", null, new HashMap<>());
+    public static QObject nullPrototype = new QObject("Null", null, new HashMap<>());
+    public static QObject stringPrototype = new QObject("String", null, new HashMap<>());
+    public static QObject listPrototype = new QObject("List", null, new HashMap<>());
+    public static QObject boolPrototype = new QObject("Bool", null, new HashMap<>());
+    public static QObject funcPrototype = new QObject("Func", null, new HashMap<>());
+
+
 
     public Runtime(String sourceCode, Node root, IOManager io, boolean doProfile) {
         this.sourceCode = sourceCode;
@@ -68,58 +86,57 @@ public class Runtime {
         this.io = io;
         this.memory = new Memory();
         registerDefaults();
+        libraryRegistry.libraryRoots.add("/home/tapeline/JavaProjects/Files/Quailv2/qlibs/?");
     }
 
     private void registerDefaults() {
-        memory.set("print", new QBuiltinFunc(
-                "print",
-                Arrays.asList(new FuncArgument("values",
-                        new ArrayList<>(), true, false)),
-                this,
-                true
-        ) {
-            @Override
-            public QObject action(Runtime runtime, HashMap<String, QObject> args) throws RuntimeStriker {
-                QList values = (QList) args.get("values");
-                for (QObject o : values.values)
-                    System.out.print(o.toString() + " ");
-                System.out.println();
-                return QObject.Val();
-            }
-        }, new ArrayList<>());
+        superObject.setPrototypeFlag(true);
+        memory.set("Object", superObject, new ArrayList<>());
 
-        memory.set("millis", new QBuiltinFunc(
-                "millis",
-                new ArrayList<>(),
-                this,
-                true
-        ) {
-            @Override
-            public QObject action(Runtime runtime, HashMap<String, QObject> args) throws RuntimeStriker {
-                return QObject.Val(System.currentTimeMillis());
-            }
-        }, new ArrayList<>());
+        memory.set("Number", numberPrototype, new ArrayList<>());
+        numberPrototype.setPrototypeFlag(true);
+        numberPrototype.setSuperClass(superObject);
+        numberPrototype.set("ceil", new NumberFuncCeil(this));
+        numberPrototype.set("round", new NumberFuncRound(this));
+        numberPrototype.set("floor", new NumberFuncFloor(this));
 
-        memory.set("sqrt", new QBuiltinFunc(
-                "sqrt",
-                Arrays.asList(
-                        new FuncArgument(
-                                "n",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_NUM)),
-                                false, false
-                        )
-                ),
-                this,
-                true
-        ) {
-            @Override
-            public QObject action(Runtime runtime, HashMap<String, QObject> args) throws RuntimeStriker {
-                return QObject.Val(Math.sqrt(((QNumber) args.get("n")).value));
-            }
-        }, new ArrayList<>());
+        memory.set("Null", nullPrototype, new ArrayList<>());
+        numberPrototype.setSuperClass(superObject);
+        nullPrototype.setPrototypeFlag(true);
+
+        memory.set("List", listPrototype, new ArrayList<>());
+        numberPrototype.setSuperClass(superObject);
+        listPrototype.setPrototypeFlag(true);
+
+        memory.set("Func", funcPrototype, new ArrayList<>());
+        numberPrototype.setSuperClass(superObject);
+        funcPrototype.setPrototypeFlag(true);
+
+        memory.set("Bool", boolPrototype, new ArrayList<>());
+        numberPrototype.setSuperClass(superObject);
+        boolPrototype.setPrototypeFlag(true);
+
+        memory.set("String", stringPrototype, new ArrayList<>());
+        numberPrototype.setSuperClass(superObject);
+        stringPrototype.setPrototypeFlag(true);
+        stringPrototype.set("upper", new StringFuncUpper(this));
+
+        memory.set("abs", new FuncAbs(this), new ArrayList<>());
+        memory.set("all", new FuncAll(this), new ArrayList<>());
+        memory.set("any", new FuncAny(this), new ArrayList<>());
+        memory.set("enumerate", new FuncEnumerate(this), new ArrayList<>());
+        memory.set("eval", new FuncEval(this), new ArrayList<>());
+        memory.set("exec", new FuncExec(this), new ArrayList<>());
+        memory.set("input", new FuncInput(this), new ArrayList<>());
+        memory.set("print", new FuncPrint(this), new ArrayList<>());
+        memory.set("millis", new FuncMillis(this), new ArrayList<>());
+        memory.set("className", new FuncClassName(this), new ArrayList<>());
+        memory.set("superClassName", new FuncSuperClassName(this), new ArrayList<>());
+        memory.set("remainingAsyncs", new FuncRemainingAsyncs(this), new ArrayList<>());
+        memory.set("asyncsDone", new FuncAsyncsDone(this), new ArrayList<>());
     }
 
-    public void error(Node node, String message) throws RuntimeStriker {
+    public void error(String message) throws RuntimeStriker {
         throw new RuntimeStriker(
                 new ErrorMessage(
                         Error.ERROR,
@@ -128,25 +145,54 @@ public class Runtime {
         );
     }
 
-    // @Deprecated, because it is highly recommended to pass a node into error(...)
-    // Although, this cannot be possible in some cases, so error(String) can be still used
-    @Deprecated
-    public void error(String message) throws RuntimeStriker {
-        if (runNodeStack.size() == 0)
-            error(new Node(Token.UNDEFINED), "<!> At possibly undefined location:\n" + message);
-        else
-            error(runNodeStack.get(runNodeStack.size() - 1), message);
-    }
-
     private void begin(Node node) {
         node.executionStart = System.currentTimeMillis();
-        runNodeStack.add(node);
     }
 
     private void end(Node node) {
         node.executionTime = System.currentTimeMillis() - node.executionStart;
-        //runNodeStack.remove(runNodeStack.size() - 1);
-        runNodeStack.remove(node);
+    }
+
+    public void loopFor(List<String> iterator, QObject iterable, JavaAction action, Memory scope)
+            throws RuntimeStriker {
+        int unpackingSize = iterator.size();
+        Memory enclosing = new Memory(scope);
+        long rethrow = 0;
+        iterable.iterateStart(this);
+        while (true) {
+            try {
+                QObject next = iterable.iterateNext(this);
+                if (unpackingSize == 1)
+                    enclosing.set(iterator.get(0), next, new ArrayList<>());
+                else if (next.isList()) {
+                    QList list = (QList) next;
+                    if (list.values.size() != unpackingSize)
+                        error("Unpacking failed. List size = " +
+                                list.values.size() + "; Iterators = " + unpackingSize);
+                    for (int i = 0; i < unpackingSize; i++)
+                        enclosing.set(iterator.get(i), list.values.get(i), new ArrayList<>());
+                } else if (unpackingSize == 2) {
+                    String keyVar = iterator.get(0);
+                    String valVar = iterator.get(1);
+                    next.getTable().forEach((key, value) -> {
+                        enclosing.set(keyVar, Val(key), new ArrayList<>());
+                        enclosing.set(valVar, value, new ArrayList<>());
+                    });
+                } else error("Iterator unpacking error. Unknown error");
+
+                action.action(this, enclosing);
+            } catch (RuntimeStriker striker) {
+                if (striker.type == RuntimeStriker.Type.BREAK) {
+                    if (--striker.strikeHP > 0) rethrow = striker.strikeHP;
+                    break;
+                } else if (striker.type == RuntimeStriker.Type.STOP_ITERATION)
+                    break;
+                else if (striker.type == RuntimeStriker.Type.CONTINUE)
+                    continue;
+                else throw striker;
+            }
+        }
+        if (rethrow > 0) throw new RuntimeStriker(rethrow);
     }
 
     public QObject performBinaryOperation(QObject operandA, TokenType op, QObject operandB)
@@ -169,14 +215,23 @@ public class Runtime {
             case LESS_EQUAL: return operandA.lessEqual(this, operandB);
             case EQUALS: return operandA.equalsObject(this, operandB);
             case NOT_EQUALS: return operandA.notEqualsObject(this, operandB);
+            case INSTANCEOF: return Val(operandA.instanceOf(operandB));
         }
         return null;
     }
 
-    public QObject run(Node node, Memory scope) throws RuntimeStriker {
+    public final QObject run(Node node, Memory scope) throws RuntimeStriker {
+        // TODO: split into methods
         if (doProfile) begin(node);
         try {
-        if (node instanceof BlockNode) {
+        if (node instanceof AsyncFlagNode) {
+            AsyncFlagNode thisNode = (AsyncFlagNode) node;
+            AsyncRuntimeWorker worker = new AsyncRuntimeWorker(thisNode.node, this, scope);
+            asyncRuntimeWorkers.add(worker);
+            worker.start();
+            if (doProfile) end(node);
+            return Val();
+        } else if (node instanceof BlockNode) {
             BlockNode thisNode = (BlockNode) node;
             int blockSize = thisNode.nodes.size();
             for (int i = 0; i < blockSize; i++)
@@ -192,11 +247,11 @@ public class Runtime {
                             thisNode.id,
                             FuncArgument.defaultNull,
                             new ArrayList<>(),
-                            false,
                             false
                     )),
                     thisNode.code,
                     this,
+                    scope,
                     new ArrayList<>(),
                     false
             );
@@ -261,7 +316,7 @@ public class Runtime {
             switch (thisNode.effect) {
                 case EFFECT_ASSERT: {
                     if (doProfile) end(node);
-                    if (!run(thisNode.value, scope).isTrue()) error(thisNode.value,
+                    if (!run(thisNode.value, scope).isTrue()) error(
                             "Assertion failed");
                     break;
                 }
@@ -277,12 +332,27 @@ public class Runtime {
                 case EFFECT_STRIKE: {
                     if (doProfile) end(node);
                     QObject count = run(thisNode.value, scope);
-                    if (!count.isNum()) error(thisNode.value, "Cannot strike. Not a number");
+                    if (!count.isNum()) error("Cannot strike. Not a number");
                     throw new RuntimeStriker((long) ((QNumber) count).value);
                 }
                 case EFFECT_IMPORT: {
+                    String code = IOManager.fileInput(run(thisNode.value, scope).toString());
+                    try {
+                        Lexer lexer = new Lexer(code);
+                        List<Token> tokens = lexer.scan();
+                        Parser parser = new Parser(code, tokens);
+                        Node root = parser.parse();
+                        run(root, scope);
+                    } catch (RuntimeStriker striker) {
+                        if (striker.type == RuntimeStriker.Type.EXCEPTION) {
+                            System.err.println(ErrorFormatter.formatError(code, striker.error));
+                            System.exit(1);
+                        }
+                    } catch (ParserException exception) {
+                        System.err.println(exception.getMessage());
+                        System.exit(1);
+                    }
                     if (doProfile) end(node);
-                    // TODO: import effect action
                     break;
                 }
             }
@@ -338,36 +408,86 @@ public class Runtime {
             return Val();
         } else if (node instanceof UseNode) {
             UseNode thisNode = (UseNode) node;
-            // TODO: do use effect action
+            QObject library = LibraryLoader.loadLibrary(this, libraryRegistry, thisNode.path);
+            if (thisNode.alias != null)
+                scope.set(thisNode.alias, library, new ArrayList<>());
             if (doProfile) end(node);
-            return Val();
+            return library;
         } else if (node instanceof CallNode) {
             CallNode thisNode = (CallNode) node;
-            QObject callee = run(thisNode.function, scope);
+            QObject callee = null, parent = null;
+            if (thisNode.isFieldCall) {
+                parent = run(thisNode.parentField, scope);
+                callee = parent.get(thisNode.field);
+            } else
+                callee = run(thisNode.function, scope);
             List<QObject> args = new ArrayList<>();
-            HashMap<String, QObject> kwargs = new HashMap<>();
             int argsCount = thisNode.arguments.size();
             for (int i = 0; i < argsCount; i++)
                 args.add(run(thisNode.arguments.get(i), scope));
-            for (Map.Entry<String, Node> entry : thisNode.keywordArguments.entrySet())
-                kwargs.put(entry.getKey(), run(entry.getValue(), scope));
-            if (thisNode.isFieldCall) {
-                QObject parent = run(thisNode.parentField, scope);
+            if (parent != null && thisNode.isFieldCall) {
                 if (!parent.isPrototype())
-                    parent.callFromThis(this, callee, args, kwargs);
+                    return parent.callFromThis(this, callee, args);
             }
             if (doProfile) end(node);
-            return callee.call(this, args, kwargs);
+            return callee.call(this, args);
         } else if (node instanceof ContainerGeneratorNode) {
             ContainerGeneratorNode thisNode = (ContainerGeneratorNode) node;
-            // TODO: do container generator
+            QObject generated = Val(new HashMap<>());
+            QObject iterable = run(thisNode.iterable, scope);
+            loopFor(
+                    thisNode.iterators,
+                    iterable,
+                    new JavaAction() {
+                        @Override
+                        public QObject action(Runtime runtime, Memory memory) throws RuntimeStriker {
+                            if (thisNode.condition != null) {
+                                QObject condition = run(thisNode.condition, memory);
+                                if (condition.isTrue())
+                                    generated.set(
+                                            run(thisNode.key, memory).toString(),
+                                            run(thisNode.value, memory)
+                                    );
+                                else if (thisNode.fallbackKey != null && thisNode.fallbackValue != null)
+                                    generated.set(
+                                            run(thisNode.fallbackKey, memory).toString(),
+                                            run(thisNode.fallbackValue, memory)
+                                    );
+                            } else generated.set(
+                                    run(thisNode.key, memory).toString(),
+                                    run(thisNode.value, memory)
+                            );
+                            return null;
+                        }
+                    },
+                    scope
+            );
             if (doProfile) end(node);
-            return Val();
+            return generated;
         } else if (node instanceof ListGeneratorNode) {
             ListGeneratorNode thisNode = (ListGeneratorNode) node;
-            // TODO: do list generator
+            QList generated = (QList) Val(new ArrayList<>());
+            QObject iterable = run(thisNode.iterable, scope);
+            loopFor(
+                    thisNode.iterators,
+                    iterable,
+                    new JavaAction() {
+                        @Override
+                        public QObject action(Runtime runtime, Memory memory) throws RuntimeStriker {
+                            if (thisNode.condition != null) {
+                                QObject condition = run(thisNode.condition, memory);
+                                if (condition.isTrue())
+                                    generated.values.add(run(thisNode.expression, memory));
+                                else if (thisNode.fallback != null)
+                                    generated.values.add(run(thisNode.fallback, memory));
+                            } else generated.values.add(run(thisNode.expression, memory));
+                            return null;
+                        }
+                    },
+                    scope
+            );
             if (doProfile) end(node);
-            return Val();
+            return generated;
         } else if (node instanceof LiteralBool) {
             if (doProfile) end(node);
             return Val(((LiteralBool) node).value);
@@ -391,6 +511,9 @@ public class Runtime {
         } else if (node instanceof LiteralContainer) {
             LiteralContainer thisNode = (LiteralContainer) node;
             QObject container = new QObject(new HashMap<>());
+            container.setPrototypeFlag(true);
+            container.isDict = true;
+            container.setObjectMetadata(superObject);
             int pairCount = thisNode.contents.getKeys().size();
             for (int i = 0; i < pairCount; i++) {
                 String key = run(thisNode.contents.getKeys().get(i), scope).toString();
@@ -401,6 +524,16 @@ public class Runtime {
             return container;
         } else if (node instanceof LiteralFunction) {
             LiteralFunction thisNode = (LiteralFunction) node;
+            if (thisNode.name.equals("->"))
+                return new QFunc(
+                        thisNode.name,
+                        thisNode.args,
+                        thisNode.code,
+                        this,
+                        scope,
+                        new ArrayList<>(),
+                        thisNode.isStatic
+                );
             if (scope.get(thisNode.name).isFunc()) {
                 QFunc superFunc = ((QFunc) scope.get(thisNode.name));
                 superFunc.alternatives.add(new AlternativeCall(
@@ -413,6 +546,7 @@ public class Runtime {
                         thisNode.args,
                         thisNode.code,
                         this,
+                        scope,
                         new ArrayList<>(),
                         thisNode.isStatic
                 );
@@ -425,16 +559,18 @@ public class Runtime {
             LiteralClass thisNode = (LiteralClass) node;
             QObject parent = thisNode.like == null ? null : run(thisNode.like, scope);
             if (parent != null && parent.isNull())
-                error(thisNode.like,
+                error(
                         "Attempt to inherit from null. Maybe the class isn't defined at the moment");
             else if (parent != null && !parent.isPrototype())
-                error(thisNode.like,
+                error(
                         "Attempt to inherit from a non-class object");
             VariableTable contents = new VariableTable();
             if (parent != null)
                 contents.putAll(parent.getTable());
+            Set<String> hereDefinedMethods = new HashSet<>();
             thisNode.methods.forEach((methodName, method) -> {
-                if (contents.get(methodName).isFunc()) {
+                if (contents.containsKey(methodName) && contents.get(methodName).isFunc()
+                    && hereDefinedMethods.contains(methodName)) {
                     QFunc superFunc = ((QFunc) contents.get(methodName));
                     superFunc.alternatives.add(new AlternativeCall(
                             method.args,
@@ -446,9 +582,11 @@ public class Runtime {
                             method.args,
                             method.code,
                             this,
+                            scope,
                             new ArrayList<>(),
                             method.isStatic
                     ));
+                    hereDefinedMethods.add(methodName);
                 }
             });
             for (Map.Entry<VariableNode, Node> entry : thisNode.contents.entrySet())
@@ -458,7 +596,10 @@ public class Runtime {
             for (int i = 0; i < items; i++)
                 run(thisNode.initialize.get(i), scope);
             QObject qClass = new QObject(thisNode.name, superObject, contents);
+            if (parent != null)
+                qClass.setSuperClass(parent);
             qClass.setPrototypeFlag(true);
+            scope.set(thisNode.name, qClass, new ArrayList<>());
             if (doProfile) end(node);
             return qClass;
         } else if (node instanceof ForNode) {
@@ -476,7 +617,7 @@ public class Runtime {
                     else if (next.isList()) {
                         QList list = (QList) next;
                         if (list.values.size() != unpackingSize)
-                            error(thisNode.iterable, "Unpacking failed. List size = " +
+                            error("Unpacking failed. List size = " +
                                     list.values.size() + "; Iterators = " + unpackingSize);
                         for (int i = 0; i < unpackingSize; i++)
                             enclosing.set(thisNode.iterator.get(i), list.values.get(i), new ArrayList<>());
@@ -487,7 +628,7 @@ public class Runtime {
                             enclosing.set(keyVar, Val(key), new ArrayList<>());
                             enclosing.set(valVar, value, new ArrayList<>());
                         });
-                    } else error(thisNode.iterable, "Iterator unpacking error. Unknown error");
+                    } else error("Iterator unpacking error. Unknown error");
 
                     run(thisNode.code, enclosing);
                 } catch (RuntimeStriker striker) {
@@ -557,11 +698,11 @@ public class Runtime {
             if (thisNode.step != null)
                 stepObject = run(thisNode.step, scope);
             if (!startObject.isNum())
-                error(thisNode.start, "Attempt to make through-loop with non-number start");
+                error("Attempt to make through-loop with non-number start");
             if (!endObject.isNum())
-                error(thisNode.end, "Attempt to make through-loop with non-number end");
+                error("Attempt to make through-loop with non-number end");
             if (stepObject != null && !stepObject.isNum())
-                error(thisNode.step, "Attempt to make through-loop with non-number step");
+                error("Attempt to make through-loop with non-number step");
             double start = ((QNumber) startObject).value;
             double end = ((QNumber) endObject).value;
             double step;
@@ -609,13 +750,13 @@ public class Runtime {
                 return casting.typeString(this);
             else if (thisNode.castedType == TokenType.TYPE_NUM)
                 return casting.typeNumber(this);
-            else error(thisNode, "Unsupported typecast");
+            else error("Unsupported typecast");
             if (doProfile) end(node);
             return Val();
         } else if (node instanceof AssignNode) {
             AssignNode thisNode = (AssignNode) node;
             QObject value = run(thisNode.value, scope);
-            if (scope.hasParentalDefinition(thisNode.variable))
+            if (scope.contains(thisNode.variable))
                 scope.set(this, thisNode.variable, value);
             else
                 scope.set(thisNode.variable, value, thisNode.variableNode.modifiers);
@@ -627,11 +768,11 @@ public class Runtime {
             QObject operandB = run(thisNode.right, scope);
             if (thisNode.token.getMod() == TokenType.ARRAY_MOD) {
                 if (!operandA.isList() || !operandB.isList())
-                    error(node, "Cannot perform unwrapping array operation on non-list");
+                    error("Cannot perform unwrapping array operation on non-list");
                 QList listA = (QList) operandA;
                 QList listB = (QList) operandB;
                 if (listA.values.size() != listB.values.size())
-                    error(node,
+                    error(
                             "Cannot perform unwrapping array operation on lists with different sizes");
                 List<QObject> result = new ArrayList<>();
                 int count = listA.values.size();
@@ -642,17 +783,17 @@ public class Runtime {
                             listB.values.get(i)
                     );
                     if (ret == null)
-                        error(node, "Unknown binary operation");
+                        error("Unknown binary operation");
                     result.add(ret);
                 }
                 return QObject.Val(result);
             } else if (thisNode.token.getMod() == TokenType.MATRIX_MOD) {
                 if (!operandA.isList() || !operandB.isList())
-                    error(node, "Cannot perform unwrapping matrix operation on non-list");
+                    error("Cannot perform unwrapping matrix operation on non-list");
                 QList listA = (QList) operandA;
                 QList listB = (QList) operandB;
                 if (listA.values.size() != listB.values.size())
-                    error(node,
+                    error(
                             "Cannot perform unwrapping matrix operation on lists with different sizes");
                 List<QObject> result = new ArrayList<>();
                 int countX = listA.values.size();
@@ -673,7 +814,7 @@ public class Runtime {
                                 sublistB.values.get(y)
                         );
                         if (ret == null)
-                            error(node, "Unknown binary operation");
+                            error("Unknown binary operation");
                         subResult.add(ret);
                     }
                     result.add(QObject.Val(subResult));
@@ -682,7 +823,7 @@ public class Runtime {
             }
             QObject ret = performBinaryOperation(operandA, thisNode.operation, operandB);
             if (ret == null)
-                error(node, "Unknown binary operation");
+                error("Unknown binary operation");
             if (doProfile) end(node);
             return ret;
         } else if (node instanceof FieldReferenceNode) {
@@ -694,8 +835,10 @@ public class Runtime {
             QObject object = run(thisNode.object, scope);
             QObject value = run(thisNode.value, scope);
             String field = thisNode.field;
-            if (doProfile) end(node);
             object.setOverridable(this, field, value);
+            if (object.isPrototype())
+                object.updateInheritanceAndDerivations();
+            if (doProfile) end(node);
             return value;
         } else if (node instanceof IndexingNode) {
             IndexingNode thisNode = (IndexingNode) node;
@@ -711,7 +854,43 @@ public class Runtime {
             if (doProfile) end(node);
             return object.indexSet(this, index, value);
         } else if (node instanceof RangeNode) {
-
+            RangeNode thisNode = (RangeNode) node;
+            QList generated = (QList) Val(new ArrayList<>());
+            if (thisNode.start == null || thisNode.end == null)
+                error("Attempt to make indefinite loop. Start or end of range is null");
+            QObject startObject = run(thisNode.start, scope);
+            QObject endObject = run(thisNode.end, scope);
+            QObject stepObject = null;
+            if (thisNode.step != null)
+                stepObject = run(thisNode.step, scope);
+            if (!startObject.isNum())
+                error("Attempt to make through-loop with non-number start");
+            if (!endObject.isNum())
+                error("Attempt to make through-loop with non-number end");
+            if (stepObject != null && !stepObject.isNum())
+                error("Attempt to make through-loop with non-number step");
+            double start = ((QNumber) startObject).value;
+            double end = ((QNumber) endObject).value;
+            double step;
+            if (stepObject != null)
+                step = ((QNumber) stepObject).value;
+            else
+                step = start <= end ? 1 : -1;
+            boolean isIncreasing = start <= end;
+            boolean isIncluding = thisNode.include;
+            double numIterator = start;
+            while ((!isIncluding || ((!isIncreasing || !(numIterator > end))
+                    &&
+                    (isIncreasing || !(numIterator < end))))
+                    &&
+                    (isIncluding || ((!isIncreasing || !(numIterator >= end))
+                    &&
+                    (isIncreasing || !(numIterator <= end))))) {
+                generated.values.add(Val(numIterator));
+                numIterator += step;
+            }
+            if (doProfile) end(node);
+            return generated;
         } else if (node instanceof SubscriptNode) {
             SubscriptNode thisNode = (SubscriptNode) node;
             QObject object = run(thisNode.object, scope);
@@ -745,7 +924,7 @@ public class Runtime {
                     break;
             }
             if (ret == null)
-                error(node, "Unknown unary operation");
+                error("Unknown unary operation");
             if (doProfile) end(node);
             return ret;
         } else if (node instanceof TupleNode) {
@@ -758,6 +937,10 @@ public class Runtime {
             return Val(values);
         } else if (node instanceof VariableNode) {
             return scope.get(((VariableNode) node).id, ((VariableNode) node));
+        } else if (node instanceof JavaEmbedNode) {
+            JavaEmbedNode thisNode = (JavaEmbedNode) node;
+            System.out.println(thisNode.code);
+            // TODO: embed execution
         }
         } catch (RuntimeStriker s) {
             if (doProfile) end(node);
@@ -774,7 +957,7 @@ public class Runtime {
 
         //start = millis()
         memory.set(this, "start", memory.get("millis").call(
-                this, new ArrayList<>(), new HashMap<>()));
+                this, new ArrayList<>()));
 
         //through 1:+1000000 as x
         String iterator = "x";
@@ -834,10 +1017,9 @@ public class Runtime {
                 this,
                 Arrays.asList(
                         memory.get("millis")
-                                .call(this, new ArrayList<>(), new HashMap<>())
+                                .call(this, new ArrayList<>())
                                 .subtract(this, memory.get("start"))
-                ),
-                new HashMap<>()
+                )
         );
     }
 

@@ -4,19 +4,65 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0f087f83-4294-4049-8196-1d1bd1edefe9" name="Changes" comment="runtime snapshot&#10;27-10-22 18:00 UTC&#10;fix lots of errors&#10;add : \t syntax for delimiting blocks of code&#10;add some functionality">
-      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/errors/Error.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/errors/ErrorMessage.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="0f087f83-4294-4049-8196-1d1bd1edefe9" name="Changes" comment="runtime snapshot&#10;03-11-22 06:30 UTC">
+      <change afterPath="$PROJECT_DIR$/kickedOut/libraries/LibraryLoader.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kickedOut/libraries/LibraryRegistry.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kickedOut/libraries/LibraryRegistryException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kickedOut/libraries/domain/ComplexDomainNode.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kickedOut/libraries/domain/DomainNode.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kickedOut/libraries/domain/ExtractDomainNode.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kickedOut/libraries/domain/LibraryDomain.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kickedOut/libraries/domain/SimpleDomainNode.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/qlibs/pkg/adder.q" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/qlibs/pkg/test.q" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/parsing/nodes/block/JavaEmbedNode.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/parsing/nodes/effect/LibraryPath.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/AsyncRuntimeWorker.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/HereScope.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/JavaCodeEmbed.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/libraries/LibraryLoader.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/libraries/LibraryRegistry.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/FuncAbs.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/FuncAll.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/FuncAny.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/FuncAsyncsDone.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/FuncClassName.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/FuncEnumerate.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/FuncEval.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/FuncExec.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/FuncInput.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/FuncMillis.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/FuncPrint.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/FuncRemainingAsyncs.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/FuncSuperClassName.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/number/NumberFuncCeil.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/number/NumberFuncFloor.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/number/NumberFuncRound.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/string/StringFuncUpper.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/utils/JavaAction.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/utils/QListUtils.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/utils/QStringUtils.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test.q" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.q" beforeDir="false" afterPath="$PROJECT_DIR$/main.q" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/Main.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/lexing/Lexer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/lexing/Lexer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/lexing/Token.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/lexing/Token.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/parsing/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/parsing/Parser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/parsing/nodes/effect/InstructionNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/parsing/nodes/effect/InstructionNode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/parsing/nodes/effect/UseNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/parsing/nodes/effect/UseNode.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/parsing/nodes/expression/CallNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/parsing/nodes/expression/CallNode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/parsing/nodes/generators/ContainerGeneratorNode.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/parsing/nodes/generators/ContainerGeneratorNode.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/platforms/IOManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/platforms/IOManager.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/Memory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/Memory.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/Runtime.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/Runtime.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/modifiers/AnyOfModifier.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/modifiers/AnyOfModifier.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/modifiers/FinalModifier.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/modifiers/FinalModifier.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/modifiers/LocalModifier.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/modifiers/LocalModifier.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/modifiers/RequireModifier.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/modifiers/RequireModifier.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/modifiers/StaticModifier.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/modifiers/StaticModifier.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/modifiers/TypeModifier.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/modifiers/TypeModifier.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/modifiers/VariableModifier.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/modifiers/VariableModifier.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/QBool.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/QBool.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/QFunc.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/QFunc.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/QList.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/QList.java" afterDir="false" />
@@ -24,11 +70,11 @@
       <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/QNumber.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/QNumber.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/QObject.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/QObject.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/QString.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/QString.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/RuntimeStriker.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/errors/RuntimeStriker.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/funcutils/FuncArgument.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/funcutils/FuncArgument.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/funcutils/QBuiltinFunc.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/funcutils/QBuiltinFunc.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/utils/Utilities.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/utils/Utilities.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/utils/VariableTable.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/utils/VariableTable.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/utils/ErrorFormatter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/utils/ErrorFormatter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/utils/Utilities.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/utils/Utilities.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,11 +84,17 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
+        <option value="Interface" />
         <option value="Class" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="quail2development-testing" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="MarkdownSettingsMigration">
@@ -53,18 +105,21 @@
     <option name="showPreview" value="true" />
   </component>
   <component name="ProjectId" id="2F1HWrqCuxB8A80jpEQHL1yfivz" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "TODO_SCOPE": "All Places",
-    "last_opened_file_path": "/home/tapeline/JavaProjects/Files/Rushboard",
+    "last_opened_file_path": "/home/tapeline/JavaProjects/Files/QuailTools",
     "project.structure.last.edited": "Project",
     "project.structure.proportion": "0.0",
     "project.structure.side.proportion": "0.0",
@@ -79,15 +134,19 @@
       <recent name="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/system" />
       <recent name="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/modifiers" />
     </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/qlibs/pkg" />
+      <recent name="$PROJECT_DIR$/qlibs" />
+    </key>
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="me.tapeline.quailj.runtime.std" />
+      <recent name="me.tapeline.quailj.runtime.std.number" />
       <recent name="me.tapeline.quailj.runtime" />
       <recent name="me.tapeline.quailj.platforms" />
       <recent name="me.tapeline.quailj.typing.objects" />
-      <recent name="me.tapeline.quailj.parsing.nodes.loops" />
-      <recent name="me.tapeline.quailj.parsing.nodes.operators" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.Runtime">
+  <component name="RunManager" selected="Application.Main">
     <configuration name="Main" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="me.tapeline.quailj.Main" />
       <module name="Quailv2" />
@@ -107,7 +166,7 @@
       <module name="Quailv2" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="me.tapeline.quailj.runtime.*" />
+          <option name="PATTERN" value="me.tapeline.quailj.runtime.libraries.domain.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -117,6 +176,8 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Application.Main" />
+        <item itemvalue="Application.Runtime" />
         <item itemvalue="Application.Runtime" />
         <item itemvalue="Application.Main" />
       </list>
@@ -152,7 +213,14 @@
       <option name="project" value="LOCAL" />
       <updated>1666894833129</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="runtime snapshot&#10;03-11-22 06:30 UTC">
+      <created>1667457020971</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1667457020971</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="UnknownFeatures">
@@ -163,70 +231,105 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="origin/quail2development" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
           </value>
         </entry>
       </map>
     </option>
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="lexer and parser done" />
     <MESSAGE value="runtime snapshot&#10;22-10-22 21:00 UTC" />
     <MESSAGE value="runtime snapshot&#10;27-10-22 18:00 UTC&#10;fix lots of errors&#10;add : \t syntax for delimiting blocks of code&#10;add some functionality" />
-    <option name="LAST_COMMIT_MESSAGE" value="runtime snapshot&#10;27-10-22 18:00 UTC&#10;fix lots of errors&#10;add : \t syntax for delimiting blocks of code&#10;add some functionality" />
+    <MESSAGE value="runtime snapshot&#10;03-11-22 06:30 UTC" />
+    <option name="LAST_COMMIT_MESSAGE" value="runtime snapshot&#10;03-11-22 06:30 UTC" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/me/tapeline/quailj/parsing/Parser.java</url>
-          <line>52</line>
+          <line>54</line>
           <option name="timeStamp" value="17" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/me/tapeline/quailj/parsing/Parser.java</url>
-          <line>77</line>
+          <line>79</line>
           <option name="timeStamp" value="19" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/me/tapeline/quailj/parsing/Parser.java</url>
-          <line>756</line>
+          <line>761</line>
           <option name="timeStamp" value="25" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/me/tapeline/quailj/Main.java</url>
-          <line>48</line>
+          <line>49</line>
           <option name="timeStamp" value="29" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/me/tapeline/quailj/Main.java</url>
-          <line>71</line>
+          <line>72</line>
           <option name="timeStamp" value="31" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/Runtime.java</url>
-          <line>136</line>
-          <option name="timeStamp" value="50" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/me/tapeline/quailj/parsing/Parser.java</url>
-          <line>592</line>
+          <line>597</line>
           <option name="timeStamp" value="69" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/Runtime.java</url>
-          <line>83</line>
-          <option name="timeStamp" value="70" />
+          <url>file://$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/QObject.java</url>
+          <line>711</line>
+          <option name="timeStamp" value="77" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/Runtime.java</url>
-          <line>763</line>
-          <option name="timeStamp" value="72" />
+          <line>368</line>
+          <option name="timeStamp" value="80" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/Runtime.java</url>
-          <line>772</line>
-          <option name="timeStamp" value="73" />
+          <url>file://$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/QFunc.java</url>
+          <line>103</line>
+          <option name="timeStamp" value="81" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/me/tapeline/quailj/Main.java</url>
+          <line>84</line>
+          <option name="timeStamp" value="87" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <condition expression="id.equals(&quot;count&quot;)" language="JAVA" />
+          <url>file://$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/Memory.java</url>
+          <line>46</line>
+          <option name="timeStamp" value="97" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/QObject.java</url>
+          <line>342</line>
+          <option name="timeStamp" value="101" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/QObject.java</url>
+          <line>688</line>
+          <option name="timeStamp" value="103" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/FuncSuperClassName.java</url>
+          <line>32</line>
+          <option name="timeStamp" value="115" />
         </line-breakpoint>
         <breakpoint type="java-exception">
           <properties class="java.lang.IndexOutOfBoundsException" package="java.lang" />
@@ -240,22 +343,21 @@
     </breakpoint-manager>
     <pin-to-top-manager>
       <pinned-members>
+        <PinnedItemInfo parentTag="me.tapeline.quailj.runtime.Runtime" memberName="memory" />
+        <PinnedItemInfo parentTag="me.tapeline.quailj.typing.utils.VariableTable" memberName="values" />
         <PinnedItemInfo parentTag="me.tapeline.quailj.parsing.nodes.effect.EffectNode" memberName="value" />
+        <PinnedItemInfo parentTag="me.tapeline.quailj.typing.objects.QObject" memberName="table" />
         <PinnedItemInfo parentTag="me.tapeline.quailj.parsing.nodes.variable.VariableNode" memberName="id" />
+        <PinnedItemInfo parentTag="me.tapeline.quailj.runtime.Memory" memberName="mem" />
       </pinned-members>
     </pin-to-top-manager>
-    <watches-manager>
-      <configuration name="Application">
-        <watch expression="((EffectNode)((java.util.ArrayList)((BlockNode)((ThroughNode)((java.util.ArrayList)((BlockNode)root).nodes).get(6)).code).nodes).get(0)).effect" custom="me.tapeline.quailj.parsing.nodes.effect.EffectNode,me.tapeline.quailj.parsing.nodes.loops.ThroughNode,me.tapeline.quailj.parsing.nodes.block.BlockNode,java.util.ArrayList" />
-      </configuration>
-    </watches-manager>
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
     <select />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/Quailv2$Main.ic" NAME="Main Coverage Results" MODIFIED="1666880312002" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false">
+    <SUITE FILE_PATH="coverage/Quailv2$Main.ic" NAME="Main Coverage Results" MODIFIED="1668018222798" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false">
       <FILTER>me.tapeline.quailj.*</FILTER>
     </SUITE>
   </component>

@@ -11,14 +11,9 @@ import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.utils.ContainerPreRuntimeContents;
 import me.tapeline.quailj.typing.utils.VariableTable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class QObject {
-    
-    public static VariableTable defaults = new VariableTable();
 
     public static QObject getDefaultFor(List<VariableModifier> modifiers) {
         for (VariableModifier m : modifiers) {
@@ -60,92 +55,209 @@ public class QObject {
     protected VariableTable table = new VariableTable();
     protected String className;
     protected QObject superClass;
+    protected QObject prototype;
     protected boolean isPrototype;
+    private Set<String> iter;
+
+    public Set<QObject> derivedObjects = new HashSet<>();
+    public Set<QObject> childPrototypes = new HashSet<>();
+    public boolean isDict = false;
 
     public QObject() {}
 
     public QObject(VariableTable content) {
         this.table = new VariableTable();
-        this.table.putAll(defaults);
+        if (Runtime.superObject != null)
+            table.putAll(Runtime.superObject.table);
         this.table.putAll(content);
         setObjectMetadata("Object");
+        if (this != Runtime.superObject)
+            Runtime.superObject.derivedObjects.add(this);
     }
 
     public QObject(HashMap<String, QObject> content) {
         this.table = new VariableTable();
-        this.table.putAll(defaults);
+        if (Runtime.superObject != null)
+            table.putAll(Runtime.superObject.table);
         this.table.putAll(content);
         setObjectMetadata("Object");
+        if (this != Runtime.superObject)
+            Runtime.superObject.derivedObjects.add(this);
     }
 
     public QObject(String name, QObject like, VariableTable content) {
         this.table = new VariableTable();
-        this.table.putAll(defaults);
+        if (Runtime.superObject != null)
+            table.putAll(Runtime.superObject.table);
         this.table.putAll(content);
         setObjectMetadata(name, like);
+        if (this != Runtime.superObject)
+            Runtime.superObject.derivedObjects.add(this);
     }
 
     public QObject(String name, QObject like, HashMap<String, QObject> content) {
         this.table = new VariableTable();
-        this.table.putAll(defaults);
+        if (Runtime.superObject != null)
+            table.putAll(Runtime.superObject.table);
         this.table.putAll(content);
         setObjectMetadata(name, like);
+        if (this != Runtime.superObject)
+            Runtime.superObject.derivedObjects.add(this);
     }
 
-    public void setObjectMetadata(String className) {
+    public final HashMap<String, QObject> getNonDefaultFields() {
+        HashMap<String, QObject> fields = new HashMap<>();
+        for (Map.Entry<String, QObject> entry : table.getValues().entrySet())
+            if (!prototype.table.getValues().containsKey(entry.getKey()))
+                fields.put(entry.getKey(), entry.getValue());
+        return fields;
+    }
+
+    public static QObject constructSuperObject() {
+        QObject superObject = new QObject();
+        superObject.table = new VariableTable();
+        superObject.setObjectMetadata("Object", null);
+        return superObject;
+    }
+
+    public final void updateDerivations() {
+        for (QObject derived : derivedObjects)
+            for (Map.Entry<String, QObject> entry : table.getValues().entrySet()) {
+                derived.table.getValues().putIfAbsent(entry.getKey(), entry.getValue());
+                derived.table.modifiers.putIfAbsent(entry.getKey(), table.getModifiersFor(entry.getKey()));
+            }
+    }
+
+    public final void updateInheritanceChain() {
+        for (QObject child : childPrototypes) {
+            for (Map.Entry<String, QObject> entry : table.getValues().entrySet()) {
+                child.table.getValues().putIfAbsent(entry.getKey(), entry.getValue());
+                child.table.modifiers.putIfAbsent(entry.getKey(), table.getModifiersFor(entry.getKey()));
+            }
+            child.updateInheritanceChain();
+        }
+    }
+
+    public final void updateInheritanceAndDerivations() {
+        updateDerivations();
+        for (QObject child : childPrototypes) {
+            for (Map.Entry<String, QObject> entry : table.getValues().entrySet()) {
+                child.table.getValues().putIfAbsent(entry.getKey(), entry.getValue());
+                child.table.modifiers.putIfAbsent(entry.getKey(), table.getModifiersFor(entry.getKey()));
+            }
+            child.updateInheritanceChain();
+            child.updateDerivations();
+        }
+    }
+
+    public final void registerInheritance(QObject child) {
+        childPrototypes.add(child);
+    }
+
+    public final void setSuperClass(QObject superClass) {
+        this.superClass = superClass;
+        if (superClass != null)
+            superClass.registerInheritance(this);
+    }
+
+    public final void setObjectMetadata(String className) {
         this.className = className;
         //this.table.put("_name", new QString(className));
     }
 
-    public void setObjectMetadata(String className, QObject superClass) {
+    public final void setObjectMetadata(String className, QObject superClass) {
         this.className = className;
         this.superClass = superClass;
+        if (superClass != null)
+            superClass.registerInheritance(this);
         /*this.table.put("_name", new QString(className));
         this.table.put("super", superClass);*/
     }
 
-    public void setPrototypeFlag(boolean isPrototype) {
+    public final void setObjectMetadata(QObject klass) {
+        this.prototype = klass;
+        this.className = klass.getClassName();
+        //this.table.put("_name", new QString(className));
+    }
+
+    public final void setObjectMetadata(QObject klass, QObject superClass) {
+        this.prototype = klass;
+        this.className = klass.getClassName();
+        this.superClass = superClass;
+        if (superClass != null)
+            superClass.registerInheritance(klass);
+        /*this.table.put("_name", new QString(className));
+        this.table.put("super", superClass);*/
+    }
+
+    public final void setPrototypeFlag(boolean isPrototype) {
         this.isPrototype = isPrototype;
         //this.table.put("_isPrototype", new QBool(isPrototype));
     }
 
-    public String getClassName() {
-        return className;
+    public final String getClassName() {
+        if (!isPrototype() && prototype != null)
+            return prototype.getClassName();
+        else
+            return className;
+        //return className;
         //return get("_name").toString();
     }
 
-    public QObject getSuper() {
+    public final QObject getPrototype() {
+        return prototype;
+    }
+
+    public final QObject getSuper() {
         return superClass;
         //return table.get("super");
     }
 
-    public boolean isPrototype() {
+    public final boolean isPrototype() {
         return isPrototype;
         //return get("_isPrototype").toString().equals("true");
     }
 
-    public boolean isNum() {
+    public final boolean isNum() {
         return this instanceof QNumber;
     }
 
-    public boolean isBool() {
+    public final boolean isBool() {
         return this instanceof QBool;
     }
 
-    public boolean isNull() {
+    public final boolean isNull() {
         return this instanceof QNull;
     }
 
-    public boolean isStr() {
+    public final boolean isStr() {
         return this instanceof QString;
     }
 
-    public boolean isList() {
+    public final boolean isList() {
         return this instanceof QList;
     }
 
-    public boolean isFunc() {
+    public final boolean isFunc() {
         return this instanceof QFunc;
+    }
+
+    public final double numValue() {
+        if (this instanceof QNumber)
+            return ((QNumber) this).value;
+        return 0;
+    }
+
+    public final boolean boolValue() {
+        if (this instanceof QBool)
+            return ((QBool) this).value;
+        return false;
+    }
+
+    public final List<QObject> listValue() {
+        if (this instanceof QList)
+            return ((QList) this).values;
+        return new ArrayList<>();
     }
 
     public static QObject Val(double d) {
@@ -176,7 +288,7 @@ public class QObject {
         return obj == null? Val() : obj;
     }
 
-    public QObject get(String id) {
+    public final QObject get(String id) {
         if (id.equals("_name"))
             return QObject.Val(className);
         else if (id.equals("_super"))
@@ -186,67 +298,81 @@ public class QObject {
         return nullSafe(table.get(id));
     }
 
-    public void set(Runtime runtime, String id, QObject value) throws RuntimeStriker {
+    public final void set(Runtime runtime, String id, QObject value) throws RuntimeStriker {
         table.put(runtime, id, value);
     }
 
-    public QObject getOverridable(Runtime runtime, String id) throws RuntimeStriker {
+    public final QObject getOverridable(Runtime runtime, String id) throws RuntimeStriker {
         if (table.containsKey("_get"))
-            return callFromThis(runtime, "_get", Arrays.asList(QObject.Val(id)), new HashMap<>());
+            return callFromThis(runtime, "_get", Arrays.asList(QObject.Val(id)));
         if (table.containsKey("_get_" + id))
-            return callFromThis(runtime, "_get_" + id, new ArrayList<>(), new HashMap<>());
+            return callFromThis(runtime, "_get_" + id, new ArrayList<>());
         return get(id);
     }
 
-    public void setOverridable(Runtime runtime, String id, QObject value) throws RuntimeStriker {
+    public final void setOverridable(Runtime runtime, String id, QObject value) throws RuntimeStriker {
         set(runtime, id, value);
         if (table.containsKey("_set"))
-            callFromThis(runtime, "_set", Arrays.asList(QObject.Val(id), value), new HashMap<>());
+            callFromThis(runtime, "_set", Arrays.asList(QObject.Val(id), value));
         if (table.containsKey("_set_" + id))
-            callFromThis(runtime, "_set_" + id, Arrays.asList(value), new HashMap<>());
+            callFromThis(runtime, "_set_" + id, Arrays.asList(value));
     }
 
-    public void set(String id, QObject value, List<VariableModifier> modifiers) {
+    public final void set(String id, QObject value, List<VariableModifier> modifiers) {
         table.put(id, value, modifiers);
     }
 
-    public void set(String id, QObject value) {
+    public final void set(String id, QObject value) {
         table.put(id, value);
     }
 
-    public boolean isTrue() {
+    public final boolean isTrue() {
         if (this instanceof QBool) {
             return ((QBool) this).value;
         } else return !(this instanceof QNull);
     }
 
-    public boolean instanceOf(QObject parent) {
-        if (getClassName().equals(parent.getClassName()))
+    public final boolean instanceOf(QObject parent) {
+        // If parent == superObject -> true
+        if (parent == Runtime.superObject) return true;
+
+        // if parent == prototype -> true
+        if (parent == prototype || parent == this) return true;
+
+        // if super.instanceof parent -> true
+        if (prototype != null && prototype.superClass != null && prototype.superClass.instanceOf(parent))
             return true;
-        else if (getSuper() != null)
-            return false;
-        else
-            return getSuper().instanceOf(parent);
+
+        if (superClass != null && superClass.instanceOf(parent))
+            return true;
+
+        // -> false
+        return false;
     }
 
-    public VariableTable getTable() {
+    public final VariableTable getTable() {
         return table;
     }
 
-    public QObject callFromThis(Runtime runtime, String funcId,
-                                List<QObject> args, HashMap<String, QObject> kwargs)
-                                        throws RuntimeStriker {
+    public final QObject callFromThis(Runtime runtime, String funcId, List<QObject> args) throws RuntimeStriker {
         if (!isPrototype())
             args.add(0, this);
-        return get(funcId).call(runtime, args, kwargs);
+        return get(funcId).call(runtime, args);
     }
 
-    public QObject callFromThis(Runtime runtime, QObject func,
-                                List<QObject> args, HashMap<String, QObject> kwargs)
-            throws RuntimeStriker {
+    public final QObject callFromThis(Runtime runtime, QObject func, List<QObject> args) throws RuntimeStriker {
         if (!isPrototype())
             args.add(0, this);
-        return func.call(runtime, args, kwargs);
+        return func.call(runtime, args);
+    }
+
+    public final QObject derive(Runtime runtime) throws RuntimeStriker {
+        if (!isPrototype())
+            runtime.error("Attempt to derive from non-prototype value");
+        QObject newObject = Val(new HashMap<>());
+        newObject.table.putAll(table);
+        newObject.setObjectMetadata(this, getSuper());
+        return newObject;
     }
 
     public QObject sum(Runtime runtime, QObject other) throws RuntimeStriker {
@@ -254,8 +380,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_add",
-                    Arrays.asList(other),
-                    new HashMap<>()
+                    Arrays.asList(other)
             );
         runtime.error("Unsupported operation between " +
                 getClassName() + " + " + other.getClassName());
@@ -267,8 +392,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_sub",
-                    Arrays.asList(other),
-                    new HashMap<>()
+                    Arrays.asList(other)
             );
         runtime.error("Unsupported operation between " +
                 getClassName() + " - " + other.getClassName());
@@ -280,8 +404,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_mul",
-                    Arrays.asList(other),
-                    new HashMap<>()
+                    Arrays.asList(other)
             );
         runtime.error("Unsupported operation between " +
                 getClassName() + " * " + other.getClassName());
@@ -293,8 +416,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_div",
-                    Arrays.asList(other),
-                    new HashMap<>()
+                    Arrays.asList(other)
             );
         runtime.error("Unsupported operation between " +
                 getClassName() + " / " + other.getClassName());
@@ -306,8 +428,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_intdiv",
-                    Arrays.asList(other),
-                    new HashMap<>()
+                    Arrays.asList(other)
             );
         runtime.error("Unsupported operation between " +
                 getClassName() + " // " + other.getClassName());
@@ -319,8 +440,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_mod",
-                    Arrays.asList(other),
-                    new HashMap<>()
+                    Arrays.asList(other)
             );
         runtime.error("Unsupported operation between " +
                 getClassName() + " % " + other.getClassName());
@@ -332,8 +452,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_pow",
-                    Arrays.asList(other),
-                    new HashMap<>()
+                    Arrays.asList(other)
             );
         runtime.error("Unsupported operation between " +
                 getClassName() + " ^ " + other.getClassName());
@@ -345,8 +464,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_shl",
-                    Arrays.asList(other),
-                    new HashMap<>()
+                    Arrays.asList(other)
             );
         runtime.error("Unsupported operation between " +
                 getClassName() + " << " + other.getClassName());
@@ -358,8 +476,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_shr",
-                    Arrays.asList(other),
-                    new HashMap<>()
+                    Arrays.asList(other)
             );
         runtime.error("Unsupported operation between " +
                 getClassName() + " >> " + other.getClassName());
@@ -371,12 +488,9 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_eq",
-                    Arrays.asList(other),
-                    new HashMap<>()
+                    Arrays.asList(other)
             );
-        runtime.error("Unsupported operation between " +
-                getClassName() + " == " + other.getClassName());
-        return Val();
+        return Val(table.getValues().equals(other.table.getValues()));
     }
 
     public QObject notEqualsObject(Runtime runtime, QObject other) throws RuntimeStriker {
@@ -384,12 +498,9 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_neq",
-                    Arrays.asList(other),
-                    new HashMap<>()
+                    Arrays.asList(other)
             );
-        runtime.error("Unsupported operation between " +
-                getClassName() + " != " + other.getClassName());
-        return Val();
+        return Val(!table.getValues().equals(other.table.getValues()));
     }
 
     public QObject greater(Runtime runtime, QObject other) throws RuntimeStriker {
@@ -397,8 +508,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_cmpg",
-                    Arrays.asList(other),
-                    new HashMap<>()
+                    Arrays.asList(other)
             );
         runtime.error("Unsupported operation between " +
                 getClassName() + " > " + other.getClassName());
@@ -410,8 +520,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_cmpge",
-                    Arrays.asList(other),
-                    new HashMap<>()
+                    Arrays.asList(other)
             );
         runtime.error("Unsupported operation between " +
                 getClassName() + " >= " + other.getClassName());
@@ -423,8 +532,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_cmpl",
-                    Arrays.asList(other),
-                    new HashMap<>()
+                    Arrays.asList(other)
             );
         runtime.error("Unsupported operation between " +
                 getClassName() + " < " + other.getClassName());
@@ -436,8 +544,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_cmple",
-                    Arrays.asList(other),
-                    new HashMap<>()
+                    Arrays.asList(other)
             );
         runtime.error("Unsupported operation between " +
                 getClassName() + " <= " + other.getClassName());
@@ -449,8 +556,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_not",
-                    new ArrayList<>(),
-                    new HashMap<>()
+                    new ArrayList<>()
             );
         runtime.error("Unsupported operation ! on " + getClassName());
         return Val();
@@ -461,8 +567,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_neg",
-                    new ArrayList<>(),
-                    new HashMap<>()
+                    new ArrayList<>()
             );
         runtime.error("Unsupported operation - on " + getClassName());
         return Val();
@@ -473,8 +578,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_tostring",
-                    new ArrayList<>(),
-                    new HashMap<>()
+                    new ArrayList<>()
             );
         runtime.error("Unsupported typecast string <- " + getClassName());
         return Val();
@@ -485,8 +589,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_tobool",
-                    new ArrayList<>(),
-                    new HashMap<>()
+                    new ArrayList<>()
             );
         runtime.error("Unsupported typecast bool <- " + getClassName());
         return Val();
@@ -497,8 +600,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_tonum",
-                    new ArrayList<>(),
-                    new HashMap<>()
+                    new ArrayList<>()
             );
         runtime.error("Unsupported typecast num <- " + getClassName());
         return Val();
@@ -509,8 +611,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_and",
-                    Arrays.asList(other),
-                    new HashMap<>()
+                    Arrays.asList(other)
             );
         runtime.error("Unsupported operation between " +
                 getClassName() + " && " + other.getClassName());
@@ -522,8 +623,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_or",
-                    Arrays.asList(other),
-                    new HashMap<>()
+                    Arrays.asList(other)
             );
         runtime.error("Unsupported operation between " +
                 getClassName() + " || " + other.getClassName());
@@ -535,12 +635,9 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_index",
-                    Arrays.asList(index),
-                    new HashMap<>()
+                    Arrays.asList(index)
             );
-        runtime.error("Unsupported operation between " +
-                getClassName() + " [" + index.getClassName() + "]");
-        return Val();
+        return get(index.toString());
     }
 
     public QObject indexSet(Runtime runtime, QObject index, QObject value) throws RuntimeStriker {
@@ -548,11 +645,9 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_indexSet",
-                    Arrays.asList(index, value),
-                    new HashMap<>()
+                    Arrays.asList(index, value)
             );
-        runtime.error("Unsupported operation between " +
-                getClassName() + " [" + index.getClassName() + "] = " + value.getClassName());
+        set(runtime, index.toString(), value);
         return Val();
     }
 
@@ -561,8 +656,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_subscriptStartEnd",
-                    Arrays.asList(start, end),
-                    new HashMap<>()
+                    Arrays.asList(start, end)
             );
         runtime.error(getClassName() + " is not subscriptable");
         return Val();
@@ -574,23 +668,26 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_subscriptStartEndStep",
-                    Arrays.asList(start, end, step),
-                    new HashMap<>()
+                    Arrays.asList(start, end, step)
             );
         runtime.error(getClassName() + " is not subscriptable with step");
         return Val();
     }
 
-    public QObject call(Runtime runtime, List<QObject> arguments,
-                        HashMap<String, QObject> kwargs) throws RuntimeStriker {
+    public QObject call(Runtime runtime, List<QObject> arguments) throws RuntimeStriker {
+        if (isPrototype()) {
+            QObject newObject = derive(runtime);
+            newObject.callFromThis(runtime, "_constructor", arguments);
+            return newObject;
+        }
         if (table.containsKey("_call"))
             return callFromThis(
                     runtime,
                     "_call",
-                    Arrays.asList(QObject.Val(arguments), QObject.Val(kwargs)),
-                    new HashMap<>()
+                    Arrays.asList(QObject.Val(arguments))
             );
         runtime.error(getClassName() + " is not callable");
+        // TODO: WTF
         return Val();
     }
 
@@ -599,11 +696,9 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_iterate",
-                    new ArrayList<>(),
-                    new HashMap<>()
+                    new ArrayList<>()
             );
-        // TODO: container iteration
-        runtime.error(getClassName() + " is not iterable");
+        iter = new HashSet<>();
         return Val();
     }
 
@@ -612,17 +707,35 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_next",
-                    new ArrayList<>(),
-                    new HashMap<>()
+                    new ArrayList<>()
             );
-        // TODO: container iteration
-        runtime.error(getClassName() + " is not iterable");
+        for (String key : table.keySet())
+            if (!iter.contains(key)) {
+                iter.add(key);
+                return Val(Arrays.asList(
+                        Val(key),
+                        table.get(key)
+                ));
+            }
+        if (iter.size() == table.keySet().size())
+            throw new RuntimeStriker(RuntimeStriker.Type.STOP_ITERATION);
         return Val();
     }
 
-    public QObject copy(Runtime runtime) throws RuntimeStriker {
+    public QObject copy(Runtime runtime) {
         QObject copy = new QObject(getClassName(), getSuper(), new VariableTable());
         copy.getTable().putAll(table);
+        copy.setPrototypeFlag(isPrototype());
+        return copy;
+    }
+
+    public QObject clone(Runtime runtime) {
+        QObject copy = new QObject(getClassName(), getSuper(), new VariableTable());
+        table.forEach((k, v) -> copy.getTable().put(
+                k,
+                v.clone(runtime),
+                table.getModifiersFor(k)
+        ));
         copy.setPrototypeFlag(isPrototype());
         return copy;
     }

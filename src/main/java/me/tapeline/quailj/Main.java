@@ -43,6 +43,7 @@ public class Main {
 
         String code = IOManager.fileInput(path);
         Node root = null;
+        Runtime runtime = null;
         try {
             Lexer lexer = new Lexer(code);
             List<Token> tokens = lexer.scan();
@@ -71,7 +72,7 @@ public class Main {
         }
         QObject result = null;
         try {
-            Runtime runtime = new Runtime(code, root, io, timings);
+            runtime = new Runtime(code, root, io, timings);
             result = runtime.run(root, runtime.memory);
         } catch (RuntimeStriker striker) {
             if (striker.type == RuntimeStriker.Type.EXCEPTION) {

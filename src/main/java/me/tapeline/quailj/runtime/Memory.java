@@ -24,15 +24,18 @@ public class Memory {
         this.enclosing = m;
     }
 
-    public boolean hasParentalDefinition(String key) {
-        if (enclosing != null) return enclosing.hasParentalDefinition(key);
-        else return mem.containsKey(key);
+    public boolean contains(String key) {
+        if (mem.containsKey(key)) return true;
+        if (enclosing != null) return enclosing.contains(key);
+        return false;
     }
 
     public void set(Runtime runtime, String id, QObject value) throws RuntimeStriker {
         if (enclosing != null) {
-            if (hasParentalDefinition(id)) enclosing.set(runtime, id, value);
-            else mem.put(runtime, id, value);
+            if (enclosing.contains(id))
+                enclosing.set(runtime, id, value);
+            else
+                mem.put(runtime, id, value);
         } else mem.put(runtime, id, value);
     }
 
@@ -40,17 +43,12 @@ public class Memory {
         mem.put(id, value, modifiers);
     }
 
-    public void remove(String id) {
-        if (enclosing != null) {
-            if (hasParentalDefinition(id)) enclosing.remove(id);
-            else mem.remove(id);
-        } else mem.remove(id);
-    }
-
     public QObject get(String id) {
         QObject value = null;
-        if (enclosing != null && hasParentalDefinition(id)) value = enclosing.get(id);
-        else value = mem.get(id);
+        if (mem.getValues().containsKey(id))
+            value = mem.get(id);
+        else if (enclosing != null) value = enclosing.get(id);
+
         if (value == null) {
             QObject q = QObject.Val();
             mem.put(id, q, new ArrayList<>());
@@ -60,8 +58,9 @@ public class Memory {
 
     public QObject get(String id, VariableNode node) {
         QObject alreadyUsed = null;
-        if (enclosing != null && hasParentalDefinition(id)) alreadyUsed = enclosing.get(id);
-        else alreadyUsed = mem.get(id);
+        if (mem.getValues().containsKey(id))
+            alreadyUsed = mem.get(id);
+        else if (enclosing != null) alreadyUsed = enclosing.get(id);
         if (alreadyUsed == null) {
             QObject newObject = QObject.Val();
             for (VariableModifier m : node.modifiers) {

@@ -56,4 +56,7 @@ public class Token {
     public TokenType getMod() {
         return mod;
     }
+    public void setType(TokenType type) {
+        this.type = type;
+    }
 }

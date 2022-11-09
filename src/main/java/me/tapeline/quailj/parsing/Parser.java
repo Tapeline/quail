@@ -9,12 +9,14 @@ import me.tapeline.quailj.lexing.Token;
 import me.tapeline.quailj.lexing.TokenType;
 import me.tapeline.quailj.parsing.nodes.Node;
 import me.tapeline.quailj.parsing.nodes.block.BlockNode;
+import me.tapeline.quailj.parsing.nodes.block.JavaEmbedNode;
 import me.tapeline.quailj.parsing.nodes.branching.CatchClause;
 import me.tapeline.quailj.parsing.nodes.branching.EventNode;
 import me.tapeline.quailj.parsing.nodes.branching.IfNode;
 import me.tapeline.quailj.parsing.nodes.branching.TryCatchNode;
 import me.tapeline.quailj.parsing.nodes.effect.EffectNode;
 import me.tapeline.quailj.parsing.nodes.effect.InstructionNode;
+import me.tapeline.quailj.parsing.nodes.effect.LibraryPath;
 import me.tapeline.quailj.parsing.nodes.effect.UseNode;
 import me.tapeline.quailj.parsing.nodes.expression.CallNode;
 import me.tapeline.quailj.parsing.nodes.generators.ContainerGeneratorNode;
@@ -385,6 +387,8 @@ public class Parser {
         if (match(INSTRUCTION_BREAKPOINT) != null) return new InstructionNode(getPrevious());
         if (match(INSTRUCTION_CONTINUE) != null) return new InstructionNode(getPrevious());
 
+        if (match(JAVA_EMBED) != null) return new JavaEmbedNode(getPrevious());
+
         Node n = parseEffect();
         if (n != null) return n;
 
@@ -414,15 +418,17 @@ public class Parser {
             Token token = getPrevious();
             if (getCurrent() == null || getCurrent().getType() == EOL)
                 error(token, "Expected expression after effect, but got EOL");
+            assert token != null;
             return new EffectNode(token, token.getType(), parseExpression(new ExpressionParsingRule()));
         } else if (match(EFFECT_USE) != null) {
             Token token = getPrevious();
             if (getCurrent() == null || getCurrent().getType() == EOL)
                 error(token, "Expected expression after effect, but got EOL");
-            Node expr = parseExpression(new ExpressionParsingRule());
+            Token library = require(LITERAL_STR, "Expected path literal");
             if (match(AS) != null)
-                return new UseNode(token, expr, parseExpression(new ExpressionParsingRule()));
-            return new UseNode(token, expr, null);
+                return new UseNode(token, library.getLexeme().substring(1, library.getLexeme().length() - 1),
+                        require(ID, "Expected alias after as").getLexeme());
+            return new UseNode(token, library.getLexeme(), null);
         }
         return null;
     }
@@ -481,8 +487,7 @@ public class Parser {
                         varArg.id,
                         FuncArgument.defaultNull,
                         varArg.modifiers,
-                        varArg.isArgConsumer,
-                        varArg.isKwargConsumer
+                        varArg.isArgConsumer
                 ));
             } else if (arg instanceof AssignNode) {
                 VariableNode varArg = ((AssignNode) arg).variableNode;
@@ -490,8 +495,7 @@ public class Parser {
                         varArg.id,
                         ((AssignNode) arg).value,
                         varArg.modifiers,
-                        varArg.isArgConsumer,
-                        varArg.isKwargConsumer
+                        varArg.isArgConsumer
                 ));
             } else error("Unexpected argument");
         }
@@ -503,6 +507,7 @@ public class Parser {
         Token token = matchMultiple(OVERRIDE, TYPE_FUNCTION, TYPE_METHOD, SETS, GETS, CONSTRUCTOR);
         if (token == null) return null;
         switch (token.getType()) {
+            case TYPE_METHOD:
             case TYPE_FUNCTION: {
                 Token name = require(ID, "Expected id");
                 Node args = parsePrimary(new ExpressionParsingRule());
@@ -547,7 +552,7 @@ public class Parser {
 
     private Node parseExpression(ExpressionParsingRule rule) throws ParserException {
         if (match(ASYNC) != null)
-            return new AsyncFlagNode(getPrevious(), parseAssignment(rule));
+            return new AsyncFlagNode(getPrevious(), parseStatement());
         else
             return parseAssignment(rule);
     }
@@ -806,7 +811,7 @@ public class Parser {
             } while (match(TokenType.COMMA) != null);
         }
         require(TokenType.RPAR, "Expected closing bracket");
-        return new CallNode(leftBracket, arguments, callee, keywordArguments);
+        return new CallNode(leftBracket, arguments, callee);
     }
 
     private Node parseModifiers() throws ParserException {
@@ -957,6 +962,7 @@ public class Parser {
 
             if (match(COMMA) != null) {
                 List<Node> tupleNodes = new ArrayList<>();
+                tupleNodes.add(value);
                 do {
                     tupleNodes.add(parseExpression(rule));
                 } while (match(COMMA) != null);
@@ -1020,7 +1026,7 @@ public class Parser {
             require(ASSIGN, "Expected key=value pair");
             Node value = parseOr(rule);
             if (match(CONTROL_FOR) != null) {
-                Node condition = null, fallback = null;
+                Node condition = null, fallbackKey = null, fallbackValue = null;
                 List<String> iterators = new ArrayList<>();
                 do {
                     iterators.add(require(ID, "Expected iterator after for").getLexeme());
@@ -1029,8 +1035,11 @@ public class Parser {
                 Node iterable = parseExpression(rule);
                 if (match(CONTROL_IF) != null) {
                     condition = parseExpression(rule);
-                    if (match(CONTROL_ELSE) != null)
-                        fallback = parseExpression(rule);
+                    if (match(CONTROL_ELSE) != null) {
+                        fallbackKey = parseOr(rule);
+                        require(ASSIGN, "Expected key=value pair in fallback");
+                        fallbackValue = parseOr(rule);
+                    }
                 }
                 require(RCPAR, "Expected } to close generator");
                 return new ContainerGeneratorNode(
@@ -1040,7 +1049,8 @@ public class Parser {
                         iterators,
                         iterable,
                         condition,
-                        fallback
+                        fallbackKey,
+                        fallbackValue
                 );
             }
 

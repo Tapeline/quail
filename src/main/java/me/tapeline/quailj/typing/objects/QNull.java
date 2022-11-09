@@ -1,15 +1,15 @@
 package me.tapeline.quailj.typing.objects;
 
+import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.typing.utils.VariableTable;
 
 public class QNull extends QObject {
 
-    public static VariableTable defaults = new VariableTable();
-
     public QNull() {
-        table.putAll(defaults);
-        setObjectMetadata("Null");
-
+        table.putAll(Runtime.superObject.table);
+        table.putAll(Runtime.nullPrototype.table);
+        Runtime.nullPrototype.derivedObjects.add(this);
+        setObjectMetadata(Runtime.nullPrototype);
     }
 
     public String toString() {

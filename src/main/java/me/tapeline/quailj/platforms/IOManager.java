@@ -43,7 +43,7 @@ public class IOManager {
     /**
      * Console Input Function W/o \n
      * */
-    public String consoleInput(String s) {
+    public String consoleInput() {
         Scanner sc = new Scanner(System.in);
         return sc.nextLine();
     }

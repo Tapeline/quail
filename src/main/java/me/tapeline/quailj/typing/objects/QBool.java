@@ -6,13 +6,14 @@ import me.tapeline.quailj.typing.utils.VariableTable;
 
 public class QBool extends QObject {
 
-    public static VariableTable defaults = new VariableTable();
-
     public boolean value;
 
     public QBool(boolean value) {
-        table.putAll(defaults);
         this.value = value;
+        table.putAll(Runtime.superObject.table);
+        table.putAll(Runtime.boolPrototype.table);
+        Runtime.boolPrototype.derivedObjects.add(this);
+        setObjectMetadata(Runtime.boolPrototype);
     }
 
     public QObject not(Runtime runtime) {
@@ -34,6 +35,8 @@ public class QBool extends QObject {
             return Val(value || ((QBool) other).value);
         return super.and(runtime, other);
     }
+
+
 
     public String toString() {
         return value? "true" : "false";

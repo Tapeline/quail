@@ -5,12 +5,12 @@ import me.tapeline.quailj.parsing.nodes.Node;
 
 public class UseNode extends Node {
 
-    public Node library;
-    public Node alias;
+    public String path;
+    public String alias;
 
-    public UseNode(Token token, Node library, Node alias) {
+    public UseNode(Token token, String path, String alias) {
         super(token);
-        this.library = library;
+        this.path = path;
         this.alias = alias;
     }
 

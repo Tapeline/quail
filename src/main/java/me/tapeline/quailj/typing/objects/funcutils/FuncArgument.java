@@ -5,6 +5,7 @@ import me.tapeline.quailj.lexing.TokenType;
 import me.tapeline.quailj.parsing.nodes.Node;
 import me.tapeline.quailj.parsing.nodes.literals.LiteralNull;
 import me.tapeline.quailj.runtime.Runtime;
+import me.tapeline.quailj.typing.modifiers.RequireModifier;
 import me.tapeline.quailj.typing.modifiers.VariableModifier;
 import me.tapeline.quailj.typing.objects.QNull;
 import me.tapeline.quailj.typing.objects.QObject;
@@ -20,29 +21,34 @@ public class FuncArgument {
     public Node defaultValue = defaultNull;
     public List<VariableModifier> modifiers;
     public boolean isArgsConsumer;
-    public boolean isKwargsConsumer;
+    public boolean couldBeNull = true;
 
     public FuncArgument(String name,
                         Node defaultValue,
                         List<VariableModifier> modifiers,
-                        boolean isArgsConsumer,
-                        boolean isKwargsConsumer) {
+                        boolean isArgsConsumer) {
         this.name = name;
         this.defaultValue = defaultValue;
         this.modifiers = modifiers;
         this.isArgsConsumer = isArgsConsumer;
-        this.isKwargsConsumer = isKwargsConsumer;
+        for (VariableModifier modifier : modifiers)
+            if (modifier instanceof RequireModifier) {
+                couldBeNull = false;
+                break;
+            }
     }
 
     public FuncArgument(String name,
                         List<VariableModifier> modifiers,
-                        boolean isArgsConsumer,
-                        boolean isKwargsConsumer) {
+                        boolean isArgsConsumer) {
         this.name = name;
-        this.defaultValue = defaultNull;
         this.modifiers = modifiers;
         this.isArgsConsumer = isArgsConsumer;
-        this.isKwargsConsumer = isKwargsConsumer;
+        for (VariableModifier modifier : modifiers)
+            if (modifier instanceof RequireModifier) {
+                couldBeNull = false;
+                break;
+            }
     }
 
     public String toString() {

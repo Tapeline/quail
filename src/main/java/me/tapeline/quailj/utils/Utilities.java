@@ -3,7 +3,10 @@ package me.tapeline.quailj.utils;
 import me.tapeline.quailj.lexing.TokenType;
 import me.tapeline.quailj.parsing.nodes.Node;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Set;
 
 import static me.tapeline.quailj.lexing.TokenType.*;
 
@@ -33,8 +36,20 @@ public class Utilities {
         opToString.put(SHIFT_RIGHT, "_shl");
     }
 
-    public String dotNotationToPath(Node node) {
-        // TODO: path.path to path/path
-        return "";
+    public static String collectionToString(Collection<?> collection, String separator) {
+        StringBuilder sb = new StringBuilder();
+        for (Object element : collection)
+            sb.append(element.toString()).append(separator);
+        if (sb.toString().endsWith(separator))
+            sb.delete(sb.length() - separator.length(), sb.length());
+        return sb.toString();
     }
+
+    public static <T> T[] arrayAppend(T[] arr, T element) {
+        final int N = arr.length;
+        arr = Arrays.copyOf(arr, N + 1);
+        arr[N] = element;
+        return arr;
+    }
+
 }

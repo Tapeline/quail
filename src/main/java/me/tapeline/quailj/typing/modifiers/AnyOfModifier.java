@@ -1,8 +1,7 @@
 package me.tapeline.quailj.typing.modifiers;
 
-import me.tapeline.quailj.lexing.TokenType;
-import me.tapeline.quailj.parsing.nodes.Node;
 import me.tapeline.quailj.runtime.Runtime;
+import me.tapeline.quailj.typing.objects.QObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +15,7 @@ public class AnyOfModifier extends VariableModifier {
         this.conditions = conditions;
     }
 
-    public boolean matches(Runtime r, Object object) {
+    public boolean matches(Runtime r, QObject object) {
         for (VariableModifier condition : conditions)
             if (condition.matches(r, object))
                 return true;
@@ -24,6 +23,9 @@ public class AnyOfModifier extends VariableModifier {
     }
 
     public String toString() {
-        return "type";
+        StringBuilder sb = new StringBuilder("anyof ");
+        for (VariableModifier modifier : conditions)
+            sb.append(" | ").append(modifier.toString());
+        return sb.toString();
     }
 }
