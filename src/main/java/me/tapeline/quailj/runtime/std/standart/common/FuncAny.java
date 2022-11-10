@@ -1,24 +1,26 @@
-package me.tapeline.quailj.runtime.std;
+package me.tapeline.quailj.runtime.std.standart.common;
 
+import me.tapeline.quailj.lexing.TokenType;
 import me.tapeline.quailj.runtime.Runtime;
+import me.tapeline.quailj.typing.modifiers.TypeModifier;
 import me.tapeline.quailj.typing.objects.QObject;
 import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
-public class FuncSuperClassName extends QBuiltinFunc {
+public class FuncAny extends QBuiltinFunc {
 
-    public FuncSuperClassName(Runtime runtime) {
+    public FuncAny(Runtime runtime) {
         super(
-                "superClassName",
+                "any",
                 Arrays.asList(
                         new FuncArgument(
-                                "obj",
-                                new ArrayList<>(),
+                                "collection",
+                                Arrays.asList(new TypeModifier(TokenType.TYPE_LIST)),
                                 false
                         )
                 ),
@@ -30,7 +32,12 @@ public class FuncSuperClassName extends QBuiltinFunc {
 
     @Override
     public QObject action(Runtime runtime, HashMap<String, QObject> args) throws RuntimeStriker {
-        return QObject.Val(args.get("obj").getPrototype().getSuper().getClassName());
+        List<QObject> values = args.get("collection").listValue();
+        int size = values.size();
+        for (int i = 0; i < size; i++)
+            if (values.get(i).isTrue())
+                return QObject.Val(true);
+        return QObject.Val(false);
     }
 
 }

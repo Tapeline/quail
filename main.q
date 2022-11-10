@@ -10,29 +10,13 @@ t.hello()
 
 print("begin test")
 
-print(abs(-43))
-print(abs(43))
-print(any([true, true]))
-print(any([false, true]))
-print(any([false, false]))
-print(className("it's a string"))
-print(enumerate([1, 2, 3]))
-print(eval("return l3"))
-print(exec("return l3"))
-#print(input("input text>"))
-print(millis())
-print(superClassName(12))
+function handler(evt)
+    print("Handle", evt)
 
-stopFlag = false
+callEvent("event")
+registerHandler("event", handler, true)
+callEvent("event")
+removeHandler("event", handler)
+callEvent("event")
 
-async while !stopFlag {}
-
-print(remainingAsyncs())
-print(asyncsDone())
-
-stopFlag = true
-
-print(remainingAsyncs())
-print(remainingAsyncs())
-print(remainingAsyncs())
-print(remainingAsyncs())
+print("test end")

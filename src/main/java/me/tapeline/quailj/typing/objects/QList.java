@@ -7,6 +7,7 @@ import me.tapeline.quailj.utils.QListUtils;
 import me.tapeline.quailj.utils.QStringUtils;
 import org.apache.commons.collections.ListUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class QList extends QObject {
@@ -159,4 +160,26 @@ public class QList extends QObject {
             throw new RuntimeStriker(RuntimeStriker.Type.STOP_ITERATION);
         return values.get(iter++);
     }
+
+    @Override
+    public QObject copy(Runtime runtime) {
+        QObject copy = QObject.Val(values);
+        copy.getTable().putAll(table);
+        return copy;
+    }
+
+    @Override
+    public QObject clone(Runtime runtime) {
+        List<QObject> clonedValues = new ArrayList<>();
+        int size = values.size();
+        for (int i = 0; i < size; i++) clonedValues.add(values.get(i).clone(runtime));
+        QObject cloned = QObject.Val(clonedValues);
+        table.forEach((k, v) -> cloned.getTable().put(
+                k,
+                v.clone(runtime),
+                table.getModifiersFor(k)
+        ));
+        return cloned;
+    }
+
 }

@@ -141,6 +141,24 @@ public class QNumber extends QObject {
         return this;
     }
 
+    @Override
+    public QObject copy(Runtime runtime) {
+        QObject copy = QObject.Val(value);
+        copy.getTable().putAll(table);
+        return copy;
+    }
+
+    @Override
+    public QObject clone(Runtime runtime) {
+        QObject cloned = QObject.Val(value);
+        table.forEach((k, v) -> cloned.getTable().put(
+                k,
+                v.clone(runtime),
+                table.getModifiersFor(k)
+        ));
+        return cloned;
+    }
+
     public String toString() {
         return value % 1 == 0? Long.toString(Math.round(value)) : Double.toString(value);
     }

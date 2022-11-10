@@ -1,4 +1,4 @@
-package me.tapeline.quailj.runtime.std;
+package me.tapeline.quailj.runtime.std.standart.reflection;
 
 import me.tapeline.quailj.lexing.Lexer;
 import me.tapeline.quailj.lexing.Token;

@@ -1,4 +1,4 @@
-package me.tapeline.quailj.runtime.std;
+package me.tapeline.quailj.runtime.std.standart.io;
 
 import me.tapeline.quailj.lexing.TokenType;
 import me.tapeline.quailj.runtime.Runtime;

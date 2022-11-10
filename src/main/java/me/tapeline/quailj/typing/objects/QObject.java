@@ -52,7 +52,7 @@ public class QObject {
         return new LiteralNull(Token.UNDEFINED);
     }
     
-    protected VariableTable table = new VariableTable();
+    public VariableTable table = new VariableTable();
     protected String className;
     protected QObject superClass;
     protected QObject prototype;
@@ -738,6 +738,10 @@ public class QObject {
         ));
         copy.setPrototypeFlag(isPrototype());
         return copy;
+    }
+
+    public String toString() {
+        return getClassName() + "@" + Integer.toHexString(hashCode());
     }
 
 }

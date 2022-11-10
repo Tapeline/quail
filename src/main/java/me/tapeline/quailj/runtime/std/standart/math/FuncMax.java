@@ -1,4 +1,4 @@
-package me.tapeline.quailj.runtime.std;
+package me.tapeline.quailj.runtime.std.standart.math;
 
 import me.tapeline.quailj.lexing.TokenType;
 import me.tapeline.quailj.runtime.Runtime;
@@ -13,16 +13,16 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-public class FuncEnumerate extends QBuiltinFunc {
+public class FuncMax extends QBuiltinFunc {
 
-    public FuncEnumerate(Runtime runtime) {
+    public FuncMax(Runtime runtime) {
         super(
-                "enumerate",
+                "max",
                 Arrays.asList(
                         new FuncArgument(
-                                "collection",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_LIST)),
-                                false
+                                "values",
+                                new ArrayList<>(),
+                                true
                         )
                 ),
                 runtime,
@@ -33,12 +33,15 @@ public class FuncEnumerate extends QBuiltinFunc {
 
     @Override
     public QObject action(Runtime runtime, HashMap<String, QObject> args) throws RuntimeStriker {
-        List<QObject> values = args.get("collection").listValue();
-        int size = values.size();
-        List<QObject> enumerated = new ArrayList<>();
-        for (int i = 0; i < size; i++)
-            enumerated.add(QObject.Val(Arrays.asList(QObject.Val(i), values.get(i))));
-        return QObject.Val(enumerated);
+        List<QObject> values = args.get("values").listValue();
+        int count = values.size();
+        double maxValue = values.get(0).numValue();
+        for (int i = 0; i < count; i++) {
+            QObject val = values.get(i);
+            if (!val.isNum()) runtime.error("Cannot find max among non-num values: " + val.toString());
+            if (val.numValue() > maxValue) maxValue = val.numValue();
+        }
+        return QObject.Val(maxValue);
     }
 
 }

@@ -32,23 +32,39 @@ import me.tapeline.quailj.parsing.nodes.variable.VariableNode;
 import me.tapeline.quailj.platforms.IOManager;
 import me.tapeline.quailj.runtime.libraries.LibraryLoader;
 import me.tapeline.quailj.runtime.libraries.LibraryRegistry;
-import me.tapeline.quailj.runtime.std.*;
 import me.tapeline.quailj.runtime.std.number.*;
+import me.tapeline.quailj.runtime.std.standart.common.*;
+import me.tapeline.quailj.runtime.std.standart.events.FuncCallEvent;
+import me.tapeline.quailj.runtime.std.standart.events.FuncRegisterHandler;
+import me.tapeline.quailj.runtime.std.standart.math.*;
+import me.tapeline.quailj.runtime.std.standart.threading.FuncAsyncsDone;
+import me.tapeline.quailj.runtime.std.standart.threading.FuncRemainingAsyncs;
+import me.tapeline.quailj.runtime.std.standart.events.FuncRemoveHandler;
+import me.tapeline.quailj.runtime.std.standart.io.FuncInput;
+import me.tapeline.quailj.runtime.std.standart.io.FuncPrint;
+import me.tapeline.quailj.runtime.std.standart.io.FuncPut;
+import me.tapeline.quailj.runtime.std.standart.numbers.FuncBin;
+import me.tapeline.quailj.runtime.std.standart.numbers.FuncDec;
+import me.tapeline.quailj.runtime.std.standart.numbers.FuncHex;
+import me.tapeline.quailj.runtime.std.standart.numbers.FuncOct;
+import me.tapeline.quailj.runtime.std.standart.reflection.FuncClassName;
+import me.tapeline.quailj.runtime.std.standart.reflection.FuncEval;
+import me.tapeline.quailj.runtime.std.standart.reflection.FuncExec;
+import me.tapeline.quailj.runtime.std.standart.reflection.FuncSuperClassName;
 import me.tapeline.quailj.runtime.std.string.*;
 import me.tapeline.quailj.runtime.utils.JavaAction;
 import me.tapeline.quailj.typing.modifiers.FinalModifier;
-import me.tapeline.quailj.typing.modifiers.TypeModifier;
 import me.tapeline.quailj.typing.objects.*;
 import me.tapeline.quailj.typing.objects.errors.Error;
 import me.tapeline.quailj.typing.objects.errors.ErrorMessage;
 import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.AlternativeCall;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
-import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 import me.tapeline.quailj.typing.utils.VariableTable;
 import me.tapeline.quailj.utils.Dict;
 import me.tapeline.quailj.utils.ErrorFormatter;
 import me.tapeline.quailj.utils.Pair;
+import me.tapeline.quailj.utils.Utilities;
 
 import static me.tapeline.quailj.typing.objects.QObject.Val;
 
@@ -61,14 +77,10 @@ public class Runtime {
     private boolean doProfile;
     public IOManager io;
     public Memory memory;
-    private EmbedIntegrator embedIntegrator;
+    public EmbedIntegrator embedIntegrator;
     public static LibraryRegistry libraryRegistry = new LibraryRegistry();
     public List<AsyncRuntimeWorker> asyncRuntimeWorkers = new ArrayList<>();
-
-    private HashMap<String, List<Pair<QFunc, Boolean>>> eventsHandlerMap = new HashMap<>();
-
-
-
+    public HashMap<String, List<Pair<QFunc, Boolean>>> eventsHandlerMap = new HashMap<>();
     public static QObject superObject = QObject.constructSuperObject();
     public static QObject numberPrototype = new QObject("Number", null, new HashMap<>());
     public static QObject nullPrototype = new QObject("Null", null, new HashMap<>());
@@ -121,19 +133,43 @@ public class Runtime {
         stringPrototype.setPrototypeFlag(true);
         stringPrototype.set("upper", new StringFuncUpper(this));
 
-        memory.set("abs", new FuncAbs(this), new ArrayList<>());
-        memory.set("all", new FuncAll(this), new ArrayList<>());
-        memory.set("any", new FuncAny(this), new ArrayList<>());
-        memory.set("enumerate", new FuncEnumerate(this), new ArrayList<>());
-        memory.set("eval", new FuncEval(this), new ArrayList<>());
-        memory.set("exec", new FuncExec(this), new ArrayList<>());
-        memory.set("input", new FuncInput(this), new ArrayList<>());
-        memory.set("print", new FuncPrint(this), new ArrayList<>());
-        memory.set("millis", new FuncMillis(this), new ArrayList<>());
-        memory.set("className", new FuncClassName(this), new ArrayList<>());
-        memory.set("superClassName", new FuncSuperClassName(this), new ArrayList<>());
-        memory.set("remainingAsyncs", new FuncRemainingAsyncs(this), new ArrayList<>());
-        memory.set("asyncsDone", new FuncAsyncsDone(this), new ArrayList<>());
+        memory.set("abs",               new FuncAbs(this), new ArrayList<>());
+        memory.set("all",               new FuncAll(this), new ArrayList<>());
+        memory.set("any",               new FuncAny(this), new ArrayList<>());
+        memory.set("enumerate",         new FuncEnumerate(this), new ArrayList<>());
+        memory.set("eval",              new FuncEval(this), new ArrayList<>());
+        memory.set("exec",              new FuncExec(this), new ArrayList<>());
+        memory.set("input",             new FuncInput(this), new ArrayList<>());
+        memory.set("print",             new FuncPrint(this), new ArrayList<>());
+        memory.set("millis",            new FuncMillis(this), new ArrayList<>());
+        memory.set("className",         new FuncClassName(this), new ArrayList<>());
+        memory.set("superClassName",    new FuncSuperClassName(this), new ArrayList<>());
+        memory.set("remainingAsyncs",   new FuncRemainingAsyncs(this), new ArrayList<>());
+        memory.set("asyncsDone",        new FuncAsyncsDone(this), new ArrayList<>());
+        memory.set("bin",               new FuncBin(this), new ArrayList<>());
+        memory.set("hex",               new FuncHex(this), new ArrayList<>());
+        memory.set("oct",               new FuncOct(this), new ArrayList<>());
+        memory.set("callEvent",         new FuncCallEvent(this), new ArrayList<>());
+        memory.set("clone",             new FuncClone(this), new ArrayList<>());
+        memory.set("copy",              new FuncCopy(this), new ArrayList<>());
+        memory.set("map",               new FuncMap(this), new ArrayList<>());
+        memory.set("dec",               new FuncDec(this), new ArrayList<>());
+        memory.set("max",               new FuncMax(this), new ArrayList<>());
+        memory.set("min",               new FuncMin(this), new ArrayList<>());
+        memory.set("put",               new FuncPut(this), new ArrayList<>());
+        memory.set("useJar",            new FuncUseJar(this), new ArrayList<>());
+        memory.set("registerHandler",   new FuncRegisterHandler(this), new ArrayList<>());
+        memory.set("removeHandler",     new FuncRemoveHandler(this), new ArrayList<>());
+        memory.set("sin",               new FuncSin(this), new ArrayList<>());
+        memory.set("cos",               new FuncCos(this), new ArrayList<>());
+        memory.set("tan",               new FuncTan(this), new ArrayList<>());
+        memory.set("sinh",              new FuncSinh(this), new ArrayList<>());
+        memory.set("cosh",              new FuncCosh(this), new ArrayList<>());
+        memory.set("tanh",              new FuncTanh(this), new ArrayList<>());
+        memory.set("asin",              new FuncAsin(this), new ArrayList<>());
+        memory.set("acos",              new FuncAcos(this), new ArrayList<>());
+        memory.set("atan",              new FuncAtan(this), new ArrayList<>());
+        memory.set("atan2",             new FuncAtan2(this), new ArrayList<>());
     }
 
     public void error(String message) throws RuntimeStriker {
@@ -193,6 +229,45 @@ public class Runtime {
             }
         }
         if (rethrow > 0) throw new RuntimeStriker(rethrow);
+    }
+
+    public void callEvent(String event, HashMap<String, QObject> args) throws RuntimeStriker {
+        QObject metadata = QObject.Val(args);
+        //if (runtime.eventHandlers.containsKey(event)) return;
+        if (eventsHandlerMap.get(event) == null) return;
+        boolean isCancelled = false;
+        metadata.set("isCancelled", QObject.Val(false));
+        for (Pair<QFunc, Boolean> handler : eventsHandlerMap.get(event)) {
+            QFunc func = handler.key;
+            boolean ignoreCancelled = handler.value;
+            if (isCancelled && !ignoreCancelled || !isCancelled) {
+                func.call(this, Arrays.asList(metadata));
+                isCancelled = metadata.get("isCancelled").isTrue();
+            }
+        }
+    }
+
+    public void putEventHandler(String eventName, QFunc func, boolean ignoreCancelled) {
+        if (!eventsHandlerMap.containsKey(eventName))
+            eventsHandlerMap.put(eventName,
+                    Utilities.asList(new Pair<>(func, ignoreCancelled)));
+        else
+            eventsHandlerMap.get(eventName).add(new Pair<>(func, ignoreCancelled));
+    }
+
+    public void removeEventHandler(String eventName, QFunc func) {
+        if (eventsHandlerMap.containsKey(eventName)) {
+            int removePos = -1;
+            List<Pair<QFunc, Boolean>> handlers = eventsHandlerMap.get(eventName);
+            int count = handlers.size();
+            for (int i = 0; i < count; i++)
+                if (handlers.get(i).key == func) {
+                    removePos = i;
+                    break;
+                }
+            if (removePos >= 0)
+                handlers.remove(removePos);
+        }
     }
 
     public QObject performBinaryOperation(QObject operandA, TokenType op, QObject operandB)
@@ -255,11 +330,7 @@ public class Runtime {
                     new ArrayList<>(),
                     false
             );
-            if (eventsHandlerMap.containsKey(eventName))
-                eventsHandlerMap.put(eventName,
-                        Arrays.asList(new Pair<>(func, true)));
-            else
-                eventsHandlerMap.get(eventName).add(new Pair<>(func, true));
+            putEventHandler(eventName, func, true);
             if (doProfile) end(node);
             return Val();
         } else if (node instanceof IfNode) {

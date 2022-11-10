@@ -1,4 +1,4 @@
-package me.tapeline.quailj.runtime.std;
+package me.tapeline.quailj.runtime.std.standart.numbers;
 
 import me.tapeline.quailj.lexing.TokenType;
 import me.tapeline.quailj.runtime.Runtime;
@@ -12,15 +12,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class FuncClassName extends QBuiltinFunc {
+public class FuncDec extends QBuiltinFunc {
 
-    public FuncClassName(Runtime runtime) {
+    public FuncDec(Runtime runtime) {
         super(
-                "className",
+                "dec",
                 Arrays.asList(
                         new FuncArgument(
-                                "obj",
+                                "n",
                                 new ArrayList<>(),
+                                false
+                        ),
+                        new FuncArgument(
+                                "base",
+                                Arrays.asList(new TypeModifier(TokenType.TYPE_NUM)),
                                 false
                         )
                 ),
@@ -32,7 +37,7 @@ public class FuncClassName extends QBuiltinFunc {
 
     @Override
     public QObject action(Runtime runtime, HashMap<String, QObject> args) throws RuntimeStriker {
-        return QObject.Val(args.get("obj").getClassName());
+        return QObject.Val(Integer.parseInt(args.get("n").toString(), ((int) args.get("base").numValue())));
     }
 
 }

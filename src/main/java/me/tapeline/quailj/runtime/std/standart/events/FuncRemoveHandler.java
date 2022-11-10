@@ -1,8 +1,9 @@
-package me.tapeline.quailj.runtime.std;
+package me.tapeline.quailj.runtime.std.standart.events;
 
 import me.tapeline.quailj.lexing.TokenType;
 import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.typing.modifiers.TypeModifier;
+import me.tapeline.quailj.typing.objects.QFunc;
 import me.tapeline.quailj.typing.objects.QObject;
 import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
@@ -10,17 +11,21 @@ import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 
-public class FuncAll extends QBuiltinFunc {
+public class FuncRemoveHandler extends QBuiltinFunc {
 
-    public FuncAll(Runtime runtime) {
+    public FuncRemoveHandler(Runtime runtime) {
         super(
-                "all",
+                "removeHandler",
                 Arrays.asList(
                         new FuncArgument(
-                                "collection",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_LIST)),
+                                "event",
+                                Arrays.asList(new TypeModifier(TokenType.TYPE_STRING)),
+                                false
+                        ),
+                        new FuncArgument(
+                                "handler",
+                                Arrays.asList(new TypeModifier(TokenType.TYPE_FUNC)),
                                 false
                         )
                 ),
@@ -32,12 +37,11 @@ public class FuncAll extends QBuiltinFunc {
 
     @Override
     public QObject action(Runtime runtime, HashMap<String, QObject> args) throws RuntimeStriker {
-        List<QObject> values = args.get("collection").listValue();
-        int size = values.size();
-        for (int i = 0; i < size; i++)
-            if (!values.get(i).isTrue())
-                return QObject.Val(false);
-        return QObject.Val(true);
+        runtime.removeEventHandler(
+                args.get("event").toString(),
+                ((QFunc) args.get("handler"))
+        );
+        return QObject.Val();
     }
 
 }

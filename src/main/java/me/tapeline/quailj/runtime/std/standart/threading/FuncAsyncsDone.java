@@ -1,21 +1,19 @@
-package me.tapeline.quailj.runtime.std;
+package me.tapeline.quailj.runtime.std.standart.threading;
 
 import me.tapeline.quailj.runtime.AsyncRuntimeWorker;
 import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.typing.objects.QObject;
 import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
-import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
-public class FuncRemainingAsyncs extends QBuiltinFunc {
+public class FuncAsyncsDone extends QBuiltinFunc {
 
-    public FuncRemainingAsyncs(Runtime runtime) {
+    public FuncAsyncsDone(Runtime runtime) {
         super(
-                "remainingAsyncs",
+                "asyncsDone",
                 new ArrayList<>(),
                 runtime,
                 runtime.memory,
@@ -29,7 +27,7 @@ public class FuncRemainingAsyncs extends QBuiltinFunc {
         for (AsyncRuntimeWorker worker : runtime.asyncRuntimeWorkers)
             if (worker.isAlive())
                 ctr++;
-        return QObject.Val(ctr);
+        return QObject.Val(ctr == 0);
     }
 
 }

@@ -1,4 +1,4 @@
-package me.tapeline.quailj.runtime.std;
+package me.tapeline.quailj.runtime.std.standart.math;
 
 import me.tapeline.quailj.lexing.TokenType;
 import me.tapeline.quailj.runtime.Runtime;
@@ -10,17 +10,21 @@ import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 
-public class FuncAny extends QBuiltinFunc {
+public class FuncAtan2 extends QBuiltinFunc {
 
-    public FuncAny(Runtime runtime) {
+    public FuncAtan2(Runtime runtime) {
         super(
-                "any",
+                "atan2",
                 Arrays.asList(
                         new FuncArgument(
-                                "collection",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_LIST)),
+                                "x",
+                                Arrays.asList(new TypeModifier(TokenType.TYPE_NUM)),
+                                false
+                        ),
+                        new FuncArgument(
+                                "y",
+                                Arrays.asList(new TypeModifier(TokenType.TYPE_NUM)),
                                 false
                         )
                 ),
@@ -32,12 +36,7 @@ public class FuncAny extends QBuiltinFunc {
 
     @Override
     public QObject action(Runtime runtime, HashMap<String, QObject> args) throws RuntimeStriker {
-        List<QObject> values = args.get("collection").listValue();
-        int size = values.size();
-        for (int i = 0; i < size; i++)
-            if (values.get(i).isTrue())
-                return QObject.Val(true);
-        return QObject.Val(false);
+        return QObject.Val(Math.atan2(args.get("x").numValue(), args.get("y").numValue()));
     }
 
 }

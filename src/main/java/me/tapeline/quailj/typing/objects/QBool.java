@@ -4,6 +4,9 @@ import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.utils.VariableTable;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class QBool extends QObject {
 
     public boolean value;
@@ -36,7 +39,23 @@ public class QBool extends QObject {
         return super.and(runtime, other);
     }
 
+    @Override
+    public QObject copy(Runtime runtime) {
+        QObject copy = QObject.Val(value);
+        copy.getTable().putAll(table);
+        return copy;
+    }
 
+    @Override
+    public QObject clone(Runtime runtime) {
+        QObject cloned = QObject.Val(value);
+        table.forEach((k, v) -> cloned.getTable().put(
+                k,
+                v.clone(runtime),
+                table.getModifiersFor(k)
+        ));
+        return cloned;
+    }
 
     public String toString() {
         return value? "true" : "false";

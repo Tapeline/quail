@@ -1,8 +1,13 @@
 package me.tapeline.quailj.libmanagement;
 
+import me.tapeline.quailj.typing.objects.QObject;
+
+import java.util.HashMap;
+import java.util.Queue;
+
 public interface Embed {
 
-    void integrate(EmbedIntegrator integrator);
+    QObject integrate(EmbedIntegrator integrator, HashMap<String, QObject> args);
     String getName();
     String getProvider();
 

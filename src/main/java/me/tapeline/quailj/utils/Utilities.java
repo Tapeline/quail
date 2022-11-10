@@ -3,10 +3,7 @@ package me.tapeline.quailj.utils;
 import me.tapeline.quailj.lexing.TokenType;
 import me.tapeline.quailj.parsing.nodes.Node;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Set;
+import java.util.*;
 
 import static me.tapeline.quailj.lexing.TokenType.*;
 
@@ -50,6 +47,11 @@ public class Utilities {
         arr = Arrays.copyOf(arr, N + 1);
         arr[N] = element;
         return arr;
+    }
+
+    @SafeVarargs
+    public static <T> List<T> asList(T... elements) {
+        return new ArrayList<>(Arrays.asList(elements));
     }
 
 }
