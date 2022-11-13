@@ -5,7 +5,6 @@ import me.tapeline.quailj.libmanagement.Embed;
 import me.tapeline.quailj.libmanagement.EmbedLoader;
 import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.typing.modifiers.TypeModifier;
-import me.tapeline.quailj.typing.objects.QFunc;
 import me.tapeline.quailj.typing.objects.QObject;
 import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
@@ -15,7 +14,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 
 public class FuncUseJar extends QBuiltinFunc {
 
@@ -54,12 +52,12 @@ public class FuncUseJar extends QBuiltinFunc {
                     args.get("classPath").toString()
             );
         } catch (Exception e) {
-            runtime.error("Caught an exception while trying to load " + args.get("path") + "\n" +
+            Runtime.error("Caught an exception while trying to load " + args.get("path") + "\n" +
                     "Exception details:\n" + e.toString());
             return QObject.Val();
         }
         if (embed == null) {
-            runtime.error("Embed load failed (probably no matching embed classes)");
+            Runtime.error("Embed load failed (probably no matching embed classes)");
             return QObject.Val();
         } else {
             try {
@@ -69,7 +67,7 @@ public class FuncUseJar extends QBuiltinFunc {
                                 null : args.get("args").getTable().getValues()
                 );
             } catch (Exception e) {
-                runtime.error("Caught an exception while trying to integrate " + args.get("path") + "\n" +
+                Runtime.error("Caught an exception while trying to integrate " + args.get("path") + "\n" +
                         "Exception details:\n" + e.toString());
                 return QObject.Val();
             }

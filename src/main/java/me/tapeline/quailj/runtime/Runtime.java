@@ -32,7 +32,9 @@ import me.tapeline.quailj.parsing.nodes.variable.VariableNode;
 import me.tapeline.quailj.platforms.IOManager;
 import me.tapeline.quailj.runtime.libraries.LibraryLoader;
 import me.tapeline.quailj.runtime.libraries.LibraryRegistry;
+import me.tapeline.quailj.runtime.std.list.*;
 import me.tapeline.quailj.runtime.std.number.*;
+import me.tapeline.quailj.runtime.std.object.*;
 import me.tapeline.quailj.runtime.std.standart.common.*;
 import me.tapeline.quailj.runtime.std.standart.events.FuncCallEvent;
 import me.tapeline.quailj.runtime.std.standart.events.FuncRegisterHandler;
@@ -52,6 +54,7 @@ import me.tapeline.quailj.runtime.std.standart.reflection.FuncEval;
 import me.tapeline.quailj.runtime.std.standart.reflection.FuncExec;
 import me.tapeline.quailj.runtime.std.standart.reflection.FuncSuperClassName;
 import me.tapeline.quailj.runtime.std.string.*;
+import me.tapeline.quailj.runtime.std.thread.QThread;
 import me.tapeline.quailj.runtime.utils.JavaAction;
 import me.tapeline.quailj.typing.modifiers.FinalModifier;
 import me.tapeline.quailj.typing.objects.*;
@@ -89,8 +92,6 @@ public class Runtime {
     public static QObject boolPrototype = new QObject("Bool", null, new HashMap<>());
     public static QObject funcPrototype = new QObject("Func", null, new HashMap<>());
 
-
-
     public Runtime(String sourceCode, Node root, IOManager io, boolean doProfile) {
         this.sourceCode = sourceCode;
         this.root = root;
@@ -104,34 +105,93 @@ public class Runtime {
     private void registerDefaults() {
         superObject.setPrototypeFlag(true);
         memory.set("Object", superObject, new ArrayList<>());
+        superObject.set("allKeys",          new ObjectFuncAllKeys(this));
+        superObject.set("allPairs",         new ObjectFuncAllPairs(this));
+        superObject.set("allValues",        new ObjectFuncAllValues(this));
+        superObject.set("contains",         new ObjectFuncContains(this));
+        superObject.set("containsCustom",   new ObjectFuncContainsCustom(this));
+        superObject.set("get",              new ObjectFuncGet(this));
+        superObject.set("getStrict",        new ObjectFuncGetStrict(this));
+        superObject.set("keys",             new ObjectFuncKeys(this));
+        superObject.set("pairs",            new ObjectFuncPairs(this));
+        superObject.set("set",              new ObjectFuncSet(this));
+        superObject.set("setStrict",        new ObjectFuncSetStrict(this));
+        superObject.set("size",             new ObjectFuncSize(this));
+        superObject.set("table",            new ObjectFuncTable(this));
+        superObject.set("values",           new ObjectFuncValues(this));
+        superObject.set("assemble",         new ObjectStaticAssemble(this));
+        superObject.set("assemblePairs",    new ObjectStaticAssemblePairs(this));
 
         memory.set("Number", numberPrototype, new ArrayList<>());
         numberPrototype.setPrototypeFlag(true);
-        numberPrototype.setSuperClass(superObject);
-        numberPrototype.set("ceil", new NumberFuncCeil(this));
+        numberPrototype.setSafeSuperClass(superObject);
+        numberPrototype.isInheritable = false;
+        numberPrototype.set("ceil",  new NumberFuncCeil(this));
         numberPrototype.set("round", new NumberFuncRound(this));
         numberPrototype.set("floor", new NumberFuncFloor(this));
 
         memory.set("Null", nullPrototype, new ArrayList<>());
-        numberPrototype.setSuperClass(superObject);
+        nullPrototype.setSafeSuperClass(superObject);
         nullPrototype.setPrototypeFlag(true);
+        nullPrototype.isInheritable = false;
 
         memory.set("List", listPrototype, new ArrayList<>());
-        numberPrototype.setSuperClass(superObject);
+        listPrototype.setSafeSuperClass(superObject);
         listPrototype.setPrototypeFlag(true);
+        listPrototype.isInheritable = false;
+        listPrototype.set("add",        new ListFuncAdd(this));
+        listPrototype.set("addAll",     new ListFuncAddAll(this));
+        listPrototype.set("clear",      new ListFuncClear(this));
+        listPrototype.set("count",      new ListFuncCount(this));
+        listPrototype.set("find",       new ListFuncFind(this));
+        listPrototype.set("get",        new ListFuncGet(this));
+        listPrototype.set("pop",        new ListFuncPop(this));
+        listPrototype.set("remove",     new ListFuncRemove(this));
+        listPrototype.set("reversed",   new ListFuncReversed(this));
+        listPrototype.set("set",        new ListFuncSet(this));
+        listPrototype.set("size",       new ListFuncSize(this));
+        listPrototype.set("sorted",     new ListFuncSorted(this));
 
         memory.set("Func", funcPrototype, new ArrayList<>());
-        numberPrototype.setSuperClass(superObject);
+        funcPrototype.setSafeSuperClass(superObject);
         funcPrototype.setPrototypeFlag(true);
+        funcPrototype.isInheritable = false;
 
         memory.set("Bool", boolPrototype, new ArrayList<>());
-        numberPrototype.setSuperClass(superObject);
+        boolPrototype.setSafeSuperClass(superObject);
         boolPrototype.setPrototypeFlag(true);
+        boolPrototype.isInheritable = false;
 
         memory.set("String", stringPrototype, new ArrayList<>());
-        numberPrototype.setSuperClass(superObject);
+        stringPrototype.setSafeSuperClass(superObject);
         stringPrototype.setPrototypeFlag(true);
-        stringPrototype.set("upper", new StringFuncUpper(this));
+        stringPrototype.isInheritable = false;
+        stringPrototype.set("capitalize",       new StringFuncCapitalize(this));
+        stringPrototype.set("center",           new StringFuncCenter(this));
+        stringPrototype.set("chars",            new StringFuncChars(this));
+        stringPrototype.set("count",            new StringFuncCount(this));
+        stringPrototype.set("encode64",         new StringFuncEncode64(this));
+        stringPrototype.set("decode64",         new StringFuncDecode64(this));
+        stringPrototype.set("endsWith",         new StringFuncEndsWith(this));
+        stringPrototype.set("find",             new StringFuncFind(this));
+        stringPrototype.set("format",           new StringFuncFormat(this));
+        stringPrototype.set("_mod",             new StringFuncFormat(this));
+        stringPrototype.set("inBetween",        new StringFuncInBetween(this));
+        stringPrototype.set("isAlpha",          new StringFuncIsAlpha(this));
+        stringPrototype.set("isAlphaNumeric",   new StringFuncIsAlphaNumeric(this));
+        stringPrototype.set("isLower",          new StringFuncIsLower(this));
+        stringPrototype.set("isNumeric",        new StringFuncIsNumeric(this));
+        stringPrototype.set("isUpper",          new StringFuncIsUpper(this));
+        stringPrototype.set("lower",            new StringFuncLower(this));
+        stringPrototype.set("replaceAll",       new StringFuncReplaceAll(this));
+        stringPrototype.set("replaceFirst",     new StringFuncReplaceFirst(this));
+        stringPrototype.set("reversed",         new StringFuncReversed(this));
+        stringPrototype.set("size",             new StringFuncSize(this));
+        stringPrototype.set("split",            new StringFuncSplit(this));
+        stringPrototype.set("swapCase",         new StringFuncSwapCase(this));
+        stringPrototype.set("upper",            new StringFuncUpper(this));
+
+        memory.set("Thread", QThread.definition(this), new ArrayList<>());
 
         memory.set("abs",               new FuncAbs(this), new ArrayList<>());
         memory.set("all",               new FuncAll(this), new ArrayList<>());
@@ -172,7 +232,7 @@ public class Runtime {
         memory.set("atan2",             new FuncAtan2(this), new ArrayList<>());
     }
 
-    public void error(String message) throws RuntimeStriker {
+    public static void error(String message) throws RuntimeStriker {
         throw new RuntimeStriker(
                 new ErrorMessage(
                         Error.ERROR,
@@ -582,7 +642,8 @@ public class Runtime {
         } else if (node instanceof LiteralContainer) {
             LiteralContainer thisNode = (LiteralContainer) node;
             QObject container = new QObject(new HashMap<>());
-            container.setPrototypeFlag(true);
+            container.setObjectMetadata(superObject);
+            container.setPrototypeFlag(false);
             container.isDict = true;
             container.setObjectMetadata(superObject);
             int pairCount = thisNode.contents.getKeys().size();

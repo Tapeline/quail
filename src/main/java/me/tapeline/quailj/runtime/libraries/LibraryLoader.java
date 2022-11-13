@@ -14,7 +14,6 @@ import me.tapeline.quailj.utils.Utilities;
 
 import java.io.File;
 import java.util.List;
-import java.util.regex.Pattern;
 
 public class LibraryLoader {
 
@@ -45,14 +44,14 @@ public class LibraryLoader {
                         System.exit(1);
                     }
                     if (result == null) {
-                        runtime.error("Library " + possibleFile + " does not return (provide) anything");
+                        Runtime.error("Library " + possibleFile + " does not return (provide) anything");
                         return null;
                     }
                     registry.cacheLibrary(name, result);
                     return result;
                 }
             }
-            runtime.error("Unable to find library " + name + "\n" +
+            Runtime.error("Unable to find library " + name + "\n" +
                     "Library wasn't found neither in registry or in following directories:\n" +
                     Utilities.collectionToString(registry.libraryRoots, "\n") + "\n" +
                     "Please check library installation and/or correct library root dir(s) definition");

@@ -2,11 +2,9 @@ package me.tapeline.quailj.typing.objects;
 
 import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
-import me.tapeline.quailj.typing.utils.VariableTable;
 import me.tapeline.quailj.utils.QStringUtils;
 import org.apache.commons.lang.StringUtils;
 
-import java.util.Arrays;
 import java.util.regex.Pattern;
 
 public class QString extends QObject {
@@ -119,7 +117,7 @@ public class QString extends QObject {
             return Val(true);
         else if (value.equals("false"))
             return Val(false);
-        else runtime.error("Not a boolean: " + value);
+        else Runtime.error("Not a boolean: " + value);
         return super.typeBool(runtime);
     }
 
@@ -128,7 +126,7 @@ public class QString extends QObject {
         try {
             return QObject.Val(Double.parseDouble(value));
         } catch (NumberFormatException e) {
-            runtime.error("Not a number: " + value);
+            Runtime.error("Not a number: " + value);
         }
         return super.typeNumber(runtime);
     }
@@ -187,20 +185,26 @@ public class QString extends QObject {
     }
 
     @Override
-    public QObject copy(Runtime runtime) {
+    public QObject copy(Runtime runtime) throws RuntimeStriker {
         QObject copy = QObject.Val(value);
         copy.getTable().putAll(table);
         return copy;
     }
 
     @Override
-    public QObject clone(Runtime runtime) {
+    public QObject clone(Runtime runtime) throws RuntimeStriker {
         QObject cloned = QObject.Val(value);
-        table.forEach((k, v) -> cloned.getTable().put(
-                k,
-                v.clone(runtime),
-                table.getModifiersFor(k)
-        ));
+        table.forEach((k, v) -> {
+            try {
+                cloned.getTable().put(
+                        k,
+                        v.clone(runtime),
+                        table.getModifiersFor(k)
+                );
+            } catch (RuntimeStriker striker) {
+                throw new RuntimeException(striker);
+            }
+        });
         return cloned;
     }
 

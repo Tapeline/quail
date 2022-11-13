@@ -1,6 +1,8 @@
-package me.tapeline.quailj.runtime.std.thread;
+package me.tapeline.quailj.runtime.std.list;
 
+import me.tapeline.quailj.lexing.TokenType;
 import me.tapeline.quailj.runtime.Runtime;
+import me.tapeline.quailj.typing.modifiers.TypeModifier;
 import me.tapeline.quailj.typing.objects.QObject;
 import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
@@ -10,15 +12,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class ThreadFuncStart extends QBuiltinFunc {
+public class ListFuncGet extends QBuiltinFunc {
 
-    public ThreadFuncStart(Runtime runtime) {
+    public ListFuncGet(Runtime runtime) {
         super(
-                "start",
+                "get",
                 Arrays.asList(
                         new FuncArgument(
-                                "thread",
-                                new ArrayList<>(),
+                                "list",
+                                Arrays.asList(new TypeModifier(TokenType.TYPE_LIST)),
+                                false
+                        ),
+                        new FuncArgument(
+                                "index",
+                                Arrays.asList(new TypeModifier(TokenType.TYPE_NUM)),
                                 false
                         )
                 ),
@@ -30,11 +37,7 @@ public class ThreadFuncStart extends QBuiltinFunc {
 
     @Override
     public QObject action(Runtime runtime, HashMap<String, QObject> args) throws RuntimeStriker {
-        if (!(args.get("thread") instanceof QThread))
-            Runtime.error("Not a thread");
-        else
-            ((QThread) args.get("thread")).worker.start();
-        return QObject.Val();
+        return args.get("list").listValue().get((int) args.get("index").numValue());
     }
 
 }

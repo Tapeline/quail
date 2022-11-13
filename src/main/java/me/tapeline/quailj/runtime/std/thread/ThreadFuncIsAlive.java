@@ -1,4 +1,4 @@
-package me.tapeline.quailj.runtime.std.standart.math;
+package me.tapeline.quailj.runtime.std.thread;
 
 import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.typing.objects.QObject;
@@ -9,18 +9,17 @@ import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 
-public class FuncMax extends QBuiltinFunc {
+public class ThreadFuncIsAlive extends QBuiltinFunc {
 
-    public FuncMax(Runtime runtime) {
+    public ThreadFuncIsAlive(Runtime runtime) {
         super(
-                "max",
+                "isAlive",
                 Arrays.asList(
                         new FuncArgument(
-                                "values",
+                                "thread",
                                 new ArrayList<>(),
-                                true
+                                false
                         )
                 ),
                 runtime,
@@ -31,15 +30,9 @@ public class FuncMax extends QBuiltinFunc {
 
     @Override
     public QObject action(Runtime runtime, HashMap<String, QObject> args) throws RuntimeStriker {
-        List<QObject> values = args.get("values").listValue();
-        int count = values.size();
-        double maxValue = values.get(0).numValue();
-        for (int i = 0; i < count; i++) {
-            QObject val = values.get(i);
-            if (!val.isNum()) Runtime.error("Cannot find max among non-num values: " + val.toString());
-            if (val.numValue() > maxValue) maxValue = val.numValue();
-        }
-        return QObject.Val(maxValue);
+        if (!(args.get("thread") instanceof QThread))
+            Runtime.error("Not a thread");
+        return QObject.Val(((QThread) args.get("thread")).worker.isAlive());
     }
 
 }

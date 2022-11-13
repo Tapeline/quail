@@ -6,6 +6,7 @@ import me.tapeline.quailj.typing.objects.QFunc;
 import me.tapeline.quailj.typing.objects.QObject;
 import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,15 +32,25 @@ public abstract class QBuiltinFunc extends QFunc {
         if (runtime == null)
             throw new RuntimeException("No bound runtime! Stopping execution.");
         Memory enclosing = new Memory(runtime.memory);
-        for (int i = 0; i < Math.min(this.args.size(), args.size()); i++) {
+        int argsSize = this.args.size();
+        for (int i = 0; i < argsSize; i++) {
             FuncArgument arg = this.args.get(i);
-            if (arg.isArgsConsumer)
-                enclosing.set(arg.name, Val(args.subList(i, args.size())), arg.modifiers);
-            else {
-                if (!arg.matchesRequirements(runtime, args.get(i)))
-                    runtime.error("Argument mapping failed for arg #" + (i + 1) + ".\n" + "" +
+            if (i >= args.size()) {
+                QObject preparedNull = QObject.Val();
+                if (!arg.matchesRequirements(runtime, preparedNull))
+                    Runtime.error("Argument mapping failed for (not provided => null) arg #" +
+                            (i + 1) + ".\n" + "" +
                             "Inapplicable for " + arg.modifiers.toString());
-                enclosing.set(arg.name, args.get(i), arg.modifiers);
+                enclosing.set(arg.name, preparedNull, arg.modifiers);
+            } else {
+                if (arg.isArgsConsumer)
+                    enclosing.set(arg.name, Val(args.subList(i, args.size())), arg.modifiers);
+                else {
+                    if (!arg.matchesRequirements(runtime, args.get(i)))
+                        Runtime.error("Argument mapping failed for arg #" + (i + 1) + ".\n" + "" +
+                                "Inapplicable for " + arg.modifiers.toString());
+                    enclosing.set(arg.name, args.get(i), arg.modifiers);
+                }
             }
         }
         try {
@@ -53,4 +64,41 @@ public abstract class QBuiltinFunc extends QFunc {
         }
         return QObject.Val();
     }
+
+    public QObject copy(Runtime runtime) throws RuntimeStriker {
+        try {
+            QBuiltinFunc copy = this.getClass().getConstructor(Class.forName(
+                    "me.tapeline.quailj.runtime.Runtime")).newInstance(runtime);
+            copy.getTable().putAll(table);
+            return copy;
+        } catch (InstantiationException | IllegalAccessException |
+                 InvocationTargetException | NoSuchMethodException |
+                 ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public QObject clone(Runtime runtime) throws RuntimeStriker {
+        try {
+            QBuiltinFunc cloned = this.getClass().getConstructor(Class.forName(
+                    "me.tapeline.quailj.runtime.Runtime")).newInstance(runtime);
+            table.forEach((k, v) -> {
+                try {
+                    cloned.getTable().put(
+                            k,
+                            v.clone(runtime),
+                            table.getModifiersFor(k)
+                    );
+                } catch (RuntimeStriker striker) {
+                    throw new RuntimeException(striker);
+                }
+            });
+            return cloned;
+        } catch (InstantiationException | IllegalAccessException |
+                 InvocationTargetException | NoSuchMethodException |
+                 ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

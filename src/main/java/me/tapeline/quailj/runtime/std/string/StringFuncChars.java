@@ -1,6 +1,8 @@
-package me.tapeline.quailj.runtime.std.standart.math;
+package me.tapeline.quailj.runtime.std.string;
 
+import me.tapeline.quailj.lexing.TokenType;
 import me.tapeline.quailj.runtime.Runtime;
+import me.tapeline.quailj.typing.modifiers.TypeModifier;
 import me.tapeline.quailj.typing.objects.QObject;
 import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
@@ -10,17 +12,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Pattern;
 
-public class FuncMax extends QBuiltinFunc {
+public class StringFuncChars extends QBuiltinFunc {
 
-    public FuncMax(Runtime runtime) {
+    public StringFuncChars(Runtime runtime) {
         super(
-                "max",
+                "chars",
                 Arrays.asList(
                         new FuncArgument(
-                                "values",
-                                new ArrayList<>(),
-                                true
+                                "str",
+                                Arrays.asList(new TypeModifier(TokenType.TYPE_STRING)),
+                                false
                         )
                 ),
                 runtime,
@@ -31,15 +34,12 @@ public class FuncMax extends QBuiltinFunc {
 
     @Override
     public QObject action(Runtime runtime, HashMap<String, QObject> args) throws RuntimeStriker {
-        List<QObject> values = args.get("values").listValue();
-        int count = values.size();
-        double maxValue = values.get(0).numValue();
-        for (int i = 0; i < count; i++) {
-            QObject val = values.get(i);
-            if (!val.isNum()) Runtime.error("Cannot find max among non-num values: " + val.toString());
-            if (val.numValue() > maxValue) maxValue = val.numValue();
-        }
-        return QObject.Val(maxValue);
+        List<QObject> split = new ArrayList<>();
+        String s = args.get("str").toString();
+        int size = s.length();
+        for (int i = 0; i < size; i++)
+            split.add(QObject.Val("" + s.charAt(i)));
+        return QObject.Val(split);
     }
 
 }

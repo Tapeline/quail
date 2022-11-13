@@ -2,10 +2,6 @@ package me.tapeline.quailj.typing.objects;
 
 import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
-import me.tapeline.quailj.typing.utils.VariableTable;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class QBool extends QObject {
 
@@ -40,20 +36,26 @@ public class QBool extends QObject {
     }
 
     @Override
-    public QObject copy(Runtime runtime) {
+    public QObject copy(Runtime runtime) throws RuntimeStriker {
         QObject copy = QObject.Val(value);
         copy.getTable().putAll(table);
         return copy;
     }
 
     @Override
-    public QObject clone(Runtime runtime) {
+    public QObject clone(Runtime runtime) throws RuntimeStriker {
         QObject cloned = QObject.Val(value);
-        table.forEach((k, v) -> cloned.getTable().put(
-                k,
-                v.clone(runtime),
-                table.getModifiersFor(k)
-        ));
+        table.forEach((k, v) -> {
+            try {
+                cloned.getTable().put(
+                        k,
+                        v.clone(runtime),
+                        table.getModifiersFor(k)
+                );
+            } catch (RuntimeStriker striker) {
+                throw new RuntimeException(striker);
+            }
+        });
         return cloned;
     }
 

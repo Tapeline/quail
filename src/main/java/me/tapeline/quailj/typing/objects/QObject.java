@@ -10,6 +10,7 @@ import me.tapeline.quailj.typing.modifiers.VariableModifier;
 import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.utils.ContainerPreRuntimeContents;
 import me.tapeline.quailj.typing.utils.VariableTable;
+import me.tapeline.quailj.utils.Utilities;
 
 import java.util.*;
 
@@ -62,6 +63,7 @@ public class QObject {
     public Set<QObject> derivedObjects = new HashSet<>();
     public Set<QObject> childPrototypes = new HashSet<>();
     public boolean isDict = false;
+    public boolean isInheritable = true;
 
     public QObject() {}
 
@@ -85,7 +87,7 @@ public class QObject {
             Runtime.superObject.derivedObjects.add(this);
     }
 
-    public QObject(String name, QObject like, VariableTable content) {
+    public QObject(String name, QObject like, VariableTable content) throws RuntimeStriker {
         this.table = new VariableTable();
         if (Runtime.superObject != null)
             table.putAll(Runtime.superObject.table);
@@ -100,7 +102,9 @@ public class QObject {
         if (Runtime.superObject != null)
             table.putAll(Runtime.superObject.table);
         this.table.putAll(content);
-        setObjectMetadata(name, like);
+        try {
+            setObjectMetadata(name, like);
+        } catch (RuntimeStriker ignored) {}
         if (this != Runtime.superObject)
             Runtime.superObject.derivedObjects.add(this);
     }
@@ -108,7 +112,7 @@ public class QObject {
     public final HashMap<String, QObject> getNonDefaultFields() {
         HashMap<String, QObject> fields = new HashMap<>();
         for (Map.Entry<String, QObject> entry : table.getValues().entrySet())
-            if (!prototype.table.getValues().containsKey(entry.getKey()))
+            if (prototype != null && !prototype.table.getValues().containsKey(entry.getKey()))
                 fields.put(entry.getKey(), entry.getValue());
         return fields;
     }
@@ -116,7 +120,9 @@ public class QObject {
     public static QObject constructSuperObject() {
         QObject superObject = new QObject();
         superObject.table = new VariableTable();
-        superObject.setObjectMetadata("Object", null);
+        try {
+            superObject.setObjectMetadata("Object", null);
+        } catch (RuntimeStriker ignored) {}
         return superObject;
     }
 
@@ -150,14 +156,23 @@ public class QObject {
         }
     }
 
-    public final void registerInheritance(QObject child) {
-        childPrototypes.add(child);
+    public final void registerInheritance(QObject child) throws RuntimeStriker {
+        if (isInheritable)
+            childPrototypes.add(child);
+        else
+            Runtime.error("Cannot inherit from " + className);
     }
 
-    public final void setSuperClass(QObject superClass) {
+    public final void setSuperClass(QObject superClass) throws RuntimeStriker  {
         this.superClass = superClass;
         if (superClass != null)
             superClass.registerInheritance(this);
+    }
+
+    public final void setSafeSuperClass(QObject superClass)  {
+        try {
+            setSuperClass(superClass);
+        } catch (RuntimeStriker ignored) {}
     }
 
     public final void setObjectMetadata(String className) {
@@ -165,7 +180,7 @@ public class QObject {
         //this.table.put("_name", new QString(className));
     }
 
-    public final void setObjectMetadata(String className, QObject superClass) {
+    public final void setObjectMetadata(String className, QObject superClass) throws RuntimeStriker {
         this.className = className;
         this.superClass = superClass;
         if (superClass != null)
@@ -180,7 +195,7 @@ public class QObject {
         //this.table.put("_name", new QString(className));
     }
 
-    public final void setObjectMetadata(QObject klass, QObject superClass) {
+    public final void setObjectMetadata(QObject klass, QObject superClass) throws RuntimeStriker {
         this.prototype = klass;
         this.className = klass.getClassName();
         this.superClass = superClass;
@@ -311,11 +326,11 @@ public class QObject {
     }
 
     public final void setOverridable(Runtime runtime, String id, QObject value) throws RuntimeStriker {
-        set(runtime, id, value);
         if (table.containsKey("_set"))
-            callFromThis(runtime, "_set", Arrays.asList(QObject.Val(id), value));
-        if (table.containsKey("_set_" + id))
-            callFromThis(runtime, "_set_" + id, Arrays.asList(value));
+            callFromThis(runtime, "_set", Utilities.asList(QObject.Val(id), value));
+        else if (table.containsKey("_set_" + id))
+            callFromThis(runtime, "_set_" + id, Utilities.asList(value));
+        else set(runtime, id, value);
     }
 
     public final void set(String id, QObject value, List<VariableModifier> modifiers) {
@@ -368,7 +383,7 @@ public class QObject {
 
     public final QObject derive(Runtime runtime) throws RuntimeStriker {
         if (!isPrototype())
-            runtime.error("Attempt to derive from non-prototype value");
+            Runtime.error("Attempt to derive from non-prototype value");
         QObject newObject = Val(new HashMap<>());
         newObject.table.putAll(table);
         newObject.setObjectMetadata(this, getSuper());
@@ -382,7 +397,7 @@ public class QObject {
                     "_add",
                     Arrays.asList(other)
             );
-        runtime.error("Unsupported operation between " +
+        Runtime.error("Unsupported operation between " +
                 getClassName() + " + " + other.getClassName());
         return Val();
     }
@@ -394,7 +409,7 @@ public class QObject {
                     "_sub",
                     Arrays.asList(other)
             );
-        runtime.error("Unsupported operation between " +
+        Runtime.error("Unsupported operation between " +
                 getClassName() + " - " + other.getClassName());
         return Val();
     }
@@ -406,7 +421,7 @@ public class QObject {
                     "_mul",
                     Arrays.asList(other)
             );
-        runtime.error("Unsupported operation between " +
+        Runtime.error("Unsupported operation between " +
                 getClassName() + " * " + other.getClassName());
         return Val();
     }
@@ -418,7 +433,7 @@ public class QObject {
                     "_div",
                     Arrays.asList(other)
             );
-        runtime.error("Unsupported operation between " +
+        Runtime.error("Unsupported operation between " +
                 getClassName() + " / " + other.getClassName());
         return Val();
     }
@@ -430,7 +445,7 @@ public class QObject {
                     "_intdiv",
                     Arrays.asList(other)
             );
-        runtime.error("Unsupported operation between " +
+        Runtime.error("Unsupported operation between " +
                 getClassName() + " // " + other.getClassName());
         return Val();
     }
@@ -442,7 +457,7 @@ public class QObject {
                     "_mod",
                     Arrays.asList(other)
             );
-        runtime.error("Unsupported operation between " +
+        Runtime.error("Unsupported operation between " +
                 getClassName() + " % " + other.getClassName());
         return Val();
     }
@@ -454,7 +469,7 @@ public class QObject {
                     "_pow",
                     Arrays.asList(other)
             );
-        runtime.error("Unsupported operation between " +
+        Runtime.error("Unsupported operation between " +
                 getClassName() + " ^ " + other.getClassName());
         return Val();
     }
@@ -466,7 +481,7 @@ public class QObject {
                     "_shl",
                     Arrays.asList(other)
             );
-        runtime.error("Unsupported operation between " +
+        Runtime.error("Unsupported operation between " +
                 getClassName() + " << " + other.getClassName());
         return Val();
     }
@@ -478,7 +493,7 @@ public class QObject {
                     "_shr",
                     Arrays.asList(other)
             );
-        runtime.error("Unsupported operation between " +
+        Runtime.error("Unsupported operation between " +
                 getClassName() + " >> " + other.getClassName());
         return Val();
     }
@@ -510,7 +525,7 @@ public class QObject {
                     "_cmpg",
                     Arrays.asList(other)
             );
-        runtime.error("Unsupported operation between " +
+        Runtime.error("Unsupported operation between " +
                 getClassName() + " > " + other.getClassName());
         return Val();
     }
@@ -522,7 +537,7 @@ public class QObject {
                     "_cmpge",
                     Arrays.asList(other)
             );
-        runtime.error("Unsupported operation between " +
+        Runtime.error("Unsupported operation between " +
                 getClassName() + " >= " + other.getClassName());
         return Val();
     }
@@ -534,7 +549,7 @@ public class QObject {
                     "_cmpl",
                     Arrays.asList(other)
             );
-        runtime.error("Unsupported operation between " +
+        Runtime.error("Unsupported operation between " +
                 getClassName() + " < " + other.getClassName());
         return Val();
     }
@@ -546,7 +561,7 @@ public class QObject {
                     "_cmple",
                     Arrays.asList(other)
             );
-        runtime.error("Unsupported operation between " +
+        Runtime.error("Unsupported operation between " +
                 getClassName() + " <= " + other.getClassName());
         return Val();
     }
@@ -558,7 +573,7 @@ public class QObject {
                     "_not",
                     new ArrayList<>()
             );
-        runtime.error("Unsupported operation ! on " + getClassName());
+        Runtime.error("Unsupported operation ! on " + getClassName());
         return Val();
     }
 
@@ -569,7 +584,7 @@ public class QObject {
                     "_neg",
                     new ArrayList<>()
             );
-        runtime.error("Unsupported operation - on " + getClassName());
+        Runtime.error("Unsupported operation - on " + getClassName());
         return Val();
     }
 
@@ -580,7 +595,7 @@ public class QObject {
                     "_tostring",
                     new ArrayList<>()
             );
-        runtime.error("Unsupported typecast string <- " + getClassName());
+        Runtime.error("Unsupported typecast string <- " + getClassName());
         return Val();
     }
 
@@ -591,7 +606,7 @@ public class QObject {
                     "_tobool",
                     new ArrayList<>()
             );
-        runtime.error("Unsupported typecast bool <- " + getClassName());
+        Runtime.error("Unsupported typecast bool <- " + getClassName());
         return Val();
     }
 
@@ -602,7 +617,7 @@ public class QObject {
                     "_tonum",
                     new ArrayList<>()
             );
-        runtime.error("Unsupported typecast num <- " + getClassName());
+        Runtime.error("Unsupported typecast num <- " + getClassName());
         return Val();
     }
 
@@ -613,7 +628,7 @@ public class QObject {
                     "_and",
                     Arrays.asList(other)
             );
-        runtime.error("Unsupported operation between " +
+        Runtime.error("Unsupported operation between " +
                 getClassName() + " && " + other.getClassName());
         return Val();
     }
@@ -625,7 +640,7 @@ public class QObject {
                     "_or",
                     Arrays.asList(other)
             );
-        runtime.error("Unsupported operation between " +
+        Runtime.error("Unsupported operation between " +
                 getClassName() + " || " + other.getClassName());
         return Val();
     }
@@ -658,7 +673,7 @@ public class QObject {
                     "_subscriptStartEnd",
                     Arrays.asList(start, end)
             );
-        runtime.error(getClassName() + " is not subscriptable");
+        Runtime.error(getClassName() + " is not subscriptable");
         return Val();
     }
 
@@ -670,15 +685,14 @@ public class QObject {
                     "_subscriptStartEndStep",
                     Arrays.asList(start, end, step)
             );
-        runtime.error(getClassName() + " is not subscriptable with step");
+        Runtime.error(getClassName() + " is not subscriptable with step");
         return Val();
     }
 
     public QObject call(Runtime runtime, List<QObject> arguments) throws RuntimeStriker {
         if (isPrototype()) {
             QObject newObject = derive(runtime);
-            newObject.callFromThis(runtime, "_constructor", arguments);
-            return newObject;
+            return newObject.callFromThis(runtime, "_constructor", arguments);
         }
         if (table.containsKey("_call"))
             return callFromThis(
@@ -686,7 +700,7 @@ public class QObject {
                     "_call",
                     Arrays.asList(QObject.Val(arguments))
             );
-        runtime.error(getClassName() + " is not callable");
+        Runtime.error(getClassName() + " is not callable");
         // TODO: WTF
         return Val();
     }
@@ -722,20 +736,26 @@ public class QObject {
         return Val();
     }
 
-    public QObject copy(Runtime runtime) {
+    public QObject copy(Runtime runtime) throws RuntimeStriker {
         QObject copy = new QObject(getClassName(), getSuper(), new VariableTable());
         copy.getTable().putAll(table);
         copy.setPrototypeFlag(isPrototype());
         return copy;
     }
 
-    public QObject clone(Runtime runtime) {
+    public QObject clone(Runtime runtime) throws RuntimeStriker {
         QObject copy = new QObject(getClassName(), getSuper(), new VariableTable());
-        table.forEach((k, v) -> copy.getTable().put(
-                k,
-                v.clone(runtime),
-                table.getModifiersFor(k)
-        ));
+        table.forEach((k, v) -> {
+            try {
+                copy.getTable().put(
+                        k,
+                        v.clone(runtime),
+                        table.getModifiersFor(k)
+                );
+            } catch (RuntimeStriker striker) {
+                throw new RuntimeException(striker);
+            }
+        });
         copy.setPrototypeFlag(isPrototype());
         return copy;
     }

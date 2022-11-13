@@ -1,6 +1,8 @@
-package me.tapeline.quailj.runtime.std.standart.math;
+package me.tapeline.quailj.runtime.std.object;
 
+import me.tapeline.quailj.lexing.TokenType;
 import me.tapeline.quailj.runtime.Runtime;
+import me.tapeline.quailj.typing.modifiers.TypeModifier;
 import me.tapeline.quailj.typing.objects.QObject;
 import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
@@ -9,18 +11,22 @@ import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 
-public class FuncMax extends QBuiltinFunc {
+public class ObjectFuncContainsCustom extends QBuiltinFunc {
 
-    public FuncMax(Runtime runtime) {
+    public ObjectFuncContainsCustom(Runtime runtime) {
         super(
-                "max",
+                "containsCustom",
                 Arrays.asList(
                         new FuncArgument(
-                                "values",
+                                "obj",
                                 new ArrayList<>(),
-                                true
+                                false
+                        ),
+                        new FuncArgument(
+                                "key",
+                                Arrays.asList(new TypeModifier(TokenType.TYPE_STRING)),
+                                false
                         )
                 ),
                 runtime,
@@ -31,15 +37,7 @@ public class FuncMax extends QBuiltinFunc {
 
     @Override
     public QObject action(Runtime runtime, HashMap<String, QObject> args) throws RuntimeStriker {
-        List<QObject> values = args.get("values").listValue();
-        int count = values.size();
-        double maxValue = values.get(0).numValue();
-        for (int i = 0; i < count; i++) {
-            QObject val = values.get(i);
-            if (!val.isNum()) Runtime.error("Cannot find max among non-num values: " + val.toString());
-            if (val.numValue() > maxValue) maxValue = val.numValue();
-        }
-        return QObject.Val(maxValue);
+        return QObject.Val(args.get("obj").getNonDefaultFields().containsKey(args.get("key").toString()));
     }
 
 }

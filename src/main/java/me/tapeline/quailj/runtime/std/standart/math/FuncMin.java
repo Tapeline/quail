@@ -36,7 +36,7 @@ public class FuncMin extends QBuiltinFunc {
         double minValue = values.get(0).numValue();
         for (int i = 0; i < count; i++) {
             QObject val = values.get(i);
-            if (!val.isNum()) runtime.error("Cannot find min among non-num values: " + val.toString());
+            if (!val.isNum()) Runtime.error("Cannot find min among non-num values: " + val.toString());
             if (val.numValue() < minValue) minValue = val.numValue();
         }
         return QObject.Val(minValue);

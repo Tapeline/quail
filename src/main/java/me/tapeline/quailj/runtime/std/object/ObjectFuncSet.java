@@ -1,6 +1,8 @@
-package me.tapeline.quailj.runtime.std.thread;
+package me.tapeline.quailj.runtime.std.object;
 
+import me.tapeline.quailj.lexing.TokenType;
 import me.tapeline.quailj.runtime.Runtime;
+import me.tapeline.quailj.typing.modifiers.TypeModifier;
 import me.tapeline.quailj.typing.objects.QObject;
 import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
@@ -10,14 +12,24 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class ThreadFuncStart extends QBuiltinFunc {
+public class ObjectFuncSet extends QBuiltinFunc {
 
-    public ThreadFuncStart(Runtime runtime) {
+    public ObjectFuncSet(Runtime runtime) {
         super(
-                "start",
+                "set",
                 Arrays.asList(
                         new FuncArgument(
-                                "thread",
+                                "obj",
+                                new ArrayList<>(),
+                                false
+                        ),
+                        new FuncArgument(
+                                "key",
+                                Arrays.asList(new TypeModifier(TokenType.TYPE_STRING)),
+                                false
+                        ),
+                        new FuncArgument(
+                                "value",
                                 new ArrayList<>(),
                                 false
                         )
@@ -30,10 +42,7 @@ public class ThreadFuncStart extends QBuiltinFunc {
 
     @Override
     public QObject action(Runtime runtime, HashMap<String, QObject> args) throws RuntimeStriker {
-        if (!(args.get("thread") instanceof QThread))
-            Runtime.error("Not a thread");
-        else
-            ((QThread) args.get("thread")).worker.start();
+        args.get("obj").setOverridable(runtime, args.get("key").toString(), args.get("value"));
         return QObject.Val();
     }
 

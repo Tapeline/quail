@@ -2,9 +2,7 @@ package me.tapeline.quailj.typing.objects;
 
 import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
-import me.tapeline.quailj.typing.utils.VariableTable;
 import me.tapeline.quailj.utils.QListUtils;
-import me.tapeline.quailj.utils.QStringUtils;
 import org.apache.commons.collections.ListUtils;
 
 import java.util.ArrayList;
@@ -162,23 +160,29 @@ public class QList extends QObject {
     }
 
     @Override
-    public QObject copy(Runtime runtime) {
+    public QObject copy(Runtime runtime) throws RuntimeStriker {
         QObject copy = QObject.Val(values);
         copy.getTable().putAll(table);
         return copy;
     }
 
     @Override
-    public QObject clone(Runtime runtime) {
+    public QObject clone(Runtime runtime) throws RuntimeStriker {
         List<QObject> clonedValues = new ArrayList<>();
         int size = values.size();
         for (int i = 0; i < size; i++) clonedValues.add(values.get(i).clone(runtime));
         QObject cloned = QObject.Val(clonedValues);
-        table.forEach((k, v) -> cloned.getTable().put(
-                k,
-                v.clone(runtime),
-                table.getModifiersFor(k)
-        ));
+        table.forEach((k, v) -> {
+            try {
+                cloned.getTable().put(
+                        k,
+                        v.clone(runtime),
+                        table.getModifiersFor(k)
+                );
+            } catch (RuntimeStriker striker) {
+                throw new RuntimeException(striker);
+            }
+        });
         return cloned;
     }
 

@@ -1,4 +1,4 @@
-package me.tapeline.quailj.runtime.std.thread;
+package me.tapeline.quailj.runtime.std.object;
 
 import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.typing.objects.QObject;
@@ -6,18 +6,16 @@ import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.*;
 
-public class ThreadFuncStart extends QBuiltinFunc {
+public class ObjectFuncAllValues extends QBuiltinFunc {
 
-    public ThreadFuncStart(Runtime runtime) {
+    public ObjectFuncAllValues(Runtime runtime) {
         super(
-                "start",
+                "allValues",
                 Arrays.asList(
                         new FuncArgument(
-                                "thread",
+                                "obj",
                                 new ArrayList<>(),
                                 false
                         )
@@ -30,11 +28,7 @@ public class ThreadFuncStart extends QBuiltinFunc {
 
     @Override
     public QObject action(Runtime runtime, HashMap<String, QObject> args) throws RuntimeStriker {
-        if (!(args.get("thread") instanceof QThread))
-            Runtime.error("Not a thread");
-        else
-            ((QThread) args.get("thread")).worker.start();
-        return QObject.Val();
+        return QObject.Val(new ArrayList<>(args.get("obj").getTable().getValues().values()));
     }
 
 }

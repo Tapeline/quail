@@ -23,13 +23,13 @@ public class VariableTable {
                 for (VariableModifier vm : modifiers.get(id))
                     if (vm instanceof FinalModifier) {
                         if (((FinalModifier) vm).hadAssignment)
-                            runtime.error("Attempt to assign data to final variable");
+                            Runtime.error("Attempt to assign data to final variable");
                         else
                             ((FinalModifier) vm).hadAssignment = true;
                     }
             values.put(id, value);
         } else
-            runtime.error("Attempt to assign data with wrong type to clarified variable (" +
+            Runtime.error("Attempt to assign data with wrong type to clarified variable (" +
                 modifiers.get(id).toString() + " = " + value.getClassName() + ")");
         return value;
     }

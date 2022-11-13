@@ -1,6 +1,8 @@
 package me.tapeline.quailj.runtime.std.thread;
 
+import me.tapeline.quailj.lexing.TokenType;
 import me.tapeline.quailj.runtime.Runtime;
+import me.tapeline.quailj.typing.modifiers.TypeModifier;
 import me.tapeline.quailj.typing.objects.QObject;
 import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
@@ -10,15 +12,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class ThreadFuncStart extends QBuiltinFunc {
+public class ThreadFuncSleep extends QBuiltinFunc {
 
-    public ThreadFuncStart(Runtime runtime) {
+    public ThreadFuncSleep(Runtime runtime) {
         super(
-                "start",
+                "sleep",
                 Arrays.asList(
                         new FuncArgument(
                                 "thread",
                                 new ArrayList<>(),
+                                false
+                        ),
+                        new FuncArgument(
+                                "time",
+                                Arrays.asList(new TypeModifier(TokenType.TYPE_NUM)),
                                 false
                         )
                 ),
@@ -33,7 +40,7 @@ public class ThreadFuncStart extends QBuiltinFunc {
         if (!(args.get("thread") instanceof QThread))
             Runtime.error("Not a thread");
         else
-            ((QThread) args.get("thread")).worker.start();
+            ((QThread) args.get("thread")).worker.sleepFor((long) args.get("time").numValue());
         return QObject.Val();
     }
 
