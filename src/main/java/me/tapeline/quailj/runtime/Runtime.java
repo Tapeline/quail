@@ -32,6 +32,7 @@ import me.tapeline.quailj.parsing.nodes.variable.VariableNode;
 import me.tapeline.quailj.platforms.IOManager;
 import me.tapeline.quailj.runtime.libraries.LibraryLoader;
 import me.tapeline.quailj.runtime.libraries.LibraryRegistry;
+import me.tapeline.quailj.runtime.std.fs.StdFsLib;
 import me.tapeline.quailj.runtime.std.list.*;
 import me.tapeline.quailj.runtime.std.number.*;
 import me.tapeline.quailj.runtime.std.object.*;
@@ -53,7 +54,9 @@ import me.tapeline.quailj.runtime.std.standart.reflection.FuncClassName;
 import me.tapeline.quailj.runtime.std.standart.reflection.FuncEval;
 import me.tapeline.quailj.runtime.std.standart.reflection.FuncExec;
 import me.tapeline.quailj.runtime.std.standart.reflection.FuncSuperClassName;
+import me.tapeline.quailj.runtime.std.storage.StdStorageLib;
 import me.tapeline.quailj.runtime.std.string.*;
+import me.tapeline.quailj.runtime.std.sys.StdSysLib;
 import me.tapeline.quailj.runtime.std.thread.QThread;
 import me.tapeline.quailj.runtime.utils.JavaAction;
 import me.tapeline.quailj.typing.modifiers.FinalModifier;
@@ -84,6 +87,10 @@ public class Runtime {
     public static LibraryRegistry libraryRegistry = new LibraryRegistry();
     public List<AsyncRuntimeWorker> asyncRuntimeWorkers = new ArrayList<>();
     public HashMap<String, List<Pair<QFunc, Boolean>>> eventsHandlerMap = new HashMap<>();
+    public String[] consoleArgs;
+    public List<QObject> consoleArgsQObjects = new ArrayList<>();
+
+
     public static QObject superObject = QObject.constructSuperObject();
     public static QObject numberPrototype = new QObject("Number", null, new HashMap<>());
     public static QObject nullPrototype = new QObject("Null", null, new HashMap<>());
@@ -92,10 +99,13 @@ public class Runtime {
     public static QObject boolPrototype = new QObject("Bool", null, new HashMap<>());
     public static QObject funcPrototype = new QObject("Func", null, new HashMap<>());
 
-    public Runtime(String sourceCode, Node root, IOManager io, boolean doProfile) {
+    public Runtime(String sourceCode, Node root, IOManager io, String[] consoleArgs, boolean doProfile) {
         this.sourceCode = sourceCode;
         this.root = root;
         this.doProfile = doProfile;
+        this.consoleArgs = consoleArgs;
+        for (String arg : consoleArgs)
+            consoleArgsQObjects.add(QObject.Val(arg));
         this.io = io;
         this.memory = new Memory();
         registerDefaults();
@@ -230,6 +240,10 @@ public class Runtime {
         memory.set("acos",              new FuncAcos(this), new ArrayList<>());
         memory.set("atan",              new FuncAtan(this), new ArrayList<>());
         memory.set("atan2",             new FuncAtan2(this), new ArrayList<>());
+
+        libraryRegistry.cacheLibrary("lang/fs", StdFsLib.getLibrary(this));
+        libraryRegistry.cacheLibrary("lang/sys", StdSysLib.getLibrary(this));
+        libraryRegistry.cacheLibrary("lang/storage", StdStorageLib.getLibrary(this));
     }
 
     public static void error(String message) throws RuntimeStriker {

@@ -2,6 +2,8 @@ package me.tapeline.quailj.utils;
 
 import me.tapeline.quailj.typing.objects.errors.ErrorMessage;
 
+import java.io.File;
+
 public class ErrorFormatter {
 
     public static String formatError(String code, int line, int character,

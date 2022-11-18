@@ -6,6 +6,7 @@ import me.tapeline.quailj.parsing.nodes.variable.VariableNode;
 import me.tapeline.quailj.typing.*;
 import me.tapeline.quailj.typing.objects.QObject;
 import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
 
@@ -65,7 +66,7 @@ public class IOManager {
             DataInputStream dis = new DataInputStream(Files.newInputStream(file.toPath()));
             dis.readFully(fileData);
             dis.close();
-            return Hex.encodeHexString(fileData);
+            return new Base64().encodeAsString(fileData);
         } catch (IOException ignored) {}
         return null;
     }
@@ -73,7 +74,7 @@ public class IOManager {
     public static boolean fileBinSet(String path, String hex) {
         try {
             File file = new File(path);
-            byte[] fileData = Hex.decodeHex(hex);
+            byte[] fileData = new Base64().decode(hex);
 
             DataOutputStream dos = new DataOutputStream(Files.newOutputStream(file.toPath()));
             dos.write(fileData);
@@ -102,7 +103,7 @@ public class IOManager {
     /**
      * Set file contents to sth.
      */
-    public static void fileSet(String path, String content) {
+    public static boolean fileSet(String path, String content) {
         /*try {
             FileOutputStream fos = new FileOutputStream(path);
             DataOutputStream outStream = new DataOutputStream(new BufferedOutputStream(fos));
@@ -113,8 +114,10 @@ public class IOManager {
         }*/
         try {
             FileUtils.writeStringToFile(new File(path), content, "UTF-8");
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
     }
 

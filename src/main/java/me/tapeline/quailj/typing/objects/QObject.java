@@ -52,7 +52,7 @@ public class QObject {
         }
         return new LiteralNull(Token.UNDEFINED);
     }
-    
+
     public VariableTable table = new VariableTable();
     protected String className;
     protected QObject superClass;
@@ -85,6 +85,9 @@ public class QObject {
         setObjectMetadata("Object");
         if (this != Runtime.superObject)
             Runtime.superObject.derivedObjects.add(this);
+        if (this != Runtime.superObject && Runtime.superObject != null)
+            prototype = Runtime.superObject;
+
     }
 
     public QObject(String name, QObject like, VariableTable content) throws RuntimeStriker {
@@ -370,7 +373,7 @@ public class QObject {
     }
 
     public final QObject callFromThis(Runtime runtime, String funcId, List<QObject> args) throws RuntimeStriker {
-        if (!isPrototype())
+        if (!isPrototype() && !isDict)
             args.add(0, this);
         return get(funcId).call(runtime, args);
     }

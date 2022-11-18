@@ -9,7 +9,8 @@ public class RuntimeStriker extends Exception {
         BREAK,
         CONTINUE,
         EXCEPTION,
-        STOP_ITERATION
+        STOP_ITERATION,
+        EXIT
     }
 
     public ErrorMessage error;
@@ -17,6 +18,7 @@ public class RuntimeStriker extends Exception {
     public Type type;
     public long strikeHP = 0;
     public QObject returnValue;
+    public int code;
 
     public RuntimeStriker(ErrorMessage message) {
         super(message.toString());

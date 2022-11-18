@@ -20,7 +20,8 @@ public class AsyncRuntimeWorker extends Thread {
         try {
             runtime.run(node, scope);
         } catch (RuntimeStriker striker) {
-            if (striker.type == RuntimeStriker.Type.EXCEPTION) {
+            if (striker.type == RuntimeStriker.Type.EXCEPTION || 
+                striker.type == RuntimeStriker.Type.EXIT) {
                 System.err.println(striker.error.toString());
             }
         }

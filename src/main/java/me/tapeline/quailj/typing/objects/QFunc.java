@@ -53,7 +53,7 @@ public class QFunc extends QObject {
                     for (int i = 0; i < argsSize; i++) {
                         FuncArgument arg = this.args.get(i);
                         if (i >= args.size()) {
-                            QObject preparedNull = QObject.Val();
+                            QObject preparedNull = runtime.run(arg.defaultValue, enclosing);
                             if (!arg.matchesRequirements(runtime, preparedNull))
                                 Runtime.error("Argument mapping failed for (not provided => null) arg #" +
                                         (i + 1) + ".\n" + "" +
@@ -80,7 +80,8 @@ public class QFunc extends QObject {
                 } catch (RuntimeStriker striker) {
                     if (striker.type == RuntimeStriker.Type.RETURN) {
                         return striker.returnValue;
-                    } else if (striker.type == RuntimeStriker.Type.EXCEPTION) {
+                    } else if (striker.type == RuntimeStriker.Type.EXCEPTION || 
+                                striker.type == RuntimeStriker.Type.EXIT) {
                         throw striker;
                     }
                 }
@@ -90,7 +91,7 @@ public class QFunc extends QObject {
         for (int i = 0; i < argsSize; i++) {
             FuncArgument arg = this.args.get(i);
             if (i >= args.size()) {
-                QObject preparedNull = QObject.Val();
+                QObject preparedNull = runtime.run(arg.defaultValue, enclosing);
                 if (!arg.matchesRequirements(runtime, preparedNull))
                     Runtime.error("Argument mapping failed for (not provided => null) arg #" +
                             (i + 1) + ".\n" + "" +
@@ -114,7 +115,8 @@ public class QFunc extends QObject {
         } catch (RuntimeStriker striker) {
             if (striker.type == RuntimeStriker.Type.RETURN) {
                 return striker.returnValue;
-            } else if (striker.type == RuntimeStriker.Type.EXCEPTION) {
+            } else if (striker.type == RuntimeStriker.Type.EXCEPTION || 
+                        striker.type == RuntimeStriker.Type.EXIT) {
                 throw striker;
             }
         }

@@ -132,7 +132,8 @@ public class LibraryLoader {
                 Runtime inner = new Runtime(code, root, runtime.io, false);
                 result = inner.run(root, inner.memory);
             } catch (RuntimeStriker striker) {
-                if (striker.type == RuntimeStriker.Type.EXCEPTION) {
+                if (striker.type == RuntimeStriker.Type.EXCEPTION || 
+striker.type == RuntimeStriker.Type.EXIT) {
                     System.err.println(ErrorFormatter.formatError(code, striker.error));
                     System.exit(1);
                 } else if (striker.type == RuntimeStriker.Type.RETURN) {

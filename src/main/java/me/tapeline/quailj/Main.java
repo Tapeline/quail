@@ -72,7 +72,7 @@ public class Main {
         }
         QObject result = null;
         try {
-            runtime = new Runtime(code, root, io, timings);
+            runtime = new Runtime(code, root, io, args, timings);
             result = runtime.run(root, runtime.memory);
         } catch (RuntimeStriker striker) {
             if (striker.type == RuntimeStriker.Type.EXCEPTION) {
@@ -80,6 +80,8 @@ public class Main {
                 System.exit(1);
             } else if (striker.type == RuntimeStriker.Type.RETURN) {
                 result = striker.returnValue;
+            } else if (striker.type == RuntimeStriker.Type.EXIT) {
+                System.exit(striker.code);
             }
         }
         System.out.println("\nRuntime returned " + result);
