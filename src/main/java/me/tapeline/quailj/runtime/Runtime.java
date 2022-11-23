@@ -33,9 +33,11 @@ import me.tapeline.quailj.platforms.IOManager;
 import me.tapeline.quailj.runtime.libraries.LibraryLoader;
 import me.tapeline.quailj.runtime.libraries.LibraryRegistry;
 import me.tapeline.quailj.runtime.std.fs.StdFsLib;
+import me.tapeline.quailj.runtime.std.ji.StdJiLib;
 import me.tapeline.quailj.runtime.std.list.*;
 import me.tapeline.quailj.runtime.std.number.*;
 import me.tapeline.quailj.runtime.std.object.*;
+import me.tapeline.quailj.runtime.std.qml.StdQMLLib;
 import me.tapeline.quailj.runtime.std.standart.common.*;
 import me.tapeline.quailj.runtime.std.standart.events.FuncCallEvent;
 import me.tapeline.quailj.runtime.std.standart.events.FuncRegisterHandler;
@@ -66,6 +68,7 @@ import me.tapeline.quailj.typing.objects.errors.ErrorMessage;
 import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.AlternativeCall;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
+import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 import me.tapeline.quailj.typing.utils.VariableTable;
 import me.tapeline.quailj.utils.Dict;
 import me.tapeline.quailj.utils.ErrorFormatter;
@@ -202,6 +205,7 @@ public class Runtime {
         stringPrototype.set("upper",            new StringFuncUpper(this));
 
         memory.set("Thread", QThread.definition(this), new ArrayList<>());
+        memory.set("JavaAdapter", QJavaAdapter.definition(this), new ArrayList<>());
 
         memory.set("abs",               new FuncAbs(this), new ArrayList<>());
         memory.set("all",               new FuncAll(this), new ArrayList<>());
@@ -244,6 +248,8 @@ public class Runtime {
         libraryRegistry.cacheLibrary("lang/fs", StdFsLib.getLibrary(this));
         libraryRegistry.cacheLibrary("lang/sys", StdSysLib.getLibrary(this));
         libraryRegistry.cacheLibrary("lang/storage", StdStorageLib.getLibrary(this));
+        libraryRegistry.cacheLibrary("lang/ji", StdJiLib.getLibrary(this));
+        libraryRegistry.cacheLibrary("lang/qml", StdQMLLib.getLibrary(this));
     }
 
     public static void error(String message) throws RuntimeStriker {
@@ -570,7 +576,7 @@ public class Runtime {
             int argsCount = thisNode.arguments.size();
             for (int i = 0; i < argsCount; i++)
                 args.add(run(thisNode.arguments.get(i), scope));
-            if (parent != null && thisNode.isFieldCall) {
+            if (callee instanceof QFunc && parent != null && thisNode.isFieldCall) {
                 if (!parent.isPrototype())
                     return parent.callFromThis(this, callee, args);
             }

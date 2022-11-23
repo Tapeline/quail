@@ -1,5 +1,11 @@
-use "lang/storage" as storage
-o = storage.loadYaml("conf.yml")   #{"a" = 1, "b" = 2}
-for k, v in o.pairs()
-    print(k, v)
+#
+
+use "lang/qml" as qml
+
+w = qml.screen.Window("Hello", 640, 480)
+w.setResizable(false)
+w.setVisible(true)
+
+while w.isVisible() {}
+
 #
