@@ -9,12 +9,57 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0f087f83-4294-4049-8196-1d1bd1edefe9" name="Changes" comment="snapshot&#10;step 4 in progress&#10;only QML left&#10;QML ~= 25%&#10;23-11-22 18:00 UTC">
+    <list default="true" id="0f087f83-4294-4049-8196-1d1bd1edefe9" name="Changes" comment="snapshot&#10;step 4 in progress&#10;15-12-22 12:00 UTC">
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/image/QMLImageFuncSaveImage.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/surface/QMLSurface.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/surface/SurfaceConstructor.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/surface/SurfaceFuncClear.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/surface/SurfaceFuncDrawLine.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/surface/SurfaceFuncDrawOval.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/surface/SurfaceFuncDrawPixel.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/surface/SurfaceFuncDrawRect.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/surface/SurfaceFuncDrawText.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/surface/SurfaceFuncFillOval.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/surface/SurfaceFuncFillRect.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/surface/SurfaceFuncGetHeight.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/surface/SurfaceFuncGetWidth.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/surface/SurfaceFuncResizeStamp.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/surface/SurfaceFuncSetColor.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/surface/SurfaceFuncSetColorHSB.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/surface/SurfaceFuncSetColorRGBA.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/surface/SurfaceFuncSetFont.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/surface/SurfaceFuncStamp.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/surface/SurfaceFuncTypeText.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/window/QCanvas.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/window/WindowFuncStampSurface.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/window/keyboard/QMLWindowKeyboardHandler.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/window/keyboard/WindowFuncKeyboardAnyPressed.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/window/keyboard/WindowFuncKeyboardGetPressed.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/window/keyboard/WindowFuncKeyboardGetPressedCode.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/window/keyboard/WindowFuncKeyboardGetPressedKeys.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/window/keyboard/WindowFuncKeyboardIsAlt.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/window/keyboard/WindowFuncKeyboardIsCtrl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/window/keyboard/WindowFuncKeyboardIsShift.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/window/mouse/QMLWindowMouseHandler.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/window/mouse/WindowFuncMouseAbsX.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/window/mouse/WindowFuncMouseAbsY.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/window/mouse/WindowFuncMouseButton.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/window/mouse/WindowFuncMousePressed.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/window/mouse/WindowFuncMouseX.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/window/mouse/WindowFuncMouseY.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/typography/QMLTypographyFuncCreateFont.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/typography/QMLTypographyFuncEditFont.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/typography/QMLTypographyFuncLoadFont.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/typography/QMLTypographyFuncMetrics.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.q" beforeDir="false" afterPath="$PROJECT_DIR$/main.q" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/parsing/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/parsing/Parser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/fs/FsFuncDeleteFolder.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/fs/FsFuncDeleteFolder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/fs/FsFuncExists.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/fs/FsFuncExists.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/StdQMLLib.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/StdQMLLib.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/surface/QMLMouseFuncIsPressed.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/image/QMLImageFuncLoadImage.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/window/QMLWindow.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/window/QMLWindow.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/window/WindowFuncSetPos.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/window/WindowFuncSetPos.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/window/WindowFuncSetSize.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/window/WindowFuncSetSize.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/QObject.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/QObject.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -33,7 +78,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="quail2development-testing" />
+        <entry key="$PROJECT_DIR$" value="refactoring/typing" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -83,11 +128,11 @@
       <recent name="me.tapeline.quailj.runtime.std.storage" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
-      <recent name="me.tapeline.quailj.runtime.std.qml.screen.surface" />
-      <recent name="me.tapeline.quailj.runtime.std.qml.sound" />
+      <recent name="me.tapeline.quailj.runtime.std.qml.typography" />
+      <recent name="me.tapeline.quailj.runtime.std.qml.image" />
+      <recent name="me.tapeline.quailj.runtime.std.qml.screen.window.keyboard" />
+      <recent name="me.tapeline.quailj.runtime.std.qml.screen.window.mouse" />
       <recent name="me.tapeline.quailj.runtime.std.qml.screen.window" />
-      <recent name="me.tapeline.quailj.runtime.std.qml" />
-      <recent name="me.tapeline.quailj.runtime.std.ji" />
     </key>
   </component>
   <component name="RunManager" selected="Application.Main">
@@ -123,6 +168,7 @@
         <item itemvalue="Application.Main" />
         <item itemvalue="Application.Runtime" />
         <item itemvalue="Application.Runtime" />
+        <item itemvalue="Application.Main" />
         <item itemvalue="Application.Main" />
       </list>
     </recent_temporary>
@@ -199,7 +245,14 @@
       <option name="project" value="LOCAL" />
       <updated>1669225883358</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="snapshot&#10;step 4 in progress&#10;15-12-22 12:00 UTC">
+      <created>1671107071266</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1671107071266</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="UnknownFeatures">
@@ -240,7 +293,8 @@
     <MESSAGE value="runtime snapshot&#10;step 4 in progress&#10;18-11-22 19:30 UTC" />
     <MESSAGE value="v.2.alpha-1&#10;step 4 in progress&#10;18-11-22 19:30 UTC" />
     <MESSAGE value="snapshot&#10;step 4 in progress&#10;only QML left&#10;QML ~= 25%&#10;23-11-22 18:00 UTC" />
-    <option name="LAST_COMMIT_MESSAGE" value="snapshot&#10;step 4 in progress&#10;only QML left&#10;QML ~= 25%&#10;23-11-22 18:00 UTC" />
+    <MESSAGE value="snapshot&#10;step 4 in progress&#10;15-12-22 12:00 UTC" />
+    <option name="LAST_COMMIT_MESSAGE" value="snapshot&#10;step 4 in progress&#10;15-12-22 12:00 UTC" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -284,11 +338,6 @@
           <url>file://$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/QFunc.java</url>
           <line>125</line>
           <option name="timeStamp" value="81" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/me/tapeline/quailj/Main.java</url>
-          <line>86</line>
-          <option name="timeStamp" value="87" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <condition expression="id.equals(&quot;count&quot;)" language="JAVA" />
@@ -367,9 +416,9 @@
           <option name="timeStamp" value="143" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/Runtime.java</url>
-          <line>574</line>
-          <option name="timeStamp" value="144" />
+          <url>file://$PROJECT_DIR$/src/main/java/me/tapeline/quailj/Main.java</url>
+          <line>86</line>
+          <option name="timeStamp" value="147" />
         </line-breakpoint>
         <breakpoint type="java-exception">
           <properties class="java.lang.IndexOutOfBoundsException" package="java.lang" />

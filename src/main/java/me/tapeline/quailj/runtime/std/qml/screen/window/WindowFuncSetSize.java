@@ -8,7 +8,7 @@ import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
-import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -45,7 +45,7 @@ public class WindowFuncSetSize extends QBuiltinFunc {
     public QObject action(Runtime runtime, HashMap<String, QObject> args) throws RuntimeStriker {
         if (!(args.get("window") instanceof QMLWindow))
             Runtime.error("Not a window");
-        JFrame frame = ((QMLWindow) args.get("window")).frame;
+        Frame frame = ((QMLWindow) args.get("window")).frame;
         frame.setBounds(
                 frame.getX(),
                 frame.getY(),

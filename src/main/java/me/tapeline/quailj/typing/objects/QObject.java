@@ -57,6 +57,8 @@ public class QObject {
     protected String className;
     protected QObject superClass;
     protected QObject prototype;
+
+    public Object value = null;
     protected boolean isPrototype;
     private Set<String> iter;
 

@@ -1,4 +1,4 @@
-package me.tapeline.quailj.runtime.std.qml.screen.window;
+package me.tapeline.quailj.runtime.std.qml.screen.surface;
 
 import me.tapeline.quailj.lexing.TokenType;
 import me.tapeline.quailj.runtime.Runtime;
@@ -8,19 +8,18 @@ import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class WindowFuncSetPos extends QBuiltinFunc {
+public class SurfaceFuncDrawLine extends QBuiltinFunc {
 
-    public WindowFuncSetPos(Runtime runtime) {
+    public SurfaceFuncDrawLine(Runtime runtime) {
         super(
-                "setPos",
+                "drawLine",
                 Arrays.asList(
                         new FuncArgument(
-                                "window",
+                                "surface",
                                 new ArrayList<>(),
                                 false
                         ),
@@ -33,6 +32,16 @@ public class WindowFuncSetPos extends QBuiltinFunc {
                                 "y",
                                 Arrays.asList(new TypeModifier(TokenType.TYPE_NUM)),
                                 false
+                        ),
+                        new FuncArgument(
+                                "x2",
+                                Arrays.asList(new TypeModifier(TokenType.TYPE_NUM)),
+                                false
+                        ),
+                        new FuncArgument(
+                                "y2",
+                                Arrays.asList(new TypeModifier(TokenType.TYPE_NUM)),
+                                false
                         )
                 ),
                 runtime,
@@ -43,14 +52,14 @@ public class WindowFuncSetPos extends QBuiltinFunc {
 
     @Override
     public QObject action(Runtime runtime, HashMap<String, QObject> args) throws RuntimeStriker {
-        if (!(args.get("window") instanceof QMLWindow))
-            Runtime.error("Not a window");
-        Frame frame = ((QMLWindow) args.get("window")).frame;
-        frame.setBounds(
-                ((int) args.get("x").numValue()),
-                ((int) args.get("y").numValue()),
-                frame.getWidth(),
-                frame.getHeight()
+        if (!(args.get("surface") instanceof QMLSurface))
+            Runtime.error("Not a surface");
+        QMLSurface surface = ((QMLSurface) args.get("surface"));
+        surface.graphics.drawLine(
+                (int) args.get("x").numValue(),
+                (int) args.get("y").numValue(),
+                (int) args.get("x2").numValue(),
+                (int) args.get("y2").numValue()
         );
         return QObject.Val();
     }
