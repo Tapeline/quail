@@ -1,6 +1,5 @@
 package me.tapeline.quailj.runtime.std.fs;
 
-import com.sun.xml.internal.messaging.saaj.packaging.mime.util.QPDecoderStream;
 import me.tapeline.quailj.lexing.TokenType;
 import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.typing.modifiers.TypeModifier;

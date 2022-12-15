@@ -876,6 +876,7 @@ public class Parser {
                     modifiers.add(new TypeModifier(modifier.getType()));
                 }
             } else if (match(MOD_ANYOF) != null) {
+                // TODO: make a loop
                 List<VariableModifier> anyOfModifiers = new ArrayList<>();
                 if (match(MOD_STATIC) != null) {
                     anyOfModifiers.add(new StaticModifier());
