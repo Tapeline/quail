@@ -13,7 +13,7 @@ public class EmbedLoader {
 
     public static Embed loadEmbed(File file, String mainClass, String scriptHome) {
         try {
-            DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
+            DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
             JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
             StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnostics,
                     null, null);
@@ -26,7 +26,7 @@ public class EmbedLoader {
                     "dist/InlineCompiler.jar");
 
             Iterable<? extends JavaFileObject> compilationUnit
-                    = fileManager.getJavaFileObjectsFromFiles(Arrays.asList(file));
+                    = fileManager.getJavaFileObjectsFromFiles(Collections.singletonList(file));
             JavaCompiler.CompilationTask task = compiler.getTask(
                     null,
                     fileManager,
@@ -70,7 +70,7 @@ public class EmbedLoader {
             // -6 because of .class
             String className = je.getName().substring(0, je.getName().length() - 6);
             className = className.replace('/', '.');
-            Class c = cl.loadClass(className);
+            Class<?> c = cl.loadClass(className);
             if (className.equals(mainClass)) {
                 return (Embed) c.newInstance();
             }

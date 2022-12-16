@@ -9,7 +9,7 @@ import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class WindowFuncMouseAbsY extends QBuiltinFunc {
@@ -17,7 +17,7 @@ public class WindowFuncMouseAbsY extends QBuiltinFunc {
     public WindowFuncMouseAbsY(Runtime runtime) {
         super(
                 "mouseAbsY",
-                Arrays.asList(
+                Collections.singletonList(
                         new FuncArgument(
                                 "window",
                                 new ArrayList<>(),

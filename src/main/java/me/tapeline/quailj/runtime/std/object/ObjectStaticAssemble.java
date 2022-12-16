@@ -18,12 +18,12 @@ public class ObjectStaticAssemble extends QBuiltinFunc {
                 Arrays.asList(
                         new FuncArgument(
                                 "keys",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_LIST)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_LIST)),
                                 false
                         ),
                         new FuncArgument(
                                 "values",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_LIST)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_LIST)),
                                 false
                         )
                 ),

@@ -7,7 +7,7 @@ import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class ThreadFuncIsAlive extends QBuiltinFunc {
@@ -15,7 +15,7 @@ public class ThreadFuncIsAlive extends QBuiltinFunc {
     public ThreadFuncIsAlive(Runtime runtime) {
         super(
                 "isAlive",
-                Arrays.asList(
+                Collections.singletonList(
                         new FuncArgument(
                                 "thread",
                                 new ArrayList<>(),

@@ -2,7 +2,6 @@ package me.tapeline.quailj.runtime.std.thread;
 
 import me.tapeline.quailj.lexing.TokenType;
 import me.tapeline.quailj.runtime.Runtime;
-import me.tapeline.quailj.typing.modifiers.RequireModifier;
 import me.tapeline.quailj.typing.modifiers.TypeModifier;
 import me.tapeline.quailj.typing.objects.QFunc;
 import me.tapeline.quailj.typing.objects.QObject;
@@ -12,6 +11,7 @@ import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class ThreadConstructor extends QBuiltinFunc {
@@ -27,12 +27,12 @@ public class ThreadConstructor extends QBuiltinFunc {
                         ),
                         new FuncArgument(
                                 "func",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_FUNC)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_FUNC)),
                                 false
                         ),
                         new FuncArgument(
                                 "args",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_LIST)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_LIST)),
                                 false
                         )
                 ),

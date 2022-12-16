@@ -5,11 +5,11 @@ import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.typing.modifiers.TypeModifier;
 import me.tapeline.quailj.typing.objects.QFunc;
 import me.tapeline.quailj.typing.objects.QObject;
-import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class FuncRemoveHandler extends QBuiltinFunc {
@@ -20,12 +20,12 @@ public class FuncRemoveHandler extends QBuiltinFunc {
                 Arrays.asList(
                         new FuncArgument(
                                 "event",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_STRING)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_STRING)),
                                 false
                         ),
                         new FuncArgument(
                                 "handler",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_FUNC)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_FUNC)),
                                 false
                         )
                 ),
@@ -36,7 +36,7 @@ public class FuncRemoveHandler extends QBuiltinFunc {
     }
 
     @Override
-    public QObject action(Runtime runtime, HashMap<String, QObject> args) throws RuntimeStriker {
+    public QObject action(Runtime runtime, HashMap<String, QObject> args) {
         runtime.removeEventHandler(
                 args.get("event").toString(),
                 ((QFunc) args.get("handler"))

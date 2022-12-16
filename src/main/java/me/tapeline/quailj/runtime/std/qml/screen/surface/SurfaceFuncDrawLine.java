@@ -10,6 +10,7 @@ import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class SurfaceFuncDrawLine extends QBuiltinFunc {
@@ -25,22 +26,22 @@ public class SurfaceFuncDrawLine extends QBuiltinFunc {
                         ),
                         new FuncArgument(
                                 "x",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_NUM)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_NUM)),
                                 false
                         ),
                         new FuncArgument(
                                 "y",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_NUM)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_NUM)),
                                 false
                         ),
                         new FuncArgument(
                                 "x2",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_NUM)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_NUM)),
                                 false
                         ),
                         new FuncArgument(
                                 "y2",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_NUM)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_NUM)),
                                 false
                         )
                 ),

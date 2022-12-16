@@ -2,11 +2,7 @@ package me.tapeline.quailj.parsing.nodes.literals;
 
 import me.tapeline.quailj.lexing.Token;
 import me.tapeline.quailj.parsing.nodes.Node;
-import me.tapeline.quailj.parsing.nodes.sequence.TupleNode;
 import me.tapeline.quailj.typing.utils.ContainerPreRuntimeContents;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class LiteralContainer extends Node {
 

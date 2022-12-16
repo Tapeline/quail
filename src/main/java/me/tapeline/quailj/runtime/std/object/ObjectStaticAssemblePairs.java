@@ -8,20 +8,17 @@ import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class ObjectStaticAssemblePairs extends QBuiltinFunc {
 
     public ObjectStaticAssemblePairs(Runtime runtime) {
         super(
                 "assemblePairs",
-                Arrays.asList(
+                Collections.singletonList(
                         new FuncArgument(
                                 "pairs",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_LIST)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_LIST)),
                                 false
                         )
                 ),

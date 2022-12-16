@@ -19,7 +19,7 @@ public class QString extends QObject {
         this.value = value;
     }
 
-    public QObject sum(Runtime runtime, QObject other) throws RuntimeStriker {
+    public QObject sum(Runtime runtime, QObject other) {
         return Val(value + other.toString());
     }
 
@@ -107,7 +107,7 @@ public class QString extends QObject {
     }
 
     @Override
-    public QObject typeString(Runtime runtime) throws RuntimeStriker {
+    public QObject typeString(Runtime runtime) {
         return this;
     }
 
@@ -161,8 +161,7 @@ public class QString extends QObject {
     }
 
     @Override
-    public QObject subscriptStartEndStep(Runtime runtime, QObject start, QObject end, QObject step)
-            throws RuntimeStriker {
+    public QObject subscriptStartEndStep(Runtime runtime, QObject start, QObject end, QObject step) {
         return Val(QStringUtils.subscript(
                 value,
                 start.isNull()? null : (int) start.numValue(),
@@ -172,7 +171,7 @@ public class QString extends QObject {
     }
 
     @Override
-    public QObject iterateStart(Runtime runtime) throws RuntimeStriker {
+    public QObject iterateStart(Runtime runtime) {
         iterator = 0;
         return Val();
     }
@@ -185,14 +184,14 @@ public class QString extends QObject {
     }
 
     @Override
-    public QObject copy(Runtime runtime) throws RuntimeStriker {
+    public QObject copy(Runtime runtime) {
         QObject copy = QObject.Val(value);
         copy.getTable().putAll(table);
         return copy;
     }
 
     @Override
-    public QObject clone(Runtime runtime) throws RuntimeStriker {
+    public QObject clone(Runtime runtime) {
         QObject cloned = QObject.Val(value);
         table.forEach((k, v) -> {
             try {

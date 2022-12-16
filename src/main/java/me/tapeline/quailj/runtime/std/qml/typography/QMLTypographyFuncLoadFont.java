@@ -12,7 +12,7 @@ import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class QMLTypographyFuncLoadFont extends QBuiltinFunc {
@@ -20,10 +20,10 @@ public class QMLTypographyFuncLoadFont extends QBuiltinFunc {
     public QMLTypographyFuncLoadFont(Runtime runtime) {
         super(
                 "loadFont",
-                Arrays.asList(
+                Collections.singletonList(
                         new FuncArgument(
                                 "font",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_STRING)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_STRING)),
                                 false
                         )
                 ),
@@ -41,7 +41,7 @@ public class QMLTypographyFuncLoadFont extends QBuiltinFunc {
                     new File(args.get("font").toString())
             ));
         } catch (FontFormatException | IOException e) {
-            Runtime.error("Error when loading font: \n" + e.toString() +
+            Runtime.error("Error when loading font: \n" + e +
                     "\n" + e.getLocalizedMessage());
         }
         return QObject.Val();

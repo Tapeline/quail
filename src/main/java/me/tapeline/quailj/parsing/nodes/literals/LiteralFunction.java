@@ -2,8 +2,6 @@ package me.tapeline.quailj.parsing.nodes.literals;
 
 import me.tapeline.quailj.lexing.Token;
 import me.tapeline.quailj.parsing.nodes.Node;
-import me.tapeline.quailj.parsing.nodes.block.BlockNode;
-import me.tapeline.quailj.parsing.nodes.sequence.TupleNode;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 
 import java.util.List;

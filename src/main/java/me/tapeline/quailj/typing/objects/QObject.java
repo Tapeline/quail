@@ -190,14 +190,11 @@ public class QObject {
         this.superClass = superClass;
         if (superClass != null)
             superClass.registerInheritance(this);
-        /*this.table.put("_name", new QString(className));
-        this.table.put("super", superClass);*/
     }
 
     public final void setObjectMetadata(QObject klass) {
         this.prototype = klass;
         this.className = klass.getClassName();
-        //this.table.put("_name", new QString(className));
     }
 
     public final void setObjectMetadata(QObject klass, QObject superClass) throws RuntimeStriker {
@@ -206,13 +203,10 @@ public class QObject {
         this.superClass = superClass;
         if (superClass != null)
             superClass.registerInheritance(klass);
-        /*this.table.put("_name", new QString(className));
-        this.table.put("super", superClass);*/
     }
 
     public final void setPrototypeFlag(boolean isPrototype) {
         this.isPrototype = isPrototype;
-        //this.table.put("_isPrototype", new QBool(isPrototype));
     }
 
     public final String getClassName() {
@@ -220,8 +214,6 @@ public class QObject {
             return prototype.getClassName();
         else
             return className;
-        //return className;
-        //return get("_name").toString();
     }
 
     public final QObject getPrototype() {
@@ -324,7 +316,7 @@ public class QObject {
 
     public final QObject getOverridable(Runtime runtime, String id) throws RuntimeStriker {
         if (table.containsKey("_get"))
-            return callFromThis(runtime, "_get", Arrays.asList(QObject.Val(id)));
+            return callFromThis(runtime, "_get", Collections.singletonList(QObject.Val(id)));
         if (table.containsKey("_get_" + id))
             return callFromThis(runtime, "_get_" + id, new ArrayList<>());
         return get(id);
@@ -363,11 +355,9 @@ public class QObject {
         if (prototype != null && prototype.superClass != null && prototype.superClass.instanceOf(parent))
             return true;
 
-        if (superClass != null && superClass.instanceOf(parent))
-            return true;
+        return superClass != null && superClass.instanceOf(parent);
 
         // -> false
-        return false;
     }
 
     public final VariableTable getTable() {
@@ -400,7 +390,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_add",
-                    Arrays.asList(other)
+                    Collections.singletonList(other)
             );
         Runtime.error("Unsupported operation between " +
                 getClassName() + " + " + other.getClassName());
@@ -412,7 +402,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_sub",
-                    Arrays.asList(other)
+                    Collections.singletonList(other)
             );
         Runtime.error("Unsupported operation between " +
                 getClassName() + " - " + other.getClassName());
@@ -424,7 +414,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_mul",
-                    Arrays.asList(other)
+                    Collections.singletonList(other)
             );
         Runtime.error("Unsupported operation between " +
                 getClassName() + " * " + other.getClassName());
@@ -436,7 +426,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_div",
-                    Arrays.asList(other)
+                    Collections.singletonList(other)
             );
         Runtime.error("Unsupported operation between " +
                 getClassName() + " / " + other.getClassName());
@@ -448,7 +438,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_intdiv",
-                    Arrays.asList(other)
+                    Collections.singletonList(other)
             );
         Runtime.error("Unsupported operation between " +
                 getClassName() + " // " + other.getClassName());
@@ -460,7 +450,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_mod",
-                    Arrays.asList(other)
+                    Collections.singletonList(other)
             );
         Runtime.error("Unsupported operation between " +
                 getClassName() + " % " + other.getClassName());
@@ -472,7 +462,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_pow",
-                    Arrays.asList(other)
+                    Collections.singletonList(other)
             );
         Runtime.error("Unsupported operation between " +
                 getClassName() + " ^ " + other.getClassName());
@@ -484,7 +474,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_shl",
-                    Arrays.asList(other)
+                    Collections.singletonList(other)
             );
         Runtime.error("Unsupported operation between " +
                 getClassName() + " << " + other.getClassName());
@@ -496,7 +486,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_shr",
-                    Arrays.asList(other)
+                    Collections.singletonList(other)
             );
         Runtime.error("Unsupported operation between " +
                 getClassName() + " >> " + other.getClassName());
@@ -508,7 +498,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_eq",
-                    Arrays.asList(other)
+                    Collections.singletonList(other)
             );
         return Val(table.getValues().equals(other.table.getValues()));
     }
@@ -518,7 +508,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_neq",
-                    Arrays.asList(other)
+                    Collections.singletonList(other)
             );
         return Val(!table.getValues().equals(other.table.getValues()));
     }
@@ -528,7 +518,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_cmpg",
-                    Arrays.asList(other)
+                    Collections.singletonList(other)
             );
         Runtime.error("Unsupported operation between " +
                 getClassName() + " > " + other.getClassName());
@@ -540,7 +530,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_cmpge",
-                    Arrays.asList(other)
+                    Collections.singletonList(other)
             );
         Runtime.error("Unsupported operation between " +
                 getClassName() + " >= " + other.getClassName());
@@ -552,7 +542,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_cmpl",
-                    Arrays.asList(other)
+                    Collections.singletonList(other)
             );
         Runtime.error("Unsupported operation between " +
                 getClassName() + " < " + other.getClassName());
@@ -564,7 +554,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_cmple",
-                    Arrays.asList(other)
+                    Collections.singletonList(other)
             );
         Runtime.error("Unsupported operation between " +
                 getClassName() + " <= " + other.getClassName());
@@ -631,7 +621,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_and",
-                    Arrays.asList(other)
+                    Collections.singletonList(other)
             );
         Runtime.error("Unsupported operation between " +
                 getClassName() + " && " + other.getClassName());
@@ -643,7 +633,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_or",
-                    Arrays.asList(other)
+                    Collections.singletonList(other)
             );
         Runtime.error("Unsupported operation between " +
                 getClassName() + " || " + other.getClassName());
@@ -655,7 +645,7 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_index",
-                    Arrays.asList(index)
+                    Collections.singletonList(index)
             );
         return get(index.toString());
     }
@@ -703,10 +693,9 @@ public class QObject {
             return callFromThis(
                     runtime,
                     "_call",
-                    Arrays.asList(QObject.Val(arguments))
+                    Collections.singletonList(QObject.Val(arguments))
             );
         Runtime.error(getClassName() + " is not callable");
-        // TODO: WTF
         return Val();
     }
 

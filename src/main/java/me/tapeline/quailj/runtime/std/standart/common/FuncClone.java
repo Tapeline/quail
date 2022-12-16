@@ -7,7 +7,7 @@ import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class FuncClone extends QBuiltinFunc {
@@ -15,7 +15,7 @@ public class FuncClone extends QBuiltinFunc {
     public FuncClone(Runtime runtime) {
         super(
                 "clone",
-                Arrays.asList(
+                Collections.singletonList(
                         new FuncArgument(
                                 "obj",
                                 new ArrayList<>(),

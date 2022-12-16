@@ -12,9 +12,7 @@ import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
 
 public class QMLTypographyFuncMetrics extends QBuiltinFunc {
@@ -30,7 +28,7 @@ public class QMLTypographyFuncMetrics extends QBuiltinFunc {
                         ),
                         new FuncArgument(
                                 "str",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_STRING)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_STRING)),
                                 false
                         )
                 ),

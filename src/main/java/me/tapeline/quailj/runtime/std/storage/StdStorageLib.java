@@ -1,7 +1,6 @@
 package me.tapeline.quailj.runtime.std.storage;
 
 import me.tapeline.quailj.runtime.Runtime;
-import me.tapeline.quailj.runtime.std.fs.*;
 import me.tapeline.quailj.typing.objects.QObject;
 
 import java.util.HashMap;

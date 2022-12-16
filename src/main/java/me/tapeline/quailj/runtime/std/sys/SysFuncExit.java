@@ -8,7 +8,7 @@ import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class SysFuncExit extends QBuiltinFunc {
@@ -16,10 +16,10 @@ public class SysFuncExit extends QBuiltinFunc {
     public SysFuncExit(Runtime runtime) {
         super(
                 "exit",
-                Arrays.asList(
+                Collections.singletonList(
                         new FuncArgument(
                                 "code",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_NUM)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_NUM)),
                                 false
                         )
                 ),

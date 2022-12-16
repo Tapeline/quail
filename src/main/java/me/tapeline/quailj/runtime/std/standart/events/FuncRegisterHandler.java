@@ -1,19 +1,15 @@
 package me.tapeline.quailj.runtime.std.standart.events;
 
 import me.tapeline.quailj.lexing.TokenType;
-import me.tapeline.quailj.libmanagement.Embed;
-import me.tapeline.quailj.libmanagement.EmbedLoader;
 import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.typing.modifiers.TypeModifier;
 import me.tapeline.quailj.typing.objects.QFunc;
 import me.tapeline.quailj.typing.objects.QObject;
-import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class FuncRegisterHandler extends QBuiltinFunc {
@@ -24,17 +20,17 @@ public class FuncRegisterHandler extends QBuiltinFunc {
                 Arrays.asList(
                         new FuncArgument(
                                 "event",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_STRING)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_STRING)),
                                 false
                         ),
                         new FuncArgument(
                                 "handler",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_FUNC)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_FUNC)),
                                 false
                         ),
                         new FuncArgument(
                                 "ignoreCancelled",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_BOOL)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_BOOL)),
                                 false
                         )
                 ),
@@ -45,7 +41,7 @@ public class FuncRegisterHandler extends QBuiltinFunc {
     }
 
     @Override
-    public QObject action(Runtime runtime, HashMap<String, QObject> args) throws RuntimeStriker {
+    public QObject action(Runtime runtime, HashMap<String, QObject> args) {
         runtime.putEventHandler(
                 args.get("event").toString(),
                 ((QFunc) args.get("handler")),

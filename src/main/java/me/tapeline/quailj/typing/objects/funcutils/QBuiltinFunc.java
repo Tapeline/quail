@@ -66,7 +66,7 @@ public abstract class QBuiltinFunc extends QFunc {
         return QObject.Val();
     }
 
-    public QObject copy(Runtime runtime) throws RuntimeStriker {
+    public QObject copy(Runtime runtime) {
         try {
             QBuiltinFunc copy = this.getClass().getConstructor(Class.forName(
                     "me.tapeline.quailj.runtime.Runtime")).newInstance(runtime);
@@ -79,7 +79,7 @@ public abstract class QBuiltinFunc extends QFunc {
         }
     }
 
-    public QObject clone(Runtime runtime) throws RuntimeStriker {
+    public QObject clone(Runtime runtime) {
         try {
             QBuiltinFunc cloned = this.getClass().getConstructor(Class.forName(
                     "me.tapeline.quailj.runtime.Runtime")).newInstance(runtime);

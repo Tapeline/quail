@@ -1,8 +1,6 @@
 package me.tapeline.quailj.runtime.std.standart.events;
 
 import me.tapeline.quailj.lexing.TokenType;
-import me.tapeline.quailj.libmanagement.Embed;
-import me.tapeline.quailj.libmanagement.EmbedLoader;
 import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.typing.modifiers.TypeModifier;
 import me.tapeline.quailj.typing.objects.QObject;
@@ -10,9 +8,9 @@ import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class FuncCallEvent extends QBuiltinFunc {
@@ -23,7 +21,7 @@ public class FuncCallEvent extends QBuiltinFunc {
                 Arrays.asList(
                         new FuncArgument(
                                 "eventName",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_STRING)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_STRING)),
                                 false
                         ),
                         new FuncArgument(

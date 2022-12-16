@@ -2,7 +2,6 @@ package me.tapeline.quailj.runtime.std.object;
 
 import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.typing.objects.QObject;
-import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 import me.tapeline.quailj.utils.Utilities;
@@ -14,7 +13,7 @@ public class ObjectFuncPairs extends QBuiltinFunc {
     public ObjectFuncPairs(Runtime runtime) {
         super(
                 "pairs",
-                Arrays.asList(
+                Collections.singletonList(
                         new FuncArgument(
                                 "obj",
                                 new ArrayList<>(),
@@ -28,7 +27,7 @@ public class ObjectFuncPairs extends QBuiltinFunc {
     }
 
     @Override
-    public QObject action(Runtime runtime, HashMap<String, QObject> args) throws RuntimeStriker {
+    public QObject action(Runtime runtime, HashMap<String, QObject> args) {
         Set<Map.Entry<String, QObject>> pairs = args.get("obj").getNonDefaultFields().entrySet();
         List<QObject> pairsList = new ArrayList<>();
         for (Map.Entry<String, QObject> entry : pairs)

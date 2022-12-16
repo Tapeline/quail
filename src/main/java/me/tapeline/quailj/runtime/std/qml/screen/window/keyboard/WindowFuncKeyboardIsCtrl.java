@@ -8,7 +8,7 @@ import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class WindowFuncKeyboardIsCtrl extends QBuiltinFunc {
@@ -16,7 +16,7 @@ public class WindowFuncKeyboardIsCtrl extends QBuiltinFunc {
     public WindowFuncKeyboardIsCtrl(Runtime runtime) {
         super(
                 "keyboardIsCtrl",
-                Arrays.asList(
+                Collections.singletonList(
                         new FuncArgument(
                                 "window",
                                 new ArrayList<>(),

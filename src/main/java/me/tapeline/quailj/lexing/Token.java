@@ -4,7 +4,7 @@ public class Token {
 
     public static Token UNDEFINED = new Token(TokenType.EOL, "\n", 1, 0, 1);
     private TokenType type;
-    private String lexeme;
+    private final String lexeme;
     private int line;
 
     private int character;

@@ -25,7 +25,7 @@ public class AdapterFuncJavaCall extends QBuiltinFunc {
                         ),
                         new FuncArgument(
                                 "method",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_STRING)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_STRING)),
                                 false
                         ),
                         new FuncArgument(
@@ -57,11 +57,11 @@ public class AdapterFuncJavaCall extends QBuiltinFunc {
             Object result = method.invoke(obj, convertedArguments.toArray());
             return packValue(runtime, result);
         } catch (NoSuchMethodException e) {
-            Runtime.error("NoSuchMethodException while running JavaAdapter.javaCall:\n" + e.toString());
+            Runtime.error("NoSuchMethodException while running JavaAdapter.javaCall:\n" + e);
         } catch (InvocationTargetException e) {
-            Runtime.error("InvocationTargetException while running JavaAdapter.javaCall:\n" + e.toString());
+            Runtime.error("InvocationTargetException while running JavaAdapter.javaCall:\n" + e);
         } catch (IllegalAccessException e) {
-            Runtime.error("IllegalAccessException while running JavaAdapter.javaCall:\n" + e.toString());
+            Runtime.error("IllegalAccessException while running JavaAdapter.javaCall:\n" + e);
         }
         return QObject.Val();
     }

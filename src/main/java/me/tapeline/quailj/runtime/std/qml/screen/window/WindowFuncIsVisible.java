@@ -7,7 +7,7 @@ import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class WindowFuncIsVisible extends QBuiltinFunc {
@@ -15,7 +15,7 @@ public class WindowFuncIsVisible extends QBuiltinFunc {
     public WindowFuncIsVisible(Runtime runtime) {
         super(
                 "isVisible",
-                Arrays.asList(
+                Collections.singletonList(
                         new FuncArgument(
                                 "window",
                                 new ArrayList<>(),

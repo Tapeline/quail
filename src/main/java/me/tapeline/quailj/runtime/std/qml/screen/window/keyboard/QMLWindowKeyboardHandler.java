@@ -11,6 +11,9 @@ import java.util.HashMap;
 import java.util.List;
 public class QMLWindowKeyboardHandler implements KeyListener {
 
+    // TODO: when pressed a char key and then shift,
+    //     : after releasing keys, uppercase char
+    //     : is not removed
     public volatile List<Character> pressed = new ArrayList<>();
     public volatile boolean isCtrl = false;
     public volatile boolean isShift = false;

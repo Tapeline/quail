@@ -1,7 +1,5 @@
 package me.tapeline.quailj.typing.objects.errors;
 
-import me.tapeline.quailj.runtime.Runtime;
-
 public class ErrorMessage {
 
     public int line;

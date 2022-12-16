@@ -5,14 +5,13 @@ import me.tapeline.quailj.utils.ErrorFormatter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import static me.tapeline.quailj.lexing.TokenType.*;
 
 public class Lexer {
 
-    private String sourceCode;
-    private List<Token> tokens = new ArrayList<>();
+    private final String sourceCode;
+    private final List<Token> tokens = new ArrayList<>();
     private int start = 0;
     private int current = 0;
     private int startOfCurrentLine = 0;

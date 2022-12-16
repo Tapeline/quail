@@ -1,7 +1,6 @@
 package me.tapeline.quailj.runtime.std.qml.screen.window;
 
 import me.tapeline.quailj.runtime.Runtime;
-import me.tapeline.quailj.runtime.std.javaadapter.AdapterFuncJavaCall;
 import me.tapeline.quailj.runtime.std.qml.screen.window.keyboard.*;
 import me.tapeline.quailj.runtime.std.qml.screen.window.mouse.*;
 import me.tapeline.quailj.typing.objects.QJavaAdapter;

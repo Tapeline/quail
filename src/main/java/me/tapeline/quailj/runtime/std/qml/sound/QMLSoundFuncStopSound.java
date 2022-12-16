@@ -9,7 +9,7 @@ import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
 import javax.sound.sampled.Clip;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class QMLSoundFuncStopSound extends QBuiltinFunc {
@@ -17,7 +17,7 @@ public class QMLSoundFuncStopSound extends QBuiltinFunc {
     public QMLSoundFuncStopSound(Runtime runtime) {
         super(
                 "stopSound",
-                Arrays.asList(
+                Collections.singletonList(
                         new FuncArgument(
                                 "sound",
                                 new ArrayList<>(),

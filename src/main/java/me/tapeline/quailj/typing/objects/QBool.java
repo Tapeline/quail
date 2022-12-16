@@ -36,14 +36,14 @@ public class QBool extends QObject {
     }
 
     @Override
-    public QObject copy(Runtime runtime) throws RuntimeStriker {
+    public QObject copy(Runtime runtime) {
         QObject copy = QObject.Val(value);
         copy.getTable().putAll(table);
         return copy;
     }
 
     @Override
-    public QObject clone(Runtime runtime) throws RuntimeStriker {
+    public QObject clone(Runtime runtime) {
         QObject cloned = QObject.Val(value);
         table.forEach((k, v) -> {
             try {

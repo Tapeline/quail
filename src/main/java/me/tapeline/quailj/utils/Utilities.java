@@ -1,7 +1,6 @@
 package me.tapeline.quailj.utils;
 
 import me.tapeline.quailj.lexing.TokenType;
-import me.tapeline.quailj.parsing.nodes.Node;
 
 import java.util.*;
 

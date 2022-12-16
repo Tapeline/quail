@@ -10,6 +10,7 @@ import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class ObjectFuncGet extends QBuiltinFunc {
@@ -25,7 +26,7 @@ public class ObjectFuncGet extends QBuiltinFunc {
                         ),
                         new FuncArgument(
                                 "key",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_STRING)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_STRING)),
                                 false
                         )
                 ),

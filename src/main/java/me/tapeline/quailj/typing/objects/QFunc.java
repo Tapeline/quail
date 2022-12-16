@@ -17,7 +17,7 @@ public class QFunc extends QObject {
     public Runtime boundRuntime = null;
     public boolean isStatic;
     public List<AlternativeCall> alternatives = new ArrayList<>();
-    private Memory closure;
+    private final Memory closure;
 
     public QFunc(String name,
                  List<FuncArgument> args,

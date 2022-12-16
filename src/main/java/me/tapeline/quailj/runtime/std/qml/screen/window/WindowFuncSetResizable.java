@@ -10,6 +10,7 @@ import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class WindowFuncSetResizable extends QBuiltinFunc {
@@ -25,7 +26,7 @@ public class WindowFuncSetResizable extends QBuiltinFunc {
                         ),
                         new FuncArgument(
                                 "flag",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_BOOL)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_BOOL)),
                                 false
                         )
                 ),

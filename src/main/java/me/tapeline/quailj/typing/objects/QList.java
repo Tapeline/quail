@@ -137,7 +137,7 @@ public class QList extends QObject {
     }
 
     @Override
-    public QObject subscriptStartEndStep(Runtime runtime, QObject start, QObject end, QObject step) throws RuntimeStriker {
+    public QObject subscriptStartEndStep(Runtime runtime, QObject start, QObject end, QObject step) {
         return Val(QListUtils.subscript(
                 values,
                 start.isNull()? null : (int) start.numValue(),
@@ -147,7 +147,7 @@ public class QList extends QObject {
     }
 
     @Override
-    public QObject iterateStart(Runtime runtime) throws RuntimeStriker {
+    public QObject iterateStart(Runtime runtime) {
         this.iter = 0;
         return QObject.Val();
     }
@@ -160,7 +160,7 @@ public class QList extends QObject {
     }
 
     @Override
-    public QObject copy(Runtime runtime) throws RuntimeStriker {
+    public QObject copy(Runtime runtime) {
         QObject copy = QObject.Val(values);
         copy.getTable().putAll(table);
         return copy;

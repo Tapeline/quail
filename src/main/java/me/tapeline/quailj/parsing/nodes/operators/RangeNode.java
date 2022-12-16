@@ -1,7 +1,6 @@
 package me.tapeline.quailj.parsing.nodes.operators;
 
 import me.tapeline.quailj.lexing.Token;
-import me.tapeline.quailj.lexing.TokenType;
 import me.tapeline.quailj.parsing.nodes.Node;
 
 public class RangeNode extends Node {

@@ -8,7 +8,7 @@ import java.util.Set;
 
 public class LibraryRegistry {
 
-    private HashMap<String, QObject> cachedLibraries = new HashMap<>();
+    private final HashMap<String, QObject> cachedLibraries = new HashMap<>();
     public Set<String> libraryRoots = new HashSet<>();
     public LibraryRegistry() {}
 

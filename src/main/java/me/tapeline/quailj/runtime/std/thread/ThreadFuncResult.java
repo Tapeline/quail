@@ -7,7 +7,7 @@ import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class ThreadFuncResult extends QBuiltinFunc {
@@ -15,7 +15,7 @@ public class ThreadFuncResult extends QBuiltinFunc {
     public ThreadFuncResult(Runtime runtime) {
         super(
                 "result",
-                Arrays.asList(
+                Collections.singletonList(
                         new FuncArgument(
                                 "thread",
                                 new ArrayList<>(),

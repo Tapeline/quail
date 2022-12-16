@@ -4,7 +4,6 @@ import me.tapeline.quailj.lexing.Token;
 import me.tapeline.quailj.parsing.nodes.Node;
 import me.tapeline.quailj.parsing.nodes.operators.FieldReferenceNode;
 
-import java.util.HashMap;
 import java.util.List;
 
 public class CallNode extends Node {

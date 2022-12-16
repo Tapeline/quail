@@ -11,6 +11,7 @@ import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class SurfaceFuncSetColorRGBA extends QBuiltinFunc {
@@ -26,22 +27,22 @@ public class SurfaceFuncSetColorRGBA extends QBuiltinFunc {
                         ),
                         new FuncArgument(
                                 "r",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_NUM)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_NUM)),
                                 false
                         ),
                         new FuncArgument(
                                 "g",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_NUM)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_NUM)),
                                 false
                         ),
                         new FuncArgument(
                                 "b",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_NUM)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_NUM)),
                                 false
                         ),
                         new FuncArgument(
                                 "a",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_NUM)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_NUM)),
                                 false
                         )
                 ),

@@ -7,7 +7,6 @@ import me.tapeline.quailj.parsing.nodes.literals.LiteralNull;
 import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.typing.modifiers.RequireModifier;
 import me.tapeline.quailj.typing.modifiers.VariableModifier;
-import me.tapeline.quailj.typing.objects.QNull;
 import me.tapeline.quailj.typing.objects.QObject;
 
 import java.util.List;

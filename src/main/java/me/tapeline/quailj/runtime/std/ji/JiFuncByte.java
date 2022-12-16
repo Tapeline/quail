@@ -5,11 +5,10 @@ import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.typing.modifiers.TypeModifier;
 import me.tapeline.quailj.typing.objects.QJavaAdapter;
 import me.tapeline.quailj.typing.objects.QObject;
-import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class JiFuncByte extends QBuiltinFunc {
@@ -17,10 +16,10 @@ public class JiFuncByte extends QBuiltinFunc {
     public JiFuncByte(Runtime runtime) {
         super(
                 "byte",
-                Arrays.asList(
+                Collections.singletonList(
                         new FuncArgument(
                                 "n",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_NUM)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_NUM)),
                                 false
                         )
                 ),
@@ -31,7 +30,7 @@ public class JiFuncByte extends QBuiltinFunc {
     }
 
     @Override
-    public QObject action(Runtime runtime, HashMap<String, QObject> args) throws RuntimeStriker {
+    public QObject action(Runtime runtime, HashMap<String, QObject> args) {
         return new QJavaAdapter<>(runtime, (byte) args.get("n").numValue());
     }
 

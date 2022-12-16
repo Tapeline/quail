@@ -1,12 +1,9 @@
 package me.tapeline.quailj.runtime.std.qml.screen.surface;
 
 import me.tapeline.quailj.runtime.Runtime;
-import me.tapeline.quailj.runtime.std.qml.screen.window.*;
 import me.tapeline.quailj.typing.objects.QJavaAdapter;
 import me.tapeline.quailj.typing.objects.QObject;
-import me.tapeline.quailj.utils.Pair;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;

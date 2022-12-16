@@ -7,17 +7,14 @@ import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class WindowFuncKeyboardGetPressedKeys extends QBuiltinFunc {
 
     public WindowFuncKeyboardGetPressedKeys(Runtime runtime) {
         super(
                 "keyboardGetPressedKeys",
-                Arrays.asList(
+                Collections.singletonList(
                         new FuncArgument(
                                 "window",
                                 new ArrayList<>(),

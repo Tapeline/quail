@@ -3,7 +3,6 @@ package me.tapeline.quailj.runtime.std.standart.threading;
 import me.tapeline.quailj.runtime.AsyncRuntimeWorker;
 import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.typing.objects.QObject;
-import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
 import java.util.ArrayList;
@@ -22,7 +21,7 @@ public class FuncAsyncsDone extends QBuiltinFunc {
     }
 
     @Override
-    public QObject action(Runtime runtime, HashMap<String, QObject> args) throws RuntimeStriker {
+    public QObject action(Runtime runtime, HashMap<String, QObject> args) {
         int ctr = 0;
         for (AsyncRuntimeWorker worker : runtime.asyncRuntimeWorkers)
             if (worker.isAlive())

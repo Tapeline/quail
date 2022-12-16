@@ -1,15 +1,13 @@
 package me.tapeline.quailj.runtime.std.qml.screen.window;
 
-import me.tapeline.quailj.lexing.TokenType;
 import me.tapeline.quailj.runtime.Runtime;
-import me.tapeline.quailj.typing.modifiers.TypeModifier;
 import me.tapeline.quailj.typing.objects.QObject;
 import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class WindowFuncClose extends QBuiltinFunc {
@@ -17,7 +15,7 @@ public class WindowFuncClose extends QBuiltinFunc {
     public WindowFuncClose(Runtime runtime) {
         super(
                 "close",
-                Arrays.asList(
+                Collections.singletonList(
                         new FuncArgument(
                                 "window",
                                 new ArrayList<>(),

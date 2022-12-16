@@ -121,34 +121,34 @@ public class QNumber extends QObject {
     }
 
     @Override
-    public QObject minus(Runtime runtime) throws RuntimeStriker {
+    public QObject minus(Runtime runtime) {
         return QObject.Val(-value);
     }
 
     @Override
-    public QObject typeString(Runtime runtime) throws RuntimeStriker {
+    public QObject typeString(Runtime runtime) {
         return QObject.Val(toString());
     }
 
     @Override
-    public QObject typeBool(Runtime runtime) throws RuntimeStriker {
+    public QObject typeBool(Runtime runtime) {
         return QObject.Val(value != 0);
     }
 
     @Override
-    public QObject typeNumber(Runtime runtime) throws RuntimeStriker {
+    public QObject typeNumber(Runtime runtime) {
         return this;
     }
 
     @Override
-    public QObject copy(Runtime runtime) throws RuntimeStriker {
+    public QObject copy(Runtime runtime) {
         QObject copy = QObject.Val(value);
         copy.getTable().putAll(table);
         return copy;
     }
 
     @Override
-    public QObject clone(Runtime runtime) throws RuntimeStriker {
+    public QObject clone(Runtime runtime) {
         QObject cloned = QObject.Val(value);
         table.forEach((k, v) -> {
             try {

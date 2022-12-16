@@ -4,25 +4,20 @@ import me.tapeline.quailj.lexing.TokenType;
 import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.typing.modifiers.TypeModifier;
 import me.tapeline.quailj.typing.objects.QObject;
-import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.regex.Pattern;
+import java.util.*;
 
 public class StringFuncChars extends QBuiltinFunc {
 
     public StringFuncChars(Runtime runtime) {
         super(
                 "chars",
-                Arrays.asList(
+                Collections.singletonList(
                         new FuncArgument(
                                 "str",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_STRING)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_STRING)),
                                 false
                         )
                 ),
@@ -33,7 +28,7 @@ public class StringFuncChars extends QBuiltinFunc {
     }
 
     @Override
-    public QObject action(Runtime runtime, HashMap<String, QObject> args) throws RuntimeStriker {
+    public QObject action(Runtime runtime, HashMap<String, QObject> args) {
         List<QObject> split = new ArrayList<>();
         String s = args.get("str").toString();
         int size = s.length();

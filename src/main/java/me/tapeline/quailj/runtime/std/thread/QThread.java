@@ -3,7 +3,6 @@ package me.tapeline.quailj.runtime.std.thread;
 import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.typing.objects.QFunc;
 import me.tapeline.quailj.typing.objects.QObject;
-import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +30,7 @@ public class QThread extends QObject {
 
     public QThreadWorker worker;
 
-    public QThread(Runtime runtime, QFunc func, List<QObject> args) throws RuntimeStriker  {
+    public QThread(Runtime runtime, QFunc func, List<QObject> args) {
         table.putAll(Runtime.superObject.table);
         table.putAll(definition(runtime).table);
         definition(runtime).derivedObjects.add(this);

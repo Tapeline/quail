@@ -7,7 +7,7 @@ import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class SurfaceFuncGetWidth extends QBuiltinFunc {
@@ -15,7 +15,7 @@ public class SurfaceFuncGetWidth extends QBuiltinFunc {
     public SurfaceFuncGetWidth(Runtime runtime) {
         super(
                 "getWidth",
-                Arrays.asList(
+                Collections.singletonList(
                         new FuncArgument(
                                 "surface",
                                 new ArrayList<>(),

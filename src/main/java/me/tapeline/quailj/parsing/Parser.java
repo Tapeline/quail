@@ -1,9 +1,6 @@
 package me.tapeline.quailj.parsing;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import me.tapeline.quailj.lexing.Token;
 import me.tapeline.quailj.lexing.TokenType;
@@ -16,7 +13,6 @@ import me.tapeline.quailj.parsing.nodes.branching.IfNode;
 import me.tapeline.quailj.parsing.nodes.branching.TryCatchNode;
 import me.tapeline.quailj.parsing.nodes.effect.EffectNode;
 import me.tapeline.quailj.parsing.nodes.effect.InstructionNode;
-import me.tapeline.quailj.parsing.nodes.effect.LibraryPath;
 import me.tapeline.quailj.parsing.nodes.effect.UseNode;
 import me.tapeline.quailj.parsing.nodes.expression.CallNode;
 import me.tapeline.quailj.parsing.nodes.generators.ContainerGeneratorNode;
@@ -42,8 +38,8 @@ import static me.tapeline.quailj.lexing.TokenType.*;
 
 public class Parser {
 
-    private List<Token> tokens;
-    private String sourceCode;
+    private final List<Token> tokens;
+    private final String sourceCode;
     private int pos = 0;
 
     public Parser(String code, List<Token> tokens) {
@@ -154,15 +150,6 @@ public class Parser {
             }
         }
         return null;
-
-        /*if (!reachedEnd()) {
-            Token current = tokens.get(pos);
-            if (type.equals(current.getType())) {
-                pos++;
-                return current;
-            }
-        }
-        return null;*/
     }
 
     private Token consumeAny() {
@@ -303,7 +290,7 @@ public class Parser {
                 ifBranchCode = parseBlockUntil(CONTROL_ELSEIF, CONTROL_ELSE, RCPAR);
                 match(RCPAR);
             } else
-                ifBranchCode = new BlockNode(getCurrent(), Arrays.asList(parseStatement()));
+                ifBranchCode = new BlockNode(getCurrent(), Collections.singletonList(parseStatement()));
             IfNode ifNode = new IfNode(ifToken, ifBranchCondition, ifBranchCode);
             while (match(CONTROL_ELSEIF) != null) {
                 Node elseIfBranchCondition = parseExpression(new ExpressionParsingRule());
@@ -314,7 +301,7 @@ public class Parser {
                     elseIfCode = parseBlockUntil(CONTROL_ELSEIF, CONTROL_ELSE, RCPAR);
                     match(RCPAR);
                 } else
-                    elseIfCode = new BlockNode(getCurrent(), Arrays.asList(parseStatement()));
+                    elseIfCode = new BlockNode(getCurrent(), Collections.singletonList(parseStatement()));
                 ifNode.conditions.add(elseIfBranchCondition);
                 ifNode.branches.add(elseIfCode);
                 match(RCPAR);
@@ -325,7 +312,7 @@ public class Parser {
                     ifNode.elseBranch = parseBlockUntil(RCPAR);
                     match(RCPAR);
                 } else
-                    ifNode.elseBranch = new BlockNode(getCurrent(), Arrays.asList(parseStatement()));
+                    ifNode.elseBranch = new BlockNode(getCurrent(), Collections.singletonList(parseStatement()));
             return ifNode;
         } else if (match(CONTROL_WHILE) != null) {
             Token token = getPrevious();
@@ -597,6 +584,8 @@ public class Parser {
         ) != null) {
             Token shortOp = getPrevious();
             Node value = parseOr(rule);
+            if (shortOp == null)
+                error("Unexpected null shortOp");
             if (left instanceof VariableNode) {
                 return new AssignNode(shortOp, ((VariableNode) left).id,
                          new BinaryOperatorNode(
@@ -606,25 +595,31 @@ public class Parser {
                                  value
                          ));
             } else if (left instanceof FieldReferenceNode) {
+                Token prev = getPrevious();
+                if (prev == null)
+                    error("Unexpected null prev");
                 return new FieldSetNode(
                         shortOp,
                         ((FieldReferenceNode) left).object,
                         ((FieldReferenceNode) left).field,
                         new BinaryOperatorNode(
-                                getPrevious(),
-                                shortToNormal.get(getPrevious().getType()),
+                                prev,
+                                shortToNormal.get(prev.getType()),
                                 left,
                                 value
                         )
                 );
             } else if (left instanceof IndexingNode) {
+                Token prev = getPrevious();
+                if (prev == null)
+                    error("Unexpected null prev");
                 return new IndexSetNode(
                         getCurrent(),
                         ((IndexingNode) left).object,
                         ((IndexingNode) left).index,
                         new BinaryOperatorNode(
-                                getPrevious(),
-                                shortToNormal.get(getPrevious().getType()),
+                                prev,
+                                shortToNormal.get(prev.getType()),
                                 left,
                                 value
                         )
@@ -659,7 +654,10 @@ public class Parser {
         Node left = parseComparison(rule);
         if (rule.excludeAll) return left;
         while (matchMultiple(EQUALS, NOT_EQUALS, INSTANCEOF, IN) != null) {
-            left = new BinaryOperatorNode(getPrevious(), getPrevious().getType(),
+            Token prev = getPrevious();
+            if (prev == null)
+                error("Unexpected null prev");
+            left = new BinaryOperatorNode(prev, prev.getType(),
                     left, parseComparison(rule));
         }
         return left;
@@ -671,7 +669,10 @@ public class Parser {
 
         while (matchMultiple(GREATER, GREATER_EQUAL, LESS,
                 LESS_EQUAL, SHIFT_LEFT, SHIFT_RIGHT) != null) {
-            left = new BinaryOperatorNode(getPrevious(), getPrevious().getType(),
+            Token prev = getPrevious();
+            if (prev == null)
+                error("Unexpected null prev");
+            left = new BinaryOperatorNode(prev, prev.getType(),
                     left, parseRange(rule));
         }
         return left;
@@ -691,6 +692,8 @@ public class Parser {
             boolean include = false;
             Node end = null, step = null;
             Token rangeToken = getPrevious();
+            if (rangeToken == null)
+                error("Unexpected null rangeToken");
             include = rangeToken.getType() == RANGE_INCLUDE;
             ExpressionParsingRule rangeRule = new ExpressionParsingRule();
             rangeRule.excludeRange = true;
@@ -706,7 +709,10 @@ public class Parser {
         Node left = parseFactor(rule);
         if (rule.excludeAll) return left;
         while (matchMultiple(PLUS, MINUS) != null) {
-            left = new BinaryOperatorNode(getPrevious(), getPrevious().getType(),
+            Token prev = getPrevious();
+            if (prev == null)
+                error("Unexpected null prev");
+            left = new BinaryOperatorNode(prev, prev.getType(),
                     left, parseFactor(rule));
         }
         return left;
@@ -716,7 +722,10 @@ public class Parser {
         Node left = parsePower(rule);
         if (rule.excludeAll) return left;
         while (matchMultiple(MULTIPLY, DIVIDE, INTDIV, MODULO) != null) {
-            left = new BinaryOperatorNode(getPrevious(), getPrevious().getType(),
+            Token prev = getPrevious();
+            if (prev == null)
+                error("Unexpected null prev");
+            left = new BinaryOperatorNode(prev, prev.getType(),
                     left, parsePower(rule));
         }
         return left;
@@ -738,7 +747,10 @@ public class Parser {
                 MINUS,
                 HASH
         ) != null) {
-            return new UnaryOperatorNode(getPrevious(), getPrevious().getType(), parseUnary(rule));
+            Token prev = getPrevious();
+            if (prev == null)
+                error("Unexpected null prev");
+            return new UnaryOperatorNode(prev, prev.getType(), parseUnary(rule));
         }
         return parseCall(rule);
     }
@@ -860,6 +872,8 @@ public class Parser {
                 * string s = "123.43"
                 * out(num(s) + 13.62)
                 * */
+                if (modifier == null)
+                    error("Unexpected null modifier");
                 if (match(LPAR) != null) {
                     Token leftBracket = getPrevious();
                     Node castValue = parseExpression(new ExpressionParsingRule());
@@ -876,42 +890,49 @@ public class Parser {
                     modifiers.add(new TypeModifier(modifier.getType()));
                 }
             } else if (match(MOD_ANYOF) != null) {
-                // TODO: make a loop
                 List<VariableModifier> anyOfModifiers = new ArrayList<>();
-                if (match(MOD_STATIC) != null) {
-                    anyOfModifiers.add(new StaticModifier());
-                } else if (match(MOD_LOCAL) != null) {
-                    anyOfModifiers.add(new LocalModifier());
-                } else if (match(MOD_FINAL) != null) {
-                    anyOfModifiers.add(new FinalModifier());
-                } else if (match(MOD_REQUIRE) != null) {
-                    anyOfModifiers.add(new RequireModifier());
-                } else if (matchMultiple(
-                        TYPE_BOOL,
-                        TYPE_CONTAINER,
-                        TYPE_FUNC,
-                        TYPE_LIST,
-                        TYPE_NUM,
-                        TYPE_OBJECT,
-                        TYPE_STRING,
-                        TYPE_VOID
-                ) != null) {
-                    Token modifier = getPrevious();
-                    if (modifier.getType() == TYPE_OBJECT && match(LESS) != null) {
-                        ExpressionParsingRule rule = new ExpressionParsingRule();
-                        rule.excludeComparison = true;
-                        Node requiredClass = parseExpression(rule);
-                        require(GREATER, "Expected > to close object<Class>");
-                        anyOfModifiers.add(new TypeModifier(requiredClass));
-                    } else {
-                        anyOfModifiers.add(new TypeModifier(modifier.getType()));
+                do {
+                    if (match(MOD_STATIC) != null) {
+                        anyOfModifiers.add(new StaticModifier());
+                    } else if (match(MOD_LOCAL) != null) {
+                        anyOfModifiers.add(new LocalModifier());
+                    } else if (match(MOD_FINAL) != null) {
+                        anyOfModifiers.add(new FinalModifier());
+                    } else if (match(MOD_REQUIRE) != null) {
+                        anyOfModifiers.add(new RequireModifier());
+                    } else if (matchMultiple(
+                            TYPE_BOOL,
+                            TYPE_CONTAINER,
+                            TYPE_FUNC,
+                            TYPE_LIST,
+                            TYPE_NUM,
+                            TYPE_OBJECT,
+                            TYPE_STRING,
+                            TYPE_VOID
+                    ) != null) {
+                        Token modifier = getPrevious();
+                        if (modifier == null)
+                            error("Unexpected null modifier");
+                        if (modifier.getType() == TYPE_OBJECT && match(LESS) != null) {
+                            ExpressionParsingRule rule = new ExpressionParsingRule();
+                            rule.excludeComparison = true;
+                            Node requiredClass = parseExpression(rule);
+                            require(GREATER, "Expected > to close object<Class>");
+                            anyOfModifiers.add(new TypeModifier(requiredClass));
+                        } else {
+                            anyOfModifiers.add(new TypeModifier(modifier.getType()));
+                        }
                     }
-                }
+                } while (match(PILLAR) != null);
                 modifiers.add(new AnyOfModifier(anyOfModifiers));
             } else break;
         }
+        if (getCurrent() == null || getNext() == null)
+            error("Unexpected null getCurrent() and getNext()");
         if (getCurrent().getType() == ID && getNext().getType() == LPAR) {
             Token name = match(ID);
+            if (name == null)
+                error("Unexpected null name");
             Token leftParent = match(LPAR);
             boolean isStatic = false;
             for (VariableModifier modifier : modifiers)
@@ -980,7 +1001,7 @@ public class Parser {
             if (match(LAMBDA_ARROW) != null) {
                 Token arrow = getPrevious();
                 return new LiteralFunction(arrow, arrow.getLexeme(),
-                        convertArguments(new TupleNode(leftParent, Arrays.asList(value))),
+                        convertArguments(new TupleNode(leftParent, Collections.singletonList(value))),
                         parseStatement(), false);
             }
             return value;

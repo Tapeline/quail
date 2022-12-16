@@ -8,10 +8,7 @@ import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class ListFuncCount extends QBuiltinFunc {
 
@@ -21,7 +18,7 @@ public class ListFuncCount extends QBuiltinFunc {
                 Arrays.asList(
                         new FuncArgument(
                                 "list",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_LIST)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_LIST)),
                                 false
                         ),
                         new FuncArgument(

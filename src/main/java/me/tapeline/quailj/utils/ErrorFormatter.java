@@ -2,8 +2,6 @@ package me.tapeline.quailj.utils;
 
 import me.tapeline.quailj.typing.objects.errors.ErrorMessage;
 
-import java.io.File;
-
 public class ErrorFormatter {
 
     public static String formatError(String code, int line, int character,
@@ -26,9 +24,9 @@ public class ErrorFormatter {
             underline.append("^");
         error.append(underline).append("\n");
         int maxLength = 0;
-        for (int i = 0; i < lines.length; i++)
-            if (lines[i].length() > maxLength)
-                maxLength = lines[i].length();
+        for (String s : lines)
+            if (s.length() > maxLength)
+                maxLength = s.length();
         for (int i = 0; i < Math.max(underline.length(), maxLength); i++)
             error.append("=");
         error.append("\n").append(errorType).append(":\n").append(message);

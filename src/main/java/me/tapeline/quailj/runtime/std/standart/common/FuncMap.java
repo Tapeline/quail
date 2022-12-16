@@ -9,10 +9,7 @@ import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class FuncMap extends QBuiltinFunc {
 
@@ -22,12 +19,12 @@ public class FuncMap extends QBuiltinFunc {
                 Arrays.asList(
                         new FuncArgument(
                                 "callback",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_FUNC)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_FUNC)),
                                 false
                         ),
                         new FuncArgument(
                                 "collection",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_LIST)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_LIST)),
                                 false
                         )
                 ),
@@ -44,7 +41,7 @@ public class FuncMap extends QBuiltinFunc {
         List<QObject> result = new ArrayList<>();
         int count = values.size();
         for (int i = 0; i < count; i++)
-            result.add(callback.call(runtime, Arrays.asList(values.get(i))));
+            result.add(callback.call(runtime, Collections.singletonList(values.get(i))));
         return QObject.Val(result);
     }
 

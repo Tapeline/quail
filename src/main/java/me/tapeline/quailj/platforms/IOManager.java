@@ -1,13 +1,6 @@
 package me.tapeline.quailj.platforms;
 
-import me.tapeline.quailj.parsing.nodes.operators.FieldReferenceNode;
-import me.tapeline.quailj.parsing.nodes.Node;
-import me.tapeline.quailj.parsing.nodes.variable.VariableNode;
-import me.tapeline.quailj.typing.*;
-import me.tapeline.quailj.typing.objects.QObject;
-import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
@@ -104,14 +97,6 @@ public class IOManager {
      * Set file contents to sth.
      */
     public static boolean fileSet(String path, String content) {
-        /*try {
-            FileOutputStream fos = new FileOutputStream(path);
-            DataOutputStream outStream = new DataOutputStream(new BufferedOutputStream(fos));
-            outStream.writeUTF(content);
-            outStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
         try {
             FileUtils.writeStringToFile(new File(path), content, "UTF-8");
             return true;
@@ -128,45 +113,5 @@ public class IOManager {
         String content = fileInput(path);
         fileSet(path, content + update);
     }
-
-    /**
-     * Convert path.file to path/file
-     */
-    /*public static String resolvePathFromDotNotation(Node operand) throws RuntimeStriker {
-        String path = "";
-        if (operand instanceof VariableNode) {
-            path = ((VariableNode) operand).token.c;
-        } else if (operand instanceof FieldReferenceNode) {
-            path += resolvePathFromDotNotation(((FieldReferenceNode) operand).lnode);
-            path += "/";
-            path += resolvePathFromDotNotation(((FieldReferenceNode) operand).rnode);
-        } else {
-            throw new RuntimeStriker("run:cannot resolve path " + operand.toString(), -1);
-        }
-        return path;
-    }
-
-    /**
-     * Load library contents
-     */
-    /*public static String loadLibrary(String path) throws RuntimeStriker {
-        for (String folder : libFolders) {
-            File f = new File(folder + path);
-            if (f.exists()) {
-                return fileInput(folder + path);
-            }
-        }
-        throw new RuntimeStriker("load lib:library \"" + path + "\" was not found in these paths: " +
-                libFolders.toString());
-    }
-    public static String pathLibrary(String path) {
-        for (String folder : libFolders) {
-            File f = new File(folder + path);
-            if (f.exists()) {
-                return folder + path;
-            }
-        }
-        return null;
-    }*/
 
 }

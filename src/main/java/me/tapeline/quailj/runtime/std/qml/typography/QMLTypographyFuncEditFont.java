@@ -12,6 +12,7 @@ import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class QMLTypographyFuncEditFont extends QBuiltinFunc {
@@ -27,12 +28,12 @@ public class QMLTypographyFuncEditFont extends QBuiltinFunc {
                         ),
                         new FuncArgument(
                                 "style",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_NUM)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_NUM)),
                                 false
                         ),
                         new FuncArgument(
                                 "size",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_NUM)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_NUM)),
                                 false
                         )
                 ),

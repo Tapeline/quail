@@ -15,7 +15,7 @@ import me.tapeline.quailj.utils.ErrorFormatter;
 import java.util.List;
 
 public class Main {
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         Utilities.init();
         boolean debug = false, timings = false, translate = false;
         String path = null;

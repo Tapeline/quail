@@ -6,17 +6,14 @@ import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class FuncMax extends QBuiltinFunc {
 
     public FuncMax(Runtime runtime) {
         super(
                 "max",
-                Arrays.asList(
+                Collections.singletonList(
                         new FuncArgument(
                                 "values",
                                 new ArrayList<>(),
@@ -36,7 +33,7 @@ public class FuncMax extends QBuiltinFunc {
         double maxValue = values.get(0).numValue();
         for (int i = 0; i < count; i++) {
             QObject val = values.get(i);
-            if (!val.isNum()) Runtime.error("Cannot find max among non-num values: " + val.toString());
+            if (!val.isNum()) Runtime.error("Cannot find max among non-num values: " + val);
             if (val.numValue() > maxValue) maxValue = val.numValue();
         }
         return QObject.Val(maxValue);

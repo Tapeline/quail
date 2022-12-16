@@ -20,7 +20,7 @@ public class StorageFuncSaveYaml extends QBuiltinFunc {
                 Arrays.asList(
                         new FuncArgument(
                                 "path",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_STRING)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_STRING)),
                                 false
                         ),
                         new FuncArgument(
@@ -42,7 +42,7 @@ public class StorageFuncSaveYaml extends QBuiltinFunc {
         return QObject.Val();
     }
 
-    public static Object represent(Runtime runtime, QObject obj) throws RuntimeStriker {
+    public static Object represent(Runtime runtime, QObject obj) {
         if (obj instanceof QString) {
             return obj.toString();
         } else if (obj instanceof QNumber) {

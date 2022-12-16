@@ -2,11 +2,8 @@ package me.tapeline.quailj.typing.objects;
 
 import me.tapeline.quailj.runtime.Runtime;
 import me.tapeline.quailj.runtime.std.javaadapter.AdapterFuncJavaCall;
-import me.tapeline.quailj.runtime.std.thread.*;
-import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 
 import java.util.HashMap;
-import java.util.List;
 
 public class QJavaAdapter<T> extends QObject {
 

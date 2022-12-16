@@ -11,8 +11,6 @@ import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.util.*;
 
 public class StorageFuncLoadYaml extends QBuiltinFunc {
@@ -20,10 +18,10 @@ public class StorageFuncLoadYaml extends QBuiltinFunc {
     public StorageFuncLoadYaml(Runtime runtime) {
         super(
                 "loadYaml",
-                Arrays.asList(
+                Collections.singletonList(
                         new FuncArgument(
                                 "path",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_STRING)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_STRING)),
                                 false
                         )
                 ),

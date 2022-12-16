@@ -68,7 +68,6 @@ import me.tapeline.quailj.typing.objects.errors.ErrorMessage;
 import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.AlternativeCall;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
-import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 import me.tapeline.quailj.typing.utils.VariableTable;
 import me.tapeline.quailj.utils.Dict;
 import me.tapeline.quailj.utils.ErrorFormatter;
@@ -81,9 +80,9 @@ import java.util.*;
 
 public class Runtime {
 
-    private String sourceCode;
-    private Node root;
-    private boolean doProfile;
+    private final String sourceCode;
+    private final Node root;
+    private final boolean doProfile;
     public IOManager io;
     public Memory memory;
     public EmbedIntegrator embedIntegrator;
@@ -320,8 +319,8 @@ public class Runtime {
         for (Pair<QFunc, Boolean> handler : eventsHandlerMap.get(event)) {
             QFunc func = handler.key;
             boolean ignoreCancelled = handler.value;
-            if (isCancelled && !ignoreCancelled || !isCancelled) {
-                func.call(this, Arrays.asList(metadata));
+            if (!isCancelled || !ignoreCancelled) {
+                func.call(this, Collections.singletonList(metadata));
                 isCancelled = metadata.get("isCancelled").isTrue();
             }
         }
@@ -398,7 +397,7 @@ public class Runtime {
             String eventName = run(thisNode.event, scope).toString();
             QFunc func = new QFunc(
                     thisNode.funcName,
-                    Arrays.asList(new FuncArgument(
+                    Collections.singletonList(new FuncArgument(
                             thisNode.id,
                             FuncArgument.defaultNull,
                             new ArrayList<>(),
@@ -533,14 +532,14 @@ public class Runtime {
                                 Node evalNode = parser.parse();
                                 result = run(evalNode, scope);
                             } catch (ParserException e) {
-                                System.err.println("PE: " + e.toString());
+                                System.err.println("PE: " + e);
                             } catch (RuntimeStriker r) {
                                 if (r.type == RuntimeStriker.Type.RETURN)
                                     result = r.returnValue;
                                 else
                                     result = Val("|| ERROR: \n" + r.error.toString());
                             } catch (Exception e) {
-                                System.err.println("E: " + e.toString());
+                                System.err.println("E: " + e);
                             }
                             System.err.println(result.toString());
                         } else if (cmd.startsWith("help")) {
@@ -866,7 +865,7 @@ public class Runtime {
             boolean isIncluding = thisNode.doesInclude;
             long rethrow = 0;
             QNumber numIterator = (QNumber) QObject.Val(start);
-            scope.set(iterator, numIterator, Arrays.asList(new FinalModifier()));
+            scope.set(iterator, numIterator, Collections.singletonList(new FinalModifier()));
             while (true) {
                 try {
                     if (isIncluding && (
@@ -1133,7 +1132,7 @@ public class Runtime {
         boolean isIncluding = true;
         long rethrow = 0;
         QNumber numIterator = (QNumber) QObject.Val(start);
-        memory.set(iterator, numIterator, Arrays.asList(new FinalModifier()));
+        memory.set(iterator, numIterator, Collections.singletonList(new FinalModifier()));
         while (true) {
             try {
                 if (isIncluding && (
@@ -1167,7 +1166,7 @@ public class Runtime {
         //print(millis() - start)
         memory.get("print").call(
                 this,
-                Arrays.asList(
+                Collections.singletonList(
                         memory.get("millis")
                                 .call(this, new ArrayList<>())
                                 .subtract(this, memory.get("start"))
@@ -1183,9 +1182,9 @@ public class Runtime {
         // Java       : 4-8     ~= 6
         // x4 performance
 
-        /*Runtime r = new Runtime("", new BlockNode(Token.UNDEFINED, new ArrayList<>()),
-                new IOManager(), false);
-        r.translated();*/
+        Runtime r = new Runtime("", new BlockNode(Token.UNDEFINED, new ArrayList<>()),
+                new IOManager(), new String[] {}, false);
+        r.translated();
 
     }
 

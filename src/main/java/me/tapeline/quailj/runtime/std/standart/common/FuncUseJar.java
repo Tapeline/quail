@@ -13,6 +13,7 @@ import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class FuncUseJar extends QBuiltinFunc {
@@ -23,12 +24,12 @@ public class FuncUseJar extends QBuiltinFunc {
                 Arrays.asList(
                         new FuncArgument(
                                 "path",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_STRING)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_STRING)),
                                 false
                         ),
                         new FuncArgument(
                                 "classPath",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_STRING)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_STRING)),
                                 false
                         ),
                         new FuncArgument(
@@ -53,7 +54,7 @@ public class FuncUseJar extends QBuiltinFunc {
             );
         } catch (Exception e) {
             Runtime.error("Caught an exception while trying to load " + args.get("path") + "\n" +
-                    "Exception details:\n" + e.toString());
+                    "Exception details:\n" + e);
             return QObject.Val();
         }
         if (embed == null) {
@@ -68,7 +69,7 @@ public class FuncUseJar extends QBuiltinFunc {
                 );
             } catch (Exception e) {
                 Runtime.error("Caught an exception while trying to integrate " + args.get("path") + "\n" +
-                        "Exception details:\n" + e.toString());
+                        "Exception details:\n" + e);
                 return QObject.Val();
             }
         }

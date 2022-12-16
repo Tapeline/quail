@@ -14,7 +14,7 @@ import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 import me.tapeline.quailj.utils.ErrorFormatter;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -23,10 +23,10 @@ public class FuncExec extends QBuiltinFunc {
     public FuncExec(Runtime runtime) {
         super(
                 "exec",
-                Arrays.asList(
+                Collections.singletonList(
                         new FuncArgument(
                                 "code",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_STRING)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_STRING)),
                                 false
                         )
                 ),
@@ -37,7 +37,7 @@ public class FuncExec extends QBuiltinFunc {
     }
 
     @Override
-    public QObject action(Runtime runtime, HashMap<String, QObject> args) throws RuntimeStriker {
+    public QObject action(Runtime runtime, HashMap<String, QObject> args) {
         String code = args.get("code").toString();
         QObject result = null;
         try {

@@ -2,7 +2,6 @@ package me.tapeline.quailj.runtime.std.qml.sound;
 
 import me.tapeline.quailj.lexing.TokenType;
 import me.tapeline.quailj.runtime.Runtime;
-import me.tapeline.quailj.runtime.std.qml.screen.window.QMLWindow;
 import me.tapeline.quailj.typing.modifiers.TypeModifier;
 import me.tapeline.quailj.typing.objects.QJavaAdapter;
 import me.tapeline.quailj.typing.objects.QObject;
@@ -13,8 +12,7 @@ import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 import javax.sound.sampled.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class QMLSoundFuncLoadSound extends QBuiltinFunc {
@@ -22,10 +20,10 @@ public class QMLSoundFuncLoadSound extends QBuiltinFunc {
     public QMLSoundFuncLoadSound(Runtime runtime) {
         super(
                 "loadSound",
-                Arrays.asList(
+                Collections.singletonList(
                         new FuncArgument(
                                 "path",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_STRING)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_STRING)),
                                 false
                         )
                 ),
@@ -43,7 +41,7 @@ public class QMLSoundFuncLoadSound extends QBuiltinFunc {
             clip.open(inputStream);
             return new QJavaAdapter<>(runtime, clip);
         } catch (LineUnavailableException | UnsupportedAudioFileException | IOException e) {
-            Runtime.error("Unexpected exception during clip opening:\n" + e.toString() +
+            Runtime.error("Unexpected exception during clip opening:\n" + e +
                     "\n" + e.getLocalizedMessage());
             return QObject.Val();
         }

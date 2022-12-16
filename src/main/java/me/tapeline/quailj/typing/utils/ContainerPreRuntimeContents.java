@@ -7,8 +7,8 @@ import java.util.List;
 
 public class ContainerPreRuntimeContents {
 
-    private List<Node> keys;
-    private HashMap<Integer, Node> valueMap;
+    private final List<Node> keys;
+    private final HashMap<Integer, Node> valueMap;
 
     public ContainerPreRuntimeContents(List<Node> keys, HashMap<Integer, Node> valueMap) {
         this.keys = keys;

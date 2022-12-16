@@ -12,7 +12,7 @@ import java.util.function.BiConsumer;
 
 public class VariableTable {
 
-    private HashMap<String, QObject> values = new HashMap<>();
+    private final HashMap<String, QObject> values = new HashMap<>();
     public Map<String, List<VariableModifier>> modifiers = new HashMap<>();
 
     public QObject put(Runtime runtime, String id, QObject value) throws RuntimeStriker {

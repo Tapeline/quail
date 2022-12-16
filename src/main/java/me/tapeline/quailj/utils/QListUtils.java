@@ -1,6 +1,5 @@
 package me.tapeline.quailj.utils;
 
-import me.tapeline.quailj.typing.objects.QList;
 import me.tapeline.quailj.typing.objects.QObject;
 
 import java.util.ArrayList;

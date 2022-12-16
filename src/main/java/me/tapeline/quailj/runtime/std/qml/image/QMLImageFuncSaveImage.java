@@ -10,12 +10,11 @@ import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
 import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class QMLImageFuncSaveImage extends QBuiltinFunc {
@@ -26,7 +25,7 @@ public class QMLImageFuncSaveImage extends QBuiltinFunc {
                 Arrays.asList(
                         new FuncArgument(
                                 "path",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_STRING)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_STRING)),
                                 false
                         ),
                         new FuncArgument(
@@ -50,7 +49,7 @@ public class QMLImageFuncSaveImage extends QBuiltinFunc {
             return QObject.Val(ImageIO.write(surface.image,
                     "png", new File(args.get("path").toString())));
         } catch (IOException e) {
-            Runtime.error("Unexpected exception during image opening:\n" + e.toString() +
+            Runtime.error("Unexpected exception during image opening:\n" + e +
                     "\n" + e.getLocalizedMessage());
             return QObject.Val();
         }

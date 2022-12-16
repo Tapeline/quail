@@ -1,8 +1,6 @@
 package me.tapeline.quailj.runtime.std.qml.sound;
 
-import me.tapeline.quailj.lexing.TokenType;
 import me.tapeline.quailj.runtime.Runtime;
-import me.tapeline.quailj.typing.modifiers.TypeModifier;
 import me.tapeline.quailj.typing.objects.QJavaAdapter;
 import me.tapeline.quailj.typing.objects.QObject;
 import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
@@ -10,10 +8,8 @@ import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
 import javax.sound.sampled.*;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class QMLSoundFuncPlaySound extends QBuiltinFunc {
@@ -21,7 +17,7 @@ public class QMLSoundFuncPlaySound extends QBuiltinFunc {
     public QMLSoundFuncPlaySound(Runtime runtime) {
         super(
                 "playSound",
-                Arrays.asList(
+                Collections.singletonList(
                         new FuncArgument(
                                 "sound",
                                 new ArrayList<>(),

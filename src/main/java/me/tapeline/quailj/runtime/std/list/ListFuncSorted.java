@@ -19,12 +19,12 @@ public class ListFuncSorted extends QBuiltinFunc {
                 Arrays.asList(
                         new FuncArgument(
                                 "list",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_LIST)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_LIST)),
                                 false
                         ),
                         new FuncArgument(
                                 "comparator",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_FUNC)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_FUNC)),
                                 false
                         )
                 ),
@@ -35,7 +35,7 @@ public class ListFuncSorted extends QBuiltinFunc {
     }
 
     @Override
-    public QObject action(Runtime runtime, HashMap<String, QObject> args) throws RuntimeStriker {
+    public QObject action(Runtime runtime, HashMap<String, QObject> args) {
         List<QObject> list = args.get("list").listValue();
         List<QObject> sorted = list.subList(0, list.size());
         QFunc comparator = ((QFunc) args.get("comparator"));

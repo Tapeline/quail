@@ -1,14 +1,13 @@
 package me.tapeline.quailj.runtime.std.qml.screen.surface;
 
 import me.tapeline.quailj.runtime.Runtime;
-import me.tapeline.quailj.runtime.std.qml.screen.window.QMLWindow;
 import me.tapeline.quailj.typing.objects.QObject;
 import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.typing.objects.funcutils.FuncArgument;
 import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class SurfaceFuncClear extends QBuiltinFunc {
@@ -16,7 +15,7 @@ public class SurfaceFuncClear extends QBuiltinFunc {
     public SurfaceFuncClear(Runtime runtime) {
         super(
                 "clear",
-                Arrays.asList(
+                Collections.singletonList(
                         new FuncArgument(
                                 "surface",
                                 new ArrayList<>(),

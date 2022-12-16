@@ -11,6 +11,7 @@ import me.tapeline.quailj.typing.objects.funcutils.QBuiltinFunc;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class WindowFuncSetSize extends QBuiltinFunc {
@@ -26,12 +27,12 @@ public class WindowFuncSetSize extends QBuiltinFunc {
                         ),
                         new FuncArgument(
                                 "w",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_NUM)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_NUM)),
                                 false
                         ),
                         new FuncArgument(
                                 "h",
-                                Arrays.asList(new TypeModifier(TokenType.TYPE_NUM)),
+                                Collections.singletonList(new TypeModifier(TokenType.TYPE_NUM)),
                                 false
                         )
                 ),
