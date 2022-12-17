@@ -1009,6 +1009,8 @@ public class Parser {
 
         if (match(LSPAR) != null) {
             Token leftBracket = getPrevious();
+            if (match(RSPAR) != null)
+                return new LiteralList(leftBracket, new ArrayList<>());
             Node expr = parseExpression(rule);
             if (match(CONTROL_FOR) != null) {
                 Node condition = null, fallback = null;

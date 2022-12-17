@@ -15,6 +15,8 @@ public class QCanvas extends Canvas {
     @Override
     public void paint(Graphics g) {
         super.paint(g);
+        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
         if (image != null) {
             g.drawImage(image, 0, 0, null);
         }

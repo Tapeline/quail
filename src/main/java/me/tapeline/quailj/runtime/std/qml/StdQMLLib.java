@@ -34,13 +34,13 @@ public class StdQMLLib {
         libImage.put("saveImage", new QMLImageFuncSaveImage(runtime));
 
         HashMap<String, QObject> libTypography = new HashMap<>();
-        libImage.put("createFont", new QMLTypographyFuncCreateFont(runtime));
-        libImage.put("loadFont", new QMLTypographyFuncLoadFont(runtime));
-        libImage.put("editFont", new QMLTypographyFuncEditFont(runtime));
-        libImage.put("metrics", new QMLTypographyFuncMetrics(runtime));
-        libImage.put("REGULAR", QObject.Val(0));
-        libImage.put("ITALIC", QObject.Val(1));
-        libImage.put("BOLD", QObject.Val(2));
+        libTypography.put("createFont", new QMLTypographyFuncCreateFont(runtime));
+        libTypography.put("loadFont", new QMLTypographyFuncLoadFont(runtime));
+        libTypography.put("editFont", new QMLTypographyFuncEditFont(runtime));
+        libTypography.put("metrics", new QMLTypographyFuncMetrics(runtime));
+        libTypography.put("REGULAR", QObject.Val(0));
+        libTypography.put("ITALIC", QObject.Val(1));
+        libTypography.put("BOLD", QObject.Val(2));
 
         lib.put("screen", QObject.Val(libScreen));
         lib.put("sound", QObject.Val(libSound));

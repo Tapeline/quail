@@ -75,4 +75,8 @@ public class QMLWindow extends QJavaAdapter<Frame> {
         canvas.addMouseListener(mouseHandler);
     }
 
+    public Frame getFrame() {
+        return frame;
+    }
+
 }

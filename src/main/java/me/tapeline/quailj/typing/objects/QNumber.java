@@ -46,7 +46,7 @@ public class QNumber extends QObject {
     @Override
     public QObject intDivide(Runtime runtime, QObject other) throws RuntimeStriker {
         if (other.isNum())
-            return QObject.Val((long) (value + ((QNumber) other).value));
+            return QObject.Val((long) (value / ((QNumber) other).value));
         return super.intDivide(runtime, other);
     }
 

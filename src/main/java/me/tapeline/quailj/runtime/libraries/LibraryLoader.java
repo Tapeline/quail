@@ -21,6 +21,10 @@ public class LibraryLoader {
         QObject cached = registry.getLibrary(name);
         if (cached == null) {
             for (String pathWildcard : registry.libraryRoots) {
+                pathWildcard = pathWildcard.replaceAll("\\$cwd\\$",
+                        System.getProperty("user.dir"));
+                pathWildcard = pathWildcard.replaceAll("\\$script\\$",
+                        runtime.scriptHome.getAbsolutePath());
                 File possibleFile = new File(pathWildcard.replaceAll("\\?", name));
                 if (possibleFile.exists()) {
                     String code = IOManager.fileInput(possibleFile.getAbsolutePath());
@@ -30,7 +34,8 @@ public class LibraryLoader {
                         List<Token> tokens = lexer.scan();
                         Parser parser = new Parser(code, tokens);
                         Node root = parser.parse();
-                        Runtime inner = new Runtime(code, root, runtime.io, new String[] {}, false);
+                        Runtime inner = new Runtime(possibleFile.getParentFile(), root, runtime.io,
+                                new String[] {}, false);
                         result = inner.run(root, inner.memory);
                     } catch (RuntimeStriker striker) {
                         if (striker.type == RuntimeStriker.Type.EXCEPTION) {

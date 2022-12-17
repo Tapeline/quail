@@ -52,6 +52,7 @@ public class AdapterFuncJavaCall extends QBuiltinFunc {
         int size = convertedArguments.size();
         for (int i = 0; i < size; i++) argClasses[i] = convertedArguments.get(i).getClass();
         primitiveClasses(argClasses);
+        System.out.println(obj.getClass());
         try {
             Method method = obj.getClass().getMethod(args.get("method").toString(), argClasses);
             Object result = method.invoke(obj, convertedArguments.toArray());

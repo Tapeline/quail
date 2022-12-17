@@ -12,6 +12,7 @@ import me.tapeline.quailj.typing.objects.errors.RuntimeStriker;
 import me.tapeline.quailj.utils.Utilities;
 import me.tapeline.quailj.utils.ErrorFormatter;
 
+import java.io.File;
 import java.util.List;
 
 public class Main {
@@ -72,7 +73,7 @@ public class Main {
         }
         QObject result = null;
         try {
-            runtime = new Runtime(code, root, io, args, timings);
+            runtime = new Runtime(new File(path).getParentFile(), root, io, args, timings);
             result = runtime.run(root, runtime.memory);
         } catch (RuntimeStriker striker) {
             if (striker.type == RuntimeStriker.Type.EXCEPTION) {

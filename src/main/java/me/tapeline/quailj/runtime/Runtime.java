@@ -76,11 +76,12 @@ import me.tapeline.quailj.utils.Utilities;
 
 import static me.tapeline.quailj.typing.objects.QObject.Val;
 
+import java.io.File;
 import java.util.*;
 
 public class Runtime {
 
-    private final String sourceCode;
+    public final File scriptHome;
     private final Node root;
     private final boolean doProfile;
     public IOManager io;
@@ -101,8 +102,8 @@ public class Runtime {
     public static QObject boolPrototype = new QObject("Bool", null, new HashMap<>());
     public static QObject funcPrototype = new QObject("Func", null, new HashMap<>());
 
-    public Runtime(String sourceCode, Node root, IOManager io, String[] consoleArgs, boolean doProfile) {
-        this.sourceCode = sourceCode;
+    public Runtime(File file, Node root, IOManager io, String[] consoleArgs, boolean doProfile) {
+        this.scriptHome = file;
         this.root = root;
         this.doProfile = doProfile;
         this.consoleArgs = consoleArgs;
@@ -112,6 +113,8 @@ public class Runtime {
         this.memory = new Memory();
         registerDefaults();
         libraryRegistry.libraryRoots.add("/home/tapeline/JavaProjects/Files/Quailv2/qlibs/?");
+        libraryRegistry.libraryRoots.add("$cwd$/?");
+        libraryRegistry.libraryRoots.add("$script$/?");
     }
 
     private void registerDefaults() {
@@ -1182,9 +1185,9 @@ public class Runtime {
         // Java       : 4-8     ~= 6
         // x4 performance
 
-        Runtime r = new Runtime("", new BlockNode(Token.UNDEFINED, new ArrayList<>()),
+        /*Runtime r = new Runtime("", new BlockNode(Token.UNDEFINED, new ArrayList<>()),
                 new IOManager(), new String[] {}, false);
-        r.translated();
+        r.translated();*/
 
     }
 

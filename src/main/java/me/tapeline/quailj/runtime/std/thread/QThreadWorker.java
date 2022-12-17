@@ -20,7 +20,7 @@ public class QThreadWorker extends Thread {
     public QThreadWorker(Runtime r, QFunc f, List<QObject> casted) {
         outer = r;
         runnable = f;
-        inner = new Runtime("", null, outer.io, new String[] {}, false);
+        inner = new Runtime(r.scriptHome, null, outer.io, new String[] {}, false);
         args = casted;
     }
 

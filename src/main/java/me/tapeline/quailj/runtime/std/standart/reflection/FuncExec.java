@@ -45,7 +45,7 @@ public class FuncExec extends QBuiltinFunc {
             List<Token> tokens = lexer.scan();
             Parser parser = new Parser(code, tokens);
             Node root = parser.parse();
-            Runtime inner = new Runtime(code, root, runtime.io, new String[] {}, false);
+            Runtime inner = new Runtime(runtime.scriptHome, root, runtime.io, new String[] {}, false);
             result = inner.run(root, inner.memory);
         } catch (RuntimeStriker striker) {
             if (striker.type == RuntimeStriker.Type.EXCEPTION) {
