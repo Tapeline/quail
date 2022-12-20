@@ -8,7 +8,7 @@ public abstract class VariableModifier {
     public Type type;
 
     public enum Type {
-        MOD_REQ, MOD_TYP, MOD_ANYOF, MOD_LOCAL, MOD_FINAL, MOD_STATIC
+        MOD_REQ, MOD_TYP, MOD_ANYOF, MOD_LOCAL, MOD_FINAL, MOD_STATIC, MOD_METHOD
     }
 
     public abstract boolean matches(Runtime runtime, QObject object);

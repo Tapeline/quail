@@ -9,22 +9,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0f087f83-4294-4049-8196-1d1bd1edefe9" name="Changes" comment="done refactoring">
-      <change afterPath="$PROJECT_DIR$/example/plot/main.q" afterDir="false" />
+    <list default="true" id="0f087f83-4294-4049-8196-1d1bd1edefe9" name="Changes" comment="done refactoring #2">
+      <change afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/modifiers/MethodModifier.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Quailv2.jar" beforeDir="false" afterPath="$PROJECT_DIR$/Quailv2.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/parsing/Parser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/parsing/Parser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/Runtime.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/Runtime.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/libraries/LibraryLoader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/libraries/LibraryLoader.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/javaadapter/AdapterFuncJavaCall.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/javaadapter/AdapterFuncJavaCall.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/StdQMLLib.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/StdQMLLib.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/window/QCanvas.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/window/QCanvas.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/window/QMLWindow.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/qml/screen/window/QMLWindow.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/standart/reflection/FuncExec.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/standart/reflection/FuncExec.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/thread/QThreadWorker.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/runtime/std/thread/QThreadWorker.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/QNumber.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/objects/QNumber.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.png" beforeDir="false" afterPath="$PROJECT_DIR$/test.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/modifiers/VariableModifier.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/me/tapeline/quailj/typing/modifiers/VariableModifier.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,7 +31,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="fix/errorFormat" />
+        <entry key="$PROJECT_DIR$" value="quail2development" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -97,11 +85,11 @@
       <recent name="me.tapeline.quailj.runtime.std.storage" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="me.tapeline.quailj.typing.modifiers" />
       <recent name="me.tapeline.quailj.runtime.std.qml.typography" />
       <recent name="me.tapeline.quailj.runtime.std.qml.image" />
       <recent name="me.tapeline.quailj.runtime.std.qml.screen.window.keyboard" />
       <recent name="me.tapeline.quailj.runtime.std.qml.screen.window.mouse" />
-      <recent name="me.tapeline.quailj.runtime.std.qml.screen.window" />
     </key>
   </component>
   <component name="RunManager" selected="Application.Main">
@@ -241,7 +229,14 @@
       <option name="project" value="LOCAL" />
       <updated>1671166492721</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="done refactoring #2">
+      <created>1671304582993</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1671304582993</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="UnknownFeatures">
@@ -285,7 +280,8 @@
     <MESSAGE value="snapshot&#10;step 4 in progress&#10;15-12-22 12:00 UTC" />
     <MESSAGE value="snapshot&#10;step 4 done&#10;15-12-22 19:00 UTC" />
     <MESSAGE value="snapshot&#10;step 5 done&#10;16-12-22 05:00 UTC" />
-    <option name="LAST_COMMIT_MESSAGE" value="snapshot&#10;step 5 done&#10;16-12-22 05:00 UTC" />
+    <MESSAGE value="done refactoring #2" />
+    <option name="LAST_COMMIT_MESSAGE" value="done refactoring #2" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
