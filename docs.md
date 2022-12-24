@@ -1,3 +1,6 @@
+# NOTICE
+## This guide is only for Quail 1.0 and earlier!
+
 # Welcome!
 
 > **This guide will help you start writing code in Quail. I recommend you read it all.**
