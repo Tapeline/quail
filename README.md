@@ -1,5 +1,8 @@
 # **quail** - A simple scripting language.
 
+> **Quail 2.0 is currently being created**
+> Latest snapshots at [Tapeline/quail2](https://github.com/Tapeline/quail2) and [Quail-Language/quail](https://github.com/Quail-Language/quail)
+
 > ! ! !
 > **still in progress**
 > ! ! !
